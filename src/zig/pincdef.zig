@@ -115,6 +115,18 @@ fn pinc_event_union(clear: bool) c.pinc_event_union_t {
             return eventUnion;
         }
     }
+    if(eventsWindowCursorEnter.items.len > 0) {
+        return c.pinc_event_union_t {
+            .type = c.pinc_event_window_cursor_enter,
+            .data = .{.window_cursor_enter = if(clear) eventsWindowCursorEnter.pop() else eventsWindowCursorEnter.getLast()},
+        };
+    }
+    if(eventsWindowCursorExit.items.len > 0) {
+        return c.pinc_event_union_t {
+            .type = c.pinc_event_window_cursor_exit,
+            .data = .{.window_cursor_exit = if(clear) eventsWindowCursorExit.pop() else eventsWindowCursorExit.getLast()},
+        };
+    }
     if(eventsWindowCursorButtonDown.items.len > 0) {
         return c.pinc_event_union_t {
             .type = c.pinc_event_window_cursor_button_down,
@@ -405,41 +417,98 @@ pub export fn pinc_poll_events() void {
         switch (event.type) {
             c.pinc_event_none => {},
             c.pinc_event_window_resize => {
-                const resize = event.data.window_resize;
-                if(resize.window == 0) break;
-                if(windows.items[resize.window-1].native != .none) {
-                    const window = &windows.items[resize.window-1];
-                    // override previous size
-                    window.eventWindowResize = resize;
-                }
+                const evdat = event.data.window_resize;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                const window = &windows.items[evdat.window-1];
+                // override previous size
+                window.eventWindowResize = evdat;
             },
-            // TODO: rest of events
-            c.pinc_event_window_damaged => {},
-            c.pinc_event_window_key_down => {},
-            c.pinc_event_window_key_up => {},
-            c.pinc_event_window_key_repeat => {},
-            c.pinc_event_window_text => {},
+            c.pinc_event_window_damaged => {
+                const evdat = event.data.window_damaged;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                const window = &windows.items[evdat.window-1];
+                // override previous event
+                window.eventWindowDamaged = evdat;
+            },
+            c.pinc_event_window_key_down => {
+                const evdat = event.data.window_key_down;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowKeyDown.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_key_up => {
+                const evdat = event.data.window_key_up;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowKeyUp.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_key_repeat => {
+                const evdat = event.data.window_key_repeat;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowKeyRepeat.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_text => {
+                const evdat = event.data.window_text;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowText.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
             c.pinc_event_window_cursor_move => {
-                // Remember: the X backend only sets the pixel coords
-                const move = event.data.window_cursor_move;
-                if(move.window == 0) break;
-                if(windows.items[move.window-1].native != .none) {
-                    const window = &windows.items[move.window-1];
-                    // TODO: update current pos, calculate delta and screen coords
-                    if(window.eventWindowCursorMove == null){
-                        window.eventWindowCursorMove = move;
-                    } else {
-                        window.eventWindowCursorMove.?.x_pixels = move.x_pixels;
-                        window.eventWindowCursorMove.?.y_pixels = move.y_pixels;
-                    }
+                // Remember: the X backend only sets the pixel coords, not delta or screen coords.
+                const evdat = event.data.window_cursor_move;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                const window = &windows.items[evdat.window-1];
+                // TODO: update current pos, calculate delta and screen coords
+                if(window.eventWindowCursorMove == null){
+                    window.eventWindowCursorMove = evdat;
+                } else {
+                    window.eventWindowCursorMove.?.x_pixels = evdat.x_pixels;
+                    window.eventWindowCursorMove.?.y_pixels = evdat.y_pixels;
                 }
             },
-            c.pinc_event_window_cursor_enter => {},
-            c.pinc_event_window_cursor_exit => {},
-            c.pinc_event_window_cursor_button_down => {},
-            c.pinc_event_window_cursor_button_up => {},
-            c.pinc_event_window_scroll => {},
-            c.pinc_event_window_close => {},
+            c.pinc_event_window_cursor_enter => {
+                const evdat = event.data.window_cursor_enter;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowCursorEnter.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_cursor_exit => {
+                const evdat = event.data.window_cursor_exit;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowCursorExit.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_cursor_button_down => {
+                const evdat = event.data.window_cursor_button_down;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowCursorButtonDown.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_cursor_button_up => {
+                const evdat = event.data.window_cursor_button_up;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                eventsWindowCursorButtonUp.append(evdat) catch std.debug.panic("Out of memory", .{});
+            },
+            c.pinc_event_window_scroll => {
+                const evdat = event.data.window_scroll;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                const window = &windows.items[evdat.window-1];
+                // override previous event
+                window.eventWindowScroll = evdat;
+            },
+            c.pinc_event_window_close => {
+                const evdat = event.data.window_close;
+                if(evdat.window == 0) break;
+                if(windows.items[evdat.window-1].native == .none) break;
+                const window = &windows.items[evdat.window-1];
+                window.eventWindowClose = evdat;
+            },
             // TODO: handle this case maybe?
             else => {},
         }

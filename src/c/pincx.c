@@ -80,6 +80,7 @@ void x11_deinit(void) {
 }
 
 x11_window x11_window_incomplete_create(const char* title) {
+    // TODO: redirect window close
     Window rootWindow = DefaultRootWindow(xDisplay);
     Colormap cmap = XCreateColormap(xDisplay, rootWindow, xVisual->visual, AllocNone);
 
@@ -116,10 +117,10 @@ pinc_event_union_t x11_pop_event() {
     XNextEvent(xDisplay, &xev);
     switch(xev.type) {
         case KeyPress:
-            // TODO:
+            // TODO
             break;
         case KeyRelease:
-            // TODO:
+            // TODO
             break;
         case ButtonPress:
             event.type = pinc_event_window_cursor_button_down;

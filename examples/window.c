@@ -12,8 +12,8 @@ int main(int argc, char** argv) {
         return 1;
     }
     // Create the incomplete window
-    pinc_window_incomplete_handle_t incomplete_window = pinc_window_incomplete_create("I am a window");
-    // complete the window with every optional parameter unset
+    pinc_window_incomplete_handle_t incomplete_window = pinc_window_incomplete_create("Hello, I am a window!");
+    // complete the window
     pinc_window_handle_t window = pinc_window_complete(incomplete_window);
     bool running = true;
     while(running) {
@@ -62,8 +62,11 @@ int main(int argc, char** argv) {
                 case pinc_event_window_close:
                     printf("close\n");
                     running = false;
+                    break;
+                case pinc_event_none:
+                    break;
                 default:
-                    printf("Unknown event\n");
+                    printf("Unknown event type %i\n", event_type);
                     break;
             }
             // Move to the next event
@@ -72,6 +75,7 @@ int main(int argc, char** argv) {
         } while(pinc_event_type() != pinc_event_none);
         // No buffer swapping yet.
     }
+    // TODO: actually dispose of things
     return 0;
 }
 
