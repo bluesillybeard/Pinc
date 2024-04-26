@@ -1,0 +1,21 @@
+{
+    "files.associations": {
+        "pinc.h": "c",
+        "stdbool.h": "c",
+        "stdio.h": "c",
+        "stdint.h": "c",
+        "stddef.h": "c",
+        "glx.h": "c",
+        "gl.h": "c",
+        "x.h": "c",
+        "xlib.h": "c",
+        "types.h": "c",
+        "features.h": "c",
+        "xutil.h": "c",
+        "pincx.h": "c",
+        "xload.h": "c",
+        "time.h": "c",
+        "unistd.h": "c",
+        "dlfcn.h": "c"
+    }
+}
