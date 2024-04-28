@@ -26,6 +26,12 @@ int main(int argc, char** argv) {
                 case pinc_event_window_resize:
                     printf("resize event\n");
                     break;
+                case pinc_event_window_focus:
+                    printf("focus event\n");
+                    break;
+                case pinc_event_window_unfocus:
+                    printf("unfocus event\n");
+                    break;
                 case pinc_event_window_damaged:
                     printf("damage event\n");
                     break;

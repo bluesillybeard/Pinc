@@ -232,6 +232,10 @@ typedef enum {
 
     /// @brief triggered when a window is resized. On windows, this is only triggered once per resize, but on other platforms this may be called every frame as the window is resized.
     pinc_event_window_resize,
+    /// @brief triggered when a window gains focus. Window focus events only occur once per frame
+    pinc_event_window_focus,
+    /// @brief triggered when a window looses focus. Window focus events only occur once per frame
+    pinc_event_window_unfocus,
     // section for second priority
 
     /// @brief triggered when a window needs to be redrawn. Note that many systems store the window surface internally, and thus only call this when resizing the window.
@@ -311,6 +315,22 @@ typedef struct {
 
 /// @brief Gets the current window resize event. Undefined if the current event is not a window resize event. 
 extern pinc_event_window_resize_t pinc_event_window_resize_data(void);
+
+/// @brief Focus event data
+typedef struct {
+    pinc_window_handle_t window;
+} pinc_event_window_focus_t;
+
+/// @brief Gets the current pinc_event_window_focus_t. Undefined if the current event is not a pinc_event_window_focus_t. 
+extern pinc_event_window_focus_t pinc_event_window_focus_data(void);
+
+/// @brief Unfocus event data
+typedef struct {
+    pinc_window_handle_t window;
+} pinc_event_window_unfocus_t;
+
+/// @brief Gets the current pinc_event_window_unfocus_t. Undefined if the current event is not a pinc_event_window_unfocus_t. 
+extern pinc_event_window_unfocus_t pinc_event_window_unfocus_data(void);
 
 /// @brief Data for window damage event
 typedef struct {

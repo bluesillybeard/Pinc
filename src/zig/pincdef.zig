@@ -15,6 +15,8 @@ const PincWindow = struct {
     native: NativeWindow = .none,
     // per-window event buffers
     eventWindowResize: ?c.pinc_event_window_resize_t = null,
+    eventWindowFocus: ?c.pinc_event_window_focus_t = null,
+    eventWindowUnfocus: ?c.pinc_event_window_unfocus_t = null,
     eventWindowDamaged: ?c.pinc_event_window_damaged_t = null,
     eventWindowCursorMove: ?c.pinc_event_window_cursor_move_t = null,
     eventWindowScroll: ?c.pinc_event_window_scroll_t = null,
@@ -24,10 +26,10 @@ const PincWindow = struct {
 // This code is called from C
 fn x11_get_window_handle(xid: u32) callconv(.C) c.pinc_window_incomplete_handle_t {
     // xid is the Xlib ID of the window
-    for(windows.items, 0..) |window, i| {
+    for (windows.items, 0..) |window, i| {
         switch (window.native) {
             .x => |xWindow| {
-                if(xWindow.xWindow == xid) return @intCast(i+1);
+                if (xWindow.xWindow == xid) return @intCast(i + 1);
             },
             else => {},
         }
@@ -37,121 +39,134 @@ fn x11_get_window_handle(xid: u32) callconv(.C) c.pinc_window_incomplete_handle_
 }
 
 comptime {
-    @export(x11_get_window_handle, .{
-        .name = "x11_get_window_handle",
-        .linkage = std.builtin.GlobalLinkage.LinkOnce
-    });
+    @export(x11_get_window_handle, .{ .name = "x11_get_window_handle", .linkage = std.builtin.GlobalLinkage.link_once });
 }
 
-// Gets the current event 
+// Gets the current event
 // TODO: this entire thing is in severe need of a refactoring. Perhaps the entire way the event system is implemented needs some reworking.
 fn pinc_event_union(clear: bool) c.pinc_event_union_t {
     // This comes pretty close to the worst code I have ever emitted from my dumb brain.
     // Section for top priority
-    for(windows.items) |*window| {
-        if(window.eventWindowResize) |resize| {
-            const eventUnion = c.pinc_event_union_t {
+    for (windows.items) |*window| {
+        if (window.eventWindowResize) |resize| {
+            const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_resize,
-                .data = .{.window_resize = resize},
+                .data = .{ .window_resize = resize },
             };
-            if(clear) window.eventWindowResize = null;
+            if (clear) window.eventWindowResize = null;
+            return eventUnion;
+        }
+        if (window.eventWindowFocus) |focus| {
+            const eventUnion = c.pinc_event_union_t{
+                .type = c.pinc_event_window_focus,
+                .data = .{ .window_focus = focus },
+            };
+            if (clear) window.eventWindowFocus = null;
+            return eventUnion;
+        }
+        if (window.eventWindowUnfocus) |unfocus| {
+            const eventUnion = c.pinc_event_union_t{
+                .type = c.pinc_event_window_unfocus,
+                .data = .{ .window_unfocus = unfocus },
+            };
+            if (clear) window.eventWindowUnfocus = null;
             return eventUnion;
         }
     }
     // section for second priority
-    for(windows.items) |*window| {
-        if(window.eventWindowDamaged) |damaged| {
-            const eventUnion = c.pinc_event_union_t {
+    for (windows.items) |*window| {
+        if (window.eventWindowDamaged) |damaged| {
+            const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_damaged,
-                .data = .{.window_damaged = damaged},
+                .data = .{ .window_damaged = damaged },
             };
-            if(clear) window.eventWindowDamaged = null;
+            if (clear) window.eventWindowDamaged = null;
             return eventUnion;
         }
     }
     // section for tertiary priority
-    if(eventsWindowKeyDown.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowKeyDown.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_key_down,
-            .data = .{.window_key_down =  if(clear) eventsWindowKeyDown.pop() else eventsWindowKeyDown.getLast()},
+            .data = .{ .window_key_down = if (clear) eventsWindowKeyDown.pop() else eventsWindowKeyDown.getLast() },
         };
     }
     // pinc_event_window_key_up,
-    if(eventsWindowKeyUp.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowKeyUp.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_key_up,
-            .data = .{.window_key_up = if(clear) eventsWindowKeyUp.pop() else eventsWindowKeyUp.getLast()},
+            .data = .{ .window_key_up = if (clear) eventsWindowKeyUp.pop() else eventsWindowKeyUp.getLast() },
         };
     }
-    if(eventsWindowKeyRepeat.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowKeyRepeat.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_key_repeat,
-            .data = .{.window_key_repeat = if(clear) eventsWindowKeyRepeat.pop() else eventsWindowKeyRepeat.getLast()},
+            .data = .{ .window_key_repeat = if (clear) eventsWindowKeyRepeat.pop() else eventsWindowKeyRepeat.getLast() },
         };
     }
     // pinc_event_window_text,
-    if(eventsWindowText.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowText.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_text,
-            .data = .{.window_text = if(clear) eventsWindowText.pop() else eventsWindowText.getLast()},
+            .data = .{ .window_text = if (clear) eventsWindowText.pop() else eventsWindowText.getLast() },
         };
     }
     // section for 4th priority
-    for(windows.items) |*window| {
-        if(window.eventWindowCursorMove) |move| {
-            const eventUnion = c.pinc_event_union_t {
+    for (windows.items) |*window| {
+        if (window.eventWindowCursorMove) |move| {
+            const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_cursor_move,
-                .data = .{.window_cursor_move = move},
+                .data = .{ .window_cursor_move = move },
             };
-            if(clear) window.eventWindowCursorMove = null;
+            if (clear) window.eventWindowCursorMove = null;
             return eventUnion;
         }
-        if(window.eventWindowScroll) |scroll| {
-            const eventUnion = c.pinc_event_union_t {
+        if (window.eventWindowScroll) |scroll| {
+            const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_scroll,
-                .data = .{.window_scroll = scroll},
+                .data = .{ .window_scroll = scroll },
             };
-            if(clear) window.eventWindowScroll = null;
+            if (clear) window.eventWindowScroll = null;
             return eventUnion;
         }
     }
-    if(eventsWindowCursorEnter.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowCursorEnter.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_cursor_enter,
-            .data = .{.window_cursor_enter = if(clear) eventsWindowCursorEnter.pop() else eventsWindowCursorEnter.getLast()},
+            .data = .{ .window_cursor_enter = if (clear) eventsWindowCursorEnter.pop() else eventsWindowCursorEnter.getLast() },
         };
     }
-    if(eventsWindowCursorExit.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowCursorExit.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_cursor_exit,
-            .data = .{.window_cursor_exit = if(clear) eventsWindowCursorExit.pop() else eventsWindowCursorExit.getLast()},
+            .data = .{ .window_cursor_exit = if (clear) eventsWindowCursorExit.pop() else eventsWindowCursorExit.getLast() },
         };
     }
-    if(eventsWindowCursorButtonDown.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowCursorButtonDown.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_cursor_button_down,
-            .data = .{.window_cursor_button_down = if(clear) eventsWindowCursorButtonDown.pop() else eventsWindowCursorButtonDown.getLast()},
+            .data = .{ .window_cursor_button_down = if (clear) eventsWindowCursorButtonDown.pop() else eventsWindowCursorButtonDown.getLast() },
         };
     }
-    if(eventsWindowCursorButtonUp.items.len > 0) {
-        return c.pinc_event_union_t {
+    if (eventsWindowCursorButtonUp.items.len > 0) {
+        return c.pinc_event_union_t{
             .type = c.pinc_event_window_cursor_button_up,
-            .data = .{.window_cursor_button_up = if(clear) eventsWindowCursorButtonUp.pop() else eventsWindowCursorButtonUp.getLast()},
+            .data = .{ .window_cursor_button_up = if (clear) eventsWindowCursorButtonUp.pop() else eventsWindowCursorButtonUp.getLast() },
         };
     }
     // section for lowest priority.
 
-    for(windows.items) |*window| {
-        if(window.eventWindowClose) |close| {
-            const eventUnion = c.pinc_event_union_t {
+    for (windows.items) |*window| {
+        if (window.eventWindowClose) |close| {
+            const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_close,
-                .data = .{.window_close = close},
+                .data = .{ .window_close = close },
             };
-            if(clear) window.eventWindowClose = null;
+            if (clear) window.eventWindowClose = null;
             return eventUnion;
         }
     }
-    return c.pinc_event_union_t {
+    return c.pinc_event_union_t{
         .type = c.pinc_event_none,
         .data = undefined,
     };
@@ -161,14 +176,14 @@ fn pinc_event_union(clear: bool) c.pinc_event_union_t {
 var windows: std.ArrayList(PincWindow) = undefined;
 
 // global events buffers
-var eventsWindowKeyDown:          std.ArrayList(c.pinc_event_window_key_down_t) = undefined;
-var eventsWindowKeyUp:            std.ArrayList(c.pinc_event_window_key_up_t) = undefined;
-var eventsWindowKeyRepeat:        std.ArrayList(c.pinc_event_window_key_repeat_t) = undefined;
-var eventsWindowText:             std.ArrayList(c.pinc_event_window_text_t) = undefined;
-var eventsWindowCursorEnter:      std.ArrayList(c.pinc_event_window_cursor_enter_t) = undefined;
-var eventsWindowCursorExit:       std.ArrayList(c.pinc_event_window_cursor_exit_t) = undefined;
+var eventsWindowKeyDown: std.ArrayList(c.pinc_event_window_key_down_t) = undefined;
+var eventsWindowKeyUp: std.ArrayList(c.pinc_event_window_key_up_t) = undefined;
+var eventsWindowKeyRepeat: std.ArrayList(c.pinc_event_window_key_repeat_t) = undefined;
+var eventsWindowText: std.ArrayList(c.pinc_event_window_text_t) = undefined;
+var eventsWindowCursorEnter: std.ArrayList(c.pinc_event_window_cursor_enter_t) = undefined;
+var eventsWindowCursorExit: std.ArrayList(c.pinc_event_window_cursor_exit_t) = undefined;
 var eventsWindowCursorButtonDown: std.ArrayList(c.pinc_event_window_cursor_button_down_t) = undefined;
-var eventsWindowCursorButtonUp:   std.ArrayList(c.pinc_event_window_cursor_button_up_t) = undefined;
+var eventsWindowCursorButtonUp: std.ArrayList(c.pinc_event_window_cursor_button_up_t) = undefined;
 const AllocatorType = std.heap.GeneralPurposeAllocator(.{});
 var allocatorObj: AllocatorType = undefined;
 var allocator: std.mem.Allocator = undefined;
@@ -190,7 +205,7 @@ pub export fn pinc_init(window_api: c.pinc_window_api_t, graphics_api: c.pinc_gr
     eventsWindowCursorButtonUp = std.ArrayList(c.pinc_event_window_cursor_button_up_t).init(allocator);
     // window API specific things
     var actualWindowAPI = window_api;
-    if(window_api == c.pinc_window_api_automatic) {
+    if (window_api == c.pinc_window_api_automatic) {
         actualWindowAPI = c.pinc_window_api_x;
     }
     switch (actualWindowAPI) {
@@ -200,7 +215,7 @@ pub export fn pinc_init(window_api: c.pinc_window_api_t, graphics_api: c.pinc_gr
         else => {
             // TODO: figure out error reporting
             return false;
-        }
+        },
     }
     _ = graphics_api;
 }
@@ -214,7 +229,7 @@ pub export fn pinc_get_window_api() c.pinc_window_api_t {
 pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomplete_handle_t {
     const xWindow = c.x11_window_incomplete_create(title);
     // TODO: find an empty spot
-    windows.append(.{.native = .{.x = xWindow}}) catch return 0;
+    windows.append(.{ .native = .{ .x = xWindow } }) catch return 0;
     return @intCast(windows.items.len);
 }
 pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) void {
@@ -375,12 +390,12 @@ pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) voi
     std.debug.panic("pinc_window_destroy is not implemented\n", .{});
 }
 pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
-    if(incomplete == 0) return 0;
+    if (incomplete == 0) return 0;
     // Get a pointer to the internal window handle.
     // The list does not change within this function call so the memory will stay valid
     // the internal function does not keep a pointer to the window.
-    const xWindow: *c.x11_window = &windows.items[incomplete-1].native.x;
-    if(!c.x11_window_complete(xWindow)){
+    const xWindow: *c.x11_window = &windows.items[incomplete - 1].native.x;
+    if (!c.x11_window_complete(xWindow)) {
         // completing the window failed, return a null handle.
         return 0;
     }
@@ -399,7 +414,7 @@ pub export fn pinc_window_close(window: c.pinc_window_handle_t) void {
     std.debug.panic("pinc_window_close is not implemented\n", .{});
 }
 pub export fn pinc_poll_events() void {
-    for(windows.items) |*window| {
+    for (windows.items) |*window| {
         // Some things are backend specific
         switch (window.native) {
             .none => {},
@@ -407,63 +422,79 @@ pub export fn pinc_poll_events() void {
                 // on X, update last cursor pos to current
                 xWindow.lastCursorX = xWindow.cursorX;
                 xWindow.lastCursorY = xWindow.cursorY;
-            }
+            },
         }
     }
-    // Also reset 
+    // Also reset
     var event = c.x11_pop_event();
     // Does zig SERIOUSLY not have a do-while loop?
-    while(event.type != c.pinc_event_none) {
+    while (event.type != c.pinc_event_none) {
         switch (event.type) {
             c.pinc_event_none => {},
             c.pinc_event_window_resize => {
                 const evdat = event.data.window_resize;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
-                const window = &windows.items[evdat.window-1];
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
                 // override previous size
                 window.eventWindowResize = evdat;
             },
+            c.pinc_event_window_focus => {
+                const evdat = event.data.window_focus;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
+                // override previous size
+                window.eventWindowFocus = evdat;
+            },
+            c.pinc_event_window_unfocus => {
+                const evdat = event.data.window_unfocus;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
+                // override previous size
+                window.eventWindowUnfocus = evdat;
+            },
             c.pinc_event_window_damaged => {
                 const evdat = event.data.window_damaged;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
-                const window = &windows.items[evdat.window-1];
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
                 // override previous event
                 window.eventWindowDamaged = evdat;
             },
             c.pinc_event_window_key_down => {
                 const evdat = event.data.window_key_down;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowKeyDown.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_key_up => {
                 const evdat = event.data.window_key_up;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowKeyUp.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_key_repeat => {
                 const evdat = event.data.window_key_repeat;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowKeyRepeat.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_text => {
                 const evdat = event.data.window_text;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowText.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_cursor_move => {
                 // Remember: the X backend only sets the pixel coords, not delta or screen coords.
                 const evdat = event.data.window_cursor_move;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
-                const window = &windows.items[evdat.window-1];
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
                 // TODO: update current pos, calculate delta and screen coords
-                if(window.eventWindowCursorMove == null){
+                if (window.eventWindowCursorMove == null) {
                     window.eventWindowCursorMove = evdat;
                 } else {
                     window.eventWindowCursorMove.?.x_pixels = evdat.x_pixels;
@@ -472,41 +503,41 @@ pub export fn pinc_poll_events() void {
             },
             c.pinc_event_window_cursor_enter => {
                 const evdat = event.data.window_cursor_enter;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowCursorEnter.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_cursor_exit => {
                 const evdat = event.data.window_cursor_exit;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowCursorExit.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_cursor_button_down => {
                 const evdat = event.data.window_cursor_button_down;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowCursorButtonDown.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_cursor_button_up => {
                 const evdat = event.data.window_cursor_button_up;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
                 eventsWindowCursorButtonUp.append(evdat) catch std.debug.panic("Out of memory", .{});
             },
             c.pinc_event_window_scroll => {
                 const evdat = event.data.window_scroll;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
-                const window = &windows.items[evdat.window-1];
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
                 // override previous event
                 window.eventWindowScroll = evdat;
             },
             c.pinc_event_window_close => {
                 const evdat = event.data.window_close;
-                if(evdat.window == 0) break;
-                if(windows.items[evdat.window-1].native == .none) break;
-                const window = &windows.items[evdat.window-1];
+                if (evdat.window == 0) break;
+                if (windows.items[evdat.window - 1].native == .none) break;
+                const window = &windows.items[evdat.window - 1];
                 window.eventWindowClose = evdat;
             },
             // TODO: handle this case maybe?
@@ -515,7 +546,6 @@ pub export fn pinc_poll_events() void {
         // Go to next event for the next iteration
         event = c.x11_pop_event();
     }
-    
 }
 pub export fn pinc_advance_event() void {
     // I think this stupidity makes the need to refactor event management really obvious
@@ -532,6 +562,12 @@ pub export fn pinc_event_window_close_data() c.pinc_event_window_close_t {
 }
 pub export fn pinc_event_window_resize_data() c.pinc_event_window_resize_t {
     std.debug.panic("pinc_event_window_resize_data is not implemented\n", .{});
+}
+pub export fn pinc_event_window_focus_data() c.pinc_event_window_focus_t {
+    std.debug.panic("pinc_event_window_focus_data is not implemented\n", .{});
+}
+pub export fn pinc_event_window_unfocus_data() c.pinc_event_window_unfocus_t {
+    std.debug.panic("pinc_event_window_unfocus_data is not implemented\n", .{});
 }
 pub export fn pinc_event_window_damaged_data() c.pinc_event_window_damaged_t {
     std.debug.panic("pinc_event_window_damaged_data is not implemented\n", .{});
