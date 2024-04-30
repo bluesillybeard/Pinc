@@ -16,6 +16,8 @@
         "xload.h": "c",
         "time.h": "c",
         "unistd.h": "c",
-        "dlfcn.h": "c"
+        "dlfcn.h": "c",
+        "xlibload.h": "c",
+        "xkblib.h": "c"
     }
 }

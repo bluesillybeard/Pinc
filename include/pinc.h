@@ -458,6 +458,7 @@ typedef enum {
     pinc_key_code_numpad_slash,
     pinc_key_code_numpad_asterisk,
     pinc_key_code_numpad_dash,
+    pinc_key_code_numpad_plus,
     pinc_key_code_numpad_enter,
     pinc_key_code_numpad_equal,
     pinc_key_code_left_shift,
@@ -472,9 +473,11 @@ typedef enum {
     pinc_key_code_right_super,
     /// @brief On many keyboards, this is the button next to right control
     pinc_key_code_menu,
+    // Don't you just love C?
+    pinc_key_code_count,
 } pinc_key_code_t;
 
-/// @brief Key modifiers are a bitfield, however those may have strange ABI differences so it's represented the "raw" way (which most other libraries do anyway lol)
+/// @brief Key modifiers are a bitfield, however those may have strange ABI differences so it's represented the "raw" way
 typedef uint32_t pinc_key_modifiers_t;
 #define pinc_shift_bit = 0x1;
 #define pinc_control_bit = 0x2;
@@ -623,11 +626,11 @@ extern pinc_event_window_scroll_t pinc_event_window_scroll_data(void);
 
 /// @brief Get the name of a key
 /// @return The name of the key. This returns null if the code is invalid.
-extern char* pinc_key_name(pinc_key_code_t code);
+extern const char* pinc_key_name(pinc_key_code_t code);
 
 /// @brief Get the name of a platform specific key code. This depends on the users keyboard layout, language, and platform.
 /// @return The name of the key token. This returns null if the token does not have a name
-extern char* pinc_key_token_name(uint32_t token);
+extern const char* pinc_key_token_name(uint32_t token);
 
 // Additional cursor types and functions
 

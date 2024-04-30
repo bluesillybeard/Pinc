@@ -1,5 +1,7 @@
 const std = @import("std");
+
 pub fn build(b: *std.Build) void {
+    // TODO: options to build different artifacts (static lib, dynamic lib, examples)
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     // For now, we only build Pinc and the window example

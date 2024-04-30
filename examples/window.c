@@ -36,11 +36,17 @@ int main(int argc, char** argv) {
                     printf("damage event\n");
                     break;
                 case pinc_event_window_key_down:
-                    printf("key down\n");
+                {
+                    pinc_event_window_key_down_t key_down_data = pinc_event_window_key_down_data();
+                    printf("key %s down\n", pinc_key_name(key_down_data.key));
                     break;
+                }
                 case pinc_event_window_key_up:
-                    printf("key up\n");
+                {
+                    pinc_event_window_key_up_t key_up_data = pinc_event_window_key_up_data();
+                    printf("key %s up\n", pinc_key_name(key_up_data.key));
                     break;
+                }
                 case pinc_event_window_key_repeat:
                     printf("key repeat\n");
                     break;

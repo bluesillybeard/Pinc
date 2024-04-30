@@ -74,6 +74,14 @@ void* x11_load_Xlib_symbol(const char* name);
 
 void* x11_load_glX_symbol(const char* name);
 
+pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width);
+
+pinc_key_code_t x11_translate_key(int code);
+
+pinc_key_modifiers_t x11_translate_modifiers(unsigned int xState);
+
+void x11_create_key_tables(void);
+
 #endif
 
 // Functions implemented somewhere in Zig

@@ -13,7 +13,7 @@ Pinc is a cross platform windowing / rendering library written in Zig.
 - Easy to use
     - Similar ease of use compared to something like SDL or SFML
 - Statically linked
-    - Technically can be compiled and loaded dynamically, but it is reccommended to link to Pinc statically since its ABI is not stable.
+    - Technically can be compiled and loaded dynamically, but it is reccommended to link to Pinc statically since the ABI is not stable.
 
 ## Important notes
 
@@ -66,13 +66,12 @@ These are top priority
 None of these are going to be implemented any time soon - if ever.
 - Playstation 4/5
     - their custom proprietary grahpics API will make this difficult as this library is open source and WILL NOT support the existence of closed source components. Sorry playstation developers, your platform is fundamentally incompatible with the open source model.
-    - I've heard they support Vulkan
+    - I've heard they support Vulkan, but their NDA makes it hard to find things out
 - BSD
     - BSD might already work (due to X11), however it is not tested.
 - Haiku
 
 ## Next steps for this library
-- Work on the API until it feels ready enough
 - X11
     - The last revision to the header was in 1997. I think there won't be any problems running on older systems.
 - OpenGL 2.1
@@ -84,8 +83,8 @@ None of these are going to be implemented any time soon - if ever.
 - any final touches to the API
     - At this point, Pinc is (hopefully) fully usable on all major desktop platforms
 - Vulkan backend
-- OpenGL 4.1 backend
 - OpenGL 3.3 backend
+- OpenGL 4.1 backend
 - Software rasterizer backend
 - Wayland
     - This is a lower priority because XWayland exists and the Wayland protocol is still undergoing frequent and substantial changes.
@@ -94,7 +93,11 @@ None of these are going to be implemented any time soon - if ever.
 - Test zero-dependency compilation
 - Figure out an error reporting solution
 - internal refactor of event system
-- on X11 backend, trigger cursor exit event when the window looses focus (X does not trigger an exit event when focus is lost for some reason)
+    - on X11 backend, trigger cursor exit event when the window looses focus (X does not trigger an exit event when focus is lost for some reason)
+- Make tests to check for certain annoying things
+    - duplicate key events
+    - duplicate cursor movement events
+    - This could be placed in some kind of validation layer system. Might need to wait until everything is placed through interfaces.
 
 ## Q&A
 - Why make this when other libraries like Kinc, Raylib, V-EZ, bgfx, and however many others already exist?
@@ -105,6 +108,12 @@ None of these are going to be implemented any time soon - if ever.
         - zero compile time dependencies (other than a compiler)
         - multiple windows on desktop platforms
         - arbitrary draw surfaces
-- Why support OpenGL 2.1
-    - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. It sounds stupid, but as a stupid person I think it's a great reason. This was partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
-
+- Why support OpenGL 2.1. It's so old! (and deprecated)
+    - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. It sounds stupid, but as a stupid person myself, I think it's a great reason. This was partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
+    - It's the most widely supported graphics API, hands down. You'd be hard pressed to find a platform that doesn't have some way to get OpenGL 2 apps running.
+        - I would use OpenGL 1.x but that doesn't have shaders which are pretty much fundamental to any half-decent graphics API.
+    - It's the simplest low-level cross platform graphics API, so getting started is easier.
+- Why use X11 / Win32 / Cocoa directly
+    - To minimize dependencies
+    - GLFW is hardwired to bond each window to a GL context permanently, which is fundamentally incompatible to how this library works
+    - SDL is difficult to work with in terms of getting it to cross-compile
