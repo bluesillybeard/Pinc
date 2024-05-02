@@ -54,13 +54,12 @@ bool x11_init(void) {
     x11_load_libraries();
     // if XLib wasn't loaded, it's not going to work
     if(XOpenDisplay == NULL) {
-        // TODO: replace printfs with a proper logging / error reporting system
-        printf("Failed to load libX11.so\n");
+        pinci_make_error(pinc_error_init, "Failed to load libX11.so");
         return false;
     }
     xDisplay = XOpenDisplay(NULL);
     if(xDisplay == NULL){
-        printf("Display is null\n");
+        pinci_make_error(pinc_error_init, "Failed to connect to X11 server");
         return false;
     }
     xkbAvailable = false;
@@ -84,7 +83,7 @@ bool x11_init(void) {
     // Remember, we use a loader header - this is not the extern function,
     // it's actually a macro to a pointer that should have been loaded by x11_load_libraries.
     if(glXGetProcAddressARB == NULL) {
-        printf("glXGetProcAddressARB is null\n");
+        pinci_make_error(pinc_error_init, "libGL.so doesn't expose glXGetProcAddressARB");
         return false;
     }
     // We want one GLX context for all windows, so it's initialized here.
@@ -93,13 +92,13 @@ bool x11_init(void) {
     GLint glxAttributes[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
     xVisual = glXChooseVisual(xDisplay, 0, glxAttributes);
     if(xVisual == NULL) {
-        printf("Visual is null\n");
+        pinci_make_error(pinc_error_init, "Failed to choose X visual");
         return false;
     }
     // create a context. NOTE: This is for the old OpenGL 1.0 - 2.1 context.
     glxContext = glXCreateContext(xDisplay, xVisual, NULL, GL_TRUE);
     if(glxContext == NULL) {
-        printf("GLX Context is null");
+        pinci_make_error(pinc_error_init, "Failed to create glX context");
         return false;
     }
     return true;
@@ -147,7 +146,6 @@ pinc_event_union_t x11_pop_event() {
     }
     XEvent xev;
     XNextEvent(xDisplay, &xev);
-    // TODO: xkb events. GLFW's x11_window.c around line 1170 ish is where you can find a reference implementation
     // TODO: Apparently Xlib will send events for destroyed windows. Verify that Pinc handles that gracefully
     switch(xev.type) {
         case KeyPress:
@@ -185,14 +183,12 @@ pinc_event_union_t x11_pop_event() {
         // Note: X calls enter and leave events on windows where the cursor does not directly enter or leave the window,
         // However that only happens when dealing with hirarchical windows which pinc does not allow to exist.
         case EnterNotify:
-            // TODO: figure out how to deal with non-normal crossing events
             if(xev.xcrossing.mode == NotifyNormal) {
                 event.type = pinc_event_window_cursor_enter;
                 event.data.window_cursor_enter.window = x11_get_window_handle(xev.xcrossing.window);
             }
             break;
         case LeaveNotify:
-            // TODO: figure out how to deal with non-normal crossing events
             if(xev.xcrossing.mode == NotifyNormal) {
                 event.type = pinc_event_window_cursor_exit;
                 event.data.window_cursor_exit.window = x11_get_window_handle(xev.xcrossing.window);
@@ -290,7 +286,7 @@ pinc_event_union_t x11_pop_event() {
             // TODO
             break;
         default:
-            // TODO: produce an error maybe?
+            pinci_make_error(pinc_error_some, "Got invalid X event type");
             break;
     }
     return event;
@@ -324,12 +320,25 @@ void x11_wait_events(float timeout) {
 
 void x11_make_context_current(pinc_window_handle_t window) {
     x11_window* xWindow = x11_get_x_window(window);
-    // TODO: handle errors
-    glXMakeCurrent(xDisplay, xWindow->xWindow, glxContext);
+    if(xWindow == NULL) {
+        // This should never happen assuming the zig side checks arguments correctly.
+        printf("Internal pinc error: xWindow is null!\n");
+        return;
+    }
+    bool result = glXMakeCurrent(xDisplay, xWindow->xWindow, glxContext);
+    if(!result) {
+        // This shouldn't happen, if this does happen then that is an error in Pinc, not the user's application
+        pinci_make_error(pinc_error_some, "Failed to make glX context current");
+    }
 }
 
 void x11_present_framebuffer(pinc_window_handle_t window, bool vsync) {
     x11_window* xWindow = x11_get_x_window(window);
+    if(xWindow == NULL) {
+        // This should never happen assuming the zig side checks arguments correctly.
+        printf("Internal pinc error: xWindow is null!\n");
+        return;
+    }
     // TODO: swap interval. It's a MESA extension, so some steps will be required
     glXSwapBuffers(xDisplay, xWindow->xWindow);
 }
@@ -386,7 +395,17 @@ pinc_key_code_t x11_translate_key(int code) {
 }
 
 pinc_key_modifiers_t x11_translate_modifiers(unsigned int xState) {
-    // TODO
+    pinc_key_modifiers_t modifiers = 0;
+    if(xState & ShiftMask) {
+        modifiers |= pinc_shift_bit;
+    }
+    if(xState & LockMask) {
+        modifiers |= pinc_caps_lock_bit;
+    }
+    if(xState & ControlMask) {
+        modifiers |= pinc_control_bit;
+    }
+    // TODO: is scroll lock event aquirable from here?
     return xState;
 }
 

@@ -22,6 +22,28 @@ typedef enum {
 /// @return true if success, false otherwise.
 extern bool pinc_init(pinc_window_api_t window_api, pinc_graphics_api_t graphics_api);
 
+typedef enum {
+    /// @brief No error
+    pinc_error_none = 0,
+    /// @brief something went wrong, no idea what though
+    pinc_error_some,
+    /// @brief something went wrong at init.
+    pinc_error_init,
+    /// @brief The API the program asked for is not supported on this system
+    pinc_error_unsupported_api,
+    /// @brief A pinc function was given a null handle
+    pinc_error_null_handle,
+    /// @brief A memory allocation failed
+    pinc_error_allocation,
+} pinc_error_t;
+
+/// @brief Get the most recent error.
+extern pinc_error_t pinc_error_get(void);
+
+/// @brief Get a message for the most recent error.
+/// @return null terminated ascii string. Will never be null, but may have a length of zero.
+extern const char* pinc_error_string(void);
+
 /// @brief Returns the window api used by Pinc.
 extern pinc_window_api_t pinc_get_window_api(void);
 
@@ -479,12 +501,12 @@ typedef enum {
 
 /// @brief Key modifiers are a bitfield, however those may have strange ABI differences so it's represented the "raw" way
 typedef uint32_t pinc_key_modifiers_t;
-#define pinc_shift_bit = 0x1;
-#define pinc_control_bit = 0x2;
-#define pinc_alt_bit = 0x4;
-#define pinc_super_bit = 0x8;
-#define pinc_caps_lock_bit = 0x10;
-#define pinc_num_lock_bit = 0x20;
+#define pinc_shift_bit 0x1
+#define pinc_control_bit 0x2
+#define pinc_alt_bit 0x4
+#define pinc_super_bit 0x8
+#define pinc_caps_lock_bit 0x10
+#define pinc_num_lock_bit 0x20
 
 /// @brief Data for window key down event
 typedef struct {

@@ -96,3 +96,6 @@ pinc_window_incomplete_handle_t x11_get_window_handle(uint32_t id);
 
 // This does the opposite of the above function
 x11_window* x11_get_x_window(pinc_window_incomplete_handle_t window);
+
+// TODO: move into general internal C header
+bool pinci_make_error(pinc_error_t er, const char* err);

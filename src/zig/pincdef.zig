@@ -36,10 +36,12 @@ fn x11_get_window_handle(xid: u32) callconv(.C) c.pinc_window_incomplete_handle_
         }
     }
     // No corresponding window was found, return 0.
+    // Error is not set here since C will do that instead
     return 0;
 }
 
 fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.C) ?*c.x11_window {
+    // TODO: on the C side, check for null
     if(window == 0) return null;
     if(window-1 >= windows.items.len) return null;
     if(windows.items[window-1].native != .x) return null;
@@ -196,7 +198,14 @@ var eventsWindowCursorButtonUp: std.ArrayList(c.pinc_event_window_cursor_button_
 const AllocatorType = std.heap.GeneralPurposeAllocator(.{});
 var allocatorObj: AllocatorType = undefined;
 var allocator: std.mem.Allocator = undefined;
-// ALL public pinc functions are defined here. (and ONLY public functions)
+
+// the C api cannot use Zig errors,
+// and returning a result type on every single function is just really annoying.
+// So, functions that may result in an error return a boolean, and if the return value is false the program can then get more detail
+var latestError: c.pinc_error_t = c.pinc_error_none;
+var latestErrorString: [*:0]const u8 = "";
+
+// ALL public pinc functions are defined here.
 // They may simply call into another function from another file, but they are all in this one place so it's easy to find them.
 
 pub export fn pinc_init(window_api: c.pinc_window_api_t, graphics_api: c.pinc_graphics_api_t) bool {
@@ -219,22 +228,32 @@ pub export fn pinc_init(window_api: c.pinc_window_api_t, graphics_api: c.pinc_gr
         actualWindowAPI = c.pinc_window_api_x;
     }
     // Initialize the C portion of Pinc
-    const cSuccess = switch (actualWindowAPI) {
-        c.pinc_window_api_x => c.x11_init(),
-        // TODO: figure out error reporting
-        else => false,
-    };
-    // C failed!
-    if(!cSuccess) return false;
+    switch (actualWindowAPI) {
+        c.pinc_window_api_x => if(!c.x11_init()) return false,
+        else => return pinci_make_error(c.pinc_error_unsupported_api, "Unsupported API"),
+    }
     std.log.info("Loading OpenGL 2.1 functions", .{});
-    // TODO: errors pain
-    gl21bind.load(void{}, getOpenglProc) catch return false;
+    gl21bind.load(void{}, getOpenglProc) catch {_ = pinci_make_error(c.pinc_error_init, "Failed to load OpenGL functions");};
     return true;
 }
 
 fn getOpenglProc(context: void, name: [:0]const u8) ?gl21bind.FunctionPointer {
     _ = context;
     return @ptrCast(pinc_graphics_opengl_get_proc(name.ptr));
+}
+
+pub export fn pinci_make_error(er: c.pinc_error_t, str: [*:0]const u8) bool {
+    latestError = er;
+    latestErrorString = str;
+    return false;
+}
+
+pub export fn pinc_error_get() c.pinc_error_t {
+    return latestError;
+}
+
+pub export fn pinc_error_string() [*:0]const u8{
+    return latestErrorString;
 }
 
 pub export fn pinc_get_window_api() c.pinc_window_api_t {
@@ -247,7 +266,10 @@ pub export fn pinc_get_window_api() c.pinc_window_api_t {
 pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomplete_handle_t {
     const xWindow = c.x11_window_incomplete_create(title);
     // TODO: find an empty spot
-    windows.append(.{ .native = .{ .x = xWindow } }) catch return 0;
+    windows.append(.{ .native = .{ .x = xWindow } }) catch {
+        _ = pinci_make_error(c.pinc_error_allocation, "Failed to create window: allocation failed");
+        return 0;
+    };
     return @intCast(windows.items.len);
 }
 pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) void {
@@ -408,13 +430,18 @@ pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) voi
     std.debug.panic("pinc_window_destroy is not implemented\n", .{});
 }
 pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
-    if (incomplete == 0) return 0;
+    if (incomplete == 0) {
+        _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_complete was given a null handle");
+        return 0;
+    }
     // Get a pointer to the internal window handle.
     // The list does not change within this function call so the memory will stay valid
     // the internal function does not keep a pointer to the window.
     const xWindow: *c.x11_window = &windows.items[incomplete - 1].native.x;
     if (!c.x11_window_complete(xWindow)) {
         // completing the window failed, return a null handle.
+        // TODO: make error enum more specific
+        _ = pinci_make_error(c.pinc_error_some, "Failed to complete X11 window");
         return 0;
     }
     return incomplete;
