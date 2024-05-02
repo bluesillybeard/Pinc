@@ -60,6 +60,13 @@ pinc_event_union_t x11_pop_event();
 
 void x11_wait_events(float timeout);
 
+// This is public since it's used in pinc_graphics_opengl_get_proc
+void* x11_load_glX_symbol(const char* name);
+
+void x11_make_context_current(pinc_window_handle_t window);
+
+void x11_present_framebuffer(pinc_window_handle_t window, bool vsync);
+
 #ifdef PINCX_PRIVATE
 
 // Unfortunately some private declarations rely on Xlib.
@@ -71,8 +78,6 @@ bool x11_load_libraries(void);
 void* x11_load_library(const char* name);
 
 void* x11_load_Xlib_symbol(const char* name);
-
-void* x11_load_glX_symbol(const char* name);
 
 pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width);
 
@@ -88,3 +93,6 @@ void x11_create_key_tables(void);
 
 // This returns the pinc window handle of a an X window given the window's XID.
 pinc_window_incomplete_handle_t x11_get_window_handle(uint32_t id);
+
+// This does the opposite of the above function
+x11_window* x11_get_x_window(pinc_window_incomplete_handle_t window);

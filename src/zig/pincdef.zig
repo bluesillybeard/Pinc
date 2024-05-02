@@ -9,6 +9,7 @@ const NativeWindow = union(enum) {
     none,
     x: c.x11_window,
 };
+const gl21bind = @import("ext/gl21load.zig");
 
 const PincWindow = struct {
     // Also holds whether this window is an empty slot or not
@@ -38,8 +39,16 @@ fn x11_get_window_handle(xid: u32) callconv(.C) c.pinc_window_incomplete_handle_
     return 0;
 }
 
+fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.C) ?*c.x11_window {
+    if(window == 0) return null;
+    if(window-1 >= windows.items.len) return null;
+    if(windows.items[window-1].native != .x) return null;
+    return &windows.items[window-1].native.x;
+}
+
 comptime {
     @export(x11_get_window_handle, .{ .name = "x11_get_window_handle", .linkage = std.builtin.GlobalLinkage.link_once });
+    @export(x11_get_x_window, .{ .name = "x11_get_x_window", .linkage = std.builtin.GlobalLinkage.link_once });
 }
 
 // Gets the current event
@@ -191,6 +200,7 @@ var allocator: std.mem.Allocator = undefined;
 // They may simply call into another function from another file, but they are all in this one place so it's easy to find them.
 
 pub export fn pinc_init(window_api: c.pinc_window_api_t, graphics_api: c.pinc_graphics_api_t) bool {
+    _ = graphics_api;
     // Initialize data structures and stuff
     allocatorObj = .{};
     allocator = allocatorObj.allocator();
@@ -208,17 +218,25 @@ pub export fn pinc_init(window_api: c.pinc_window_api_t, graphics_api: c.pinc_gr
     if (window_api == c.pinc_window_api_automatic) {
         actualWindowAPI = c.pinc_window_api_x;
     }
-    switch (actualWindowAPI) {
-        c.pinc_window_api_x => {
-            return c.x11_init();
-        },
-        else => {
-            // TODO: figure out error reporting
-            return false;
-        },
-    }
-    _ = graphics_api;
+    // Initialize the C portion of Pinc
+    const cSuccess = switch (actualWindowAPI) {
+        c.pinc_window_api_x => c.x11_init(),
+        // TODO: figure out error reporting
+        else => false,
+    };
+    // C failed!
+    if(!cSuccess) return false;
+    std.log.info("Loading OpenGL 2.1 functions", .{});
+    // TODO: errors pain
+    gl21bind.load(void{}, getOpenglProc) catch return false;
+    return true;
 }
+
+fn getOpenglProc(context: void, name: [:0]const u8) ?gl21bind.FunctionPointer {
+    _ = context;
+    return @ptrCast(pinc_graphics_opengl_get_proc(name.ptr));
+}
+
 pub export fn pinc_get_window_api() c.pinc_window_api_t {
     // X11 is the only supported API at the moment.
     // In the future, this will require more complex logic as
@@ -553,6 +571,7 @@ pub export fn pinc_advance_event() void {
 }
 pub export fn pinc_wait_events(timeout: f32) void {
     c.x11_wait_events(timeout);
+    pinc_poll_events();
 }
 pub export fn pinc_event_type() c.pinc_event_type_t {
     return pinc_event_union(false).type;
@@ -594,10 +613,10 @@ pub export fn pinc_event_window_cursor_exit_data() c.pinc_event_window_cursor_ex
     std.debug.panic("pinc_event_window_cursor_exit_data is not implemented\n", .{});
 }
 pub export fn pinc_event_window_cursor_button_down_data() c.pinc_event_window_cursor_button_down_t {
-    std.debug.panic("pinc_event_window_cursor_button_down_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_cursor_button_down;
 }
 pub export fn pinc_event_window_cursor_button_up_data() c.pinc_event_window_cursor_button_up_t {
-    std.debug.panic("pinc_event_window_cursor_button_up_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_cursor_button_up;
 }
 pub export fn pinc_event_window_scroll_data() c.pinc_event_window_scroll_t {
     std.debug.panic("pinc_event_window_scroll_data is not implemented\n", .{});
@@ -753,4 +772,26 @@ pub export fn pinc_set_cursor_image(window: c.pinc_window_handle_t, data: [*]u8,
 }
 pub export fn pinc_get_clipboard_string() [*:0]u8 {
     std.debug.panic("pinc_get_clipboard_string is not implemented\n", .{});
+}
+
+pub export fn pinc_graphics_opengl_set_framebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
+    c.x11_make_context_current(framebuffer);
+    // TODO: implement for arbitrary framebuffers
+    // this will be a bit annoying (and probably not ideal for performance) to do on OpenGL2.1
+    // due to needing to blit pixels from a real framebuffer to the 'fake' one
+}
+
+pub export fn pinc_graphics_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque {
+    return c.x11_load_glX_symbol(procname);
+}
+
+pub export fn pinc_graphics_clear_color(framebuffer: c.pinc_framebuffer_handle_t, r: f32, g: f32, b: f32, a: f32) void {
+    // TODO: account for non-window framebuffers
+    c.x11_make_context_current(framebuffer);
+    gl21bind.clearColor(r, g, b, a);
+    gl21bind.clear(gl21bind.COLOR_BUFFER_BIT);
+}
+
+pub export fn pinc_graphics_present_window(window: c.pinc_window_handle_t, vsync: bool) void {
+    c.x11_present_framebuffer(window, vsync);
 }

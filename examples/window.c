@@ -1,9 +1,10 @@
 // This is a basic window example
-
 #include <stdint.h>
 #include <stdbool.h>
 #include <pinc.h>
 #include <stdio.h>
+// I don't even know how it's physically possible for the modulus operator to be undefined for floats
+#include <math.h>
 
 int main(int argc, char** argv) {
     // Initialize Pinc
@@ -15,9 +16,10 @@ int main(int argc, char** argv) {
     pinc_window_incomplete_handle_t incomplete_window = pinc_window_incomplete_create("Hello, I am a window!");
     // complete the window
     pinc_window_handle_t window = pinc_window_complete(incomplete_window);
+    int frames = 0;
     bool running = true;
     while(running) {
-        pinc_poll_events();
+        pinc_wait_events(1);
         do {
             // Get the current event
             pinc_event_type_t event_type = pinc_event_type();
@@ -85,7 +87,12 @@ int main(int argc, char** argv) {
             pinc_advance_event();
             // If the next event is none, we are done iterating events
         } while(pinc_event_type() != pinc_event_none);
-        // No buffer swapping yet.
+        // The G component makes the window fade from magenta to white as frames are rendered.
+        // Since this window is event based, it creates an interesting effect where the window gets brighter as it is touched.
+        float gComponent = fmod(frames / 100.0f, 1.0f);
+        pinc_graphics_clear_color(window, 1, gComponent, 1, 1);
+        pinc_graphics_present_window(window, false);
+        ++frames;
     }
     // TODO: actually dispose of things
     return 0;

@@ -322,6 +322,18 @@ void x11_wait_events(float timeout) {
     }
 }
 
+void x11_make_context_current(pinc_window_handle_t window) {
+    x11_window* xWindow = x11_get_x_window(window);
+    // TODO: handle errors
+    glXMakeCurrent(xDisplay, xWindow->xWindow, glxContext);
+}
+
+void x11_present_framebuffer(pinc_window_handle_t window, bool vsync) {
+    x11_window* xWindow = x11_get_x_window(window);
+    // TODO: swap interval. It's a MESA extension, so some steps will be required
+    glXSwapBuffers(xDisplay, xWindow->xWindow);
+}
+
 // Things that are private to this file
 
 bool x11_load_libraries(void) {

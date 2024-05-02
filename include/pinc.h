@@ -25,22 +25,22 @@ extern bool pinc_init(pinc_window_api_t window_api, pinc_graphics_api_t graphics
 /// @brief Returns the window api used by Pinc.
 extern pinc_window_api_t pinc_get_window_api(void);
 
-/// @brief A generic ID to a Pinc object. An id of 0 is equivalent to a null handle.
-typedef uint32_t pinc_id;
+/// @brief A generic handle to a Pinc object. An id of 0 is equivalent to a null handle.
+typedef uint32_t pinc_handle;
 
 // Window and framebuffer types and functions
 
 /// @brief A handle to a window that hasn't been finalized yet. All incomplete windows are also incomplete framebuffers, as a window contains a framebuffer.
-typedef pinc_id pinc_window_incomplete_handle_t;
+typedef pinc_handle pinc_window_incomplete_handle_t;
 
 /// @brief A handle to a window. All windows are also framebuffers.
-typedef pinc_id pinc_window_handle_t;
+typedef pinc_handle pinc_window_handle_t;
 
 /// @brief An incomplete handle to something that can be drawn to. Includes incomplete windows.
-typedef pinc_id pinc_framebuffer_incomplete_t;
+typedef pinc_handle pinc_framebuffer_incomplete_handle_t;
 
 /// @brief A handle to something that can be drawn to. Includes windows.
-typedef pinc_id pinc_framebuffer_t;
+typedef pinc_handle pinc_framebuffer_handle_t;
 
 /// @brief Creates a window. Only params of this function are required, all other window properties have default values.
 /// @param title A null-terminated UTF8 string for the title of the window
@@ -686,5 +686,26 @@ extern void pinc_set_cursor_image(pinc_window_handle_t window, uint8_t* data, ui
 /// @return the clipboard string. Its lifetime is at least as long as until the next call to Pinc, it is recomended to make a copy of it.
 extern char* pinc_get_clipboard_string(void);
 
-// Pinc "native" functions - for getting native handles, for Xlib, OpenGL, glX, etc.
-// TODO
+// Pinc functions that allow Pinc to be used like GLFW - in other words, use the graphics API directly
+// These CANNOT be used alongisde graphics functions. Things WILL break if you do that!
+
+/// @brief Set the OpenGL context to a framebuffer or window.
+///        There is one OpenGL context for the entire application, unlike GLFW where the context is per window.
+/// @param window The framebuffer whose framebuffer to draw to. Must be complete.
+extern void pinc_graphics_opengl_set_framebuffer(pinc_framebuffer_handle_t framebuffer);
+
+/// @brief Returns the pointer of an OpenGL function.
+/// @param procname the name of the opengl function
+/// @return a raw pointer to that function.
+extern void* pinc_graphics_opengl_get_proc(const char* procname);
+
+// pinc graphics functions
+
+/// @brief Clears a given framebuffer to an RGB color. The color values range from 0 to 1.
+/// @param framebuffer The framebuffer to clear. Must be complete
+extern void pinc_graphics_clear_color(pinc_framebuffer_handle_t framebuffer, float r, float g, float b, float a);
+
+/// @brief Presents a window framebuffer
+/// @param window the window to swap the
+/// @param vsync Whether to wait for vertical sync. Depending on the graphics driver & system, this may behave differently or be ignored.
+extern void pinc_graphics_present_window(pinc_window_handle_t window, bool vsync);
