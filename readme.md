@@ -71,9 +71,11 @@ None of these are going to be implemented any time soon - if ever.
     - BSD might already work (due to X11), however it is not tested.
 - Haiku
 
-## Next steps for this library
+## Next steps for this library - not nessesarily in order
 - X11
     - The last revision to the header was in 1997. I think there won't be any problems running on older systems.
+- Create the graphics API
+    - Refer to [include/readme.md](./include/readme.md)
 - OpenGL 2.1
 - Release to the public
 - Refactor to start supporting alternate backends

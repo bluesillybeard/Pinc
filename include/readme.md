@@ -7,9 +7,7 @@ Pinc's API needs to have these fundamental graphics features:
     - vertex and fragment for now
 - the features in readme.md
 - drawing to any surface & using it as a texture
-    - OpenGL 2.1 does not natively support this
-        - the X window system has, even for OpenGL 1.0 which is pretty nice actually (despite how fundamentally problematic X11 is),
-        - Look into what Win32 and Cocoa can do on this front. Worst case scenario, the framebuffer needs to be swapped into the CPU after each draw to a surface, which would actually really really suck.
+    - OpenGL 2.1 does not initally appear to natively support this, however by blitting the framebuffer to a texture it is possible. (blitting happens entirely on the GPU, the CPU is not involved other than to issue the command)
 - drawing from just vertices
 - drawing with an index buffer
     - indices with 8, 16, 32 bits
@@ -24,7 +22,7 @@ Properties / principles of the API:
     - functions only interact with objects given to it in a parameter
     - The only exception is the Pinc instance (similar to a Vulkan instance or X display), since there should only ever be one of those.
 - no big structures like in Vulkan
-    - This is for languages like Java where creating an entire object just to be given to be immediately discarded is insanely bad for performance and usability
+    - This is for languages like Java where creating an entire object just to be immediately discarded is insanely bad for performance and usability
     - In other words, functions (usually) only take basic types or objects that were created from other functions.
     - In order to achieve this, first create an 'incomplete object' where all of its parameters can be set, then the object can be completed into the actual thing. A complete object can often act as an incomplete one, but not the other way around.
 - no raw pointers to objects - everything is a numeric ID.
@@ -34,6 +32,8 @@ Properties / principles of the API:
         - JS doesn't even have integers, so using a hash would basically be a death wish upon JS users. A binding would have to convert everything to either use BigInt or string. With index-like IDs, casting to/from floats is acceptable.
     - Pointers can only be taken into Pinc functions for arrays, like creating a vertex array, index array, or string.
 - Function calls are cheap, and easy. This is a similar philosophy to what OpenGL uses.
+    - Sure, ABIs can get complicated, but that's the case no matter what
+    - function calls do incur a cost, but it's very very small compared to what that function actually does
 
 The basic order of events:
 - init Pinc
@@ -52,6 +52,8 @@ The basic order of events:
 - Upload mesh and texture data
     - create an incomplete object with the required parameters, set any optional parameters, and complete the object
     - An existing mesh or texture can have its data modified 
+- draw stuff
+- swap buffers
 
 General notes:
 - This library has no equivalent to a Vertex Buffer Object like in OpenGL.
