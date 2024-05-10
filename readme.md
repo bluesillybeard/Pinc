@@ -5,25 +5,48 @@ Pinc is a cross platform windowing / rendering library written in Zig.
 ## Pinc design goals
 - Lightweight - minimal dependencies (within reason)
     - fundamental libraries (Xlib for example) are fair game
+        - Technically Xlib is not a fundamental library but it's cut deep into the rendering so it basically is a fundamental library at this point
     - Any non-system libraries are statically linked (ex: SPIRV-cross)
 - Language agnostic - The external API is entirely in C, which makes binding to other languages relatively simple
     - Specifically, the header is written in C99 as described in the [GNU C manual](https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html)
+    - ABI compatibility is a nightmare, but the Zig compiler makes that (relatively) a breeze.
 - ABSOLUTELY ZERO compile time dependencies, other than Pinc and and the Zig compiler
-    - This includes system libraries that are not included in Zig's cross-compile toolchain
+    - This includes system libraries that are not included in Zig's cross-compile toolchain. They must be loaded at runtime.
 - Easy to use
-    - Similar ease of use compared to something like SDL or SFML
-- Statically linked
-    - Technically can be compiled and loaded dynamically, but it is reccommended to link to Pinc statically since the ABI is not stable.
+    - Similar ease of use, comparable to something like SDL or SFML
+- Flexible
+    - can be linked statically or dynamically
+    - determines the API to use at runtime, so fewer compilation targets are needed
+    - cross-compiles from any platform to any platform (supported by the Zig compiler of course)
+    - Can be made to work with any C ABI (Zig's compiler for the win!)
+
+## Q&A
+- Why make this when other libraries already exist?
+    - I am frustrated at the state of low-level windowing / graphics libraries. Kinc's build system is a mess, Raylib is too minimal to do anything serious, V-EZ hasn't been updated in many years, bgfx is written in C++, SDL is a giant pain to cross-compile with, nicegraf and llgl don't proide a way to create a window, GLFW has no way to have multiple windows on a single OpenGL context, Jai is a programming language instead of a library, and the list goes on and on and on. They are all great, but they all suck in specific ways that are conveniently very bad for my own requirements.
+- Why support OpenGL 2.1. It's so old! (and deprecated)
+    - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. It sounds stupid, but as a stupid person myself, I think it's a great reason. This was partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
+    - It's the most widely supported graphics API, hands down. You'd be hard pressed to find a platform that doesn't have some way to get OpenGL 2 apps running.
+        - I would use OpenGL 1.x but that doesn't have shaders which are pretty much fundamental to any half-decent graphics API.
+    - It's the simplest low-level cross platform graphics API, so getting started is easier.
+- Why use X11 / Win32 / Cocoa directly
+    - To minimize dependencies
+    - GLFW is hardwired to bond each window to a GL context permanently, which is fundamentally incompatible to how this library works
+    - SDL is difficult to work with in terms of getting it to cross-compile, and it's not designed for static linking
+- Why make an abomination of Zig and C?
+    - This library was going to be written entirely in Zig. Then Xlib happened.
+    - Zig makes exporting a C api easy as pie, without having to write the entire thing using the masochistic nightmare that is C.
+    - Rust is far too complicated for its own good, and it's just not as ergonomic for C interop.
+
 
 ## Important notes
 
-Pinc is a very new library. It will have issues. It will have bugs. It will have missing features. I'm not telling you to not use Pinc, but if you do decide to use it, please be patient and report issues as they show up.
+Pinc is a very new library, and is MASSIVELY out of scope for a single developer. As such:
+- Expect bugs / issues
+- the API is highly variable at the moment
+    - Give me your suggestions - the API is incomplete and I don't know what's missing!
+- the project desparately needs contributors
 
-Pinc is actually in such an early state that the API is open for changes. So, if you have any critique of the API or want something changed, now is the time to say it! Anything from missing keyboard buttons to a complete redesign of the API will be considered.
-
-If you want to make a pull request, PLEASE make a github issue and/or send me an email first to get my approval. Wasting time on pull requests with no use is dissapointing for everyone involved.
-
-Pinc's current API is fundamentally incompatible with multithreading at the moment. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you will need to either use a mutex everywhere or do some serious refactoring.
+Pinc's current API is fundamentally incompatible with multithreading at the moment. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you're probably making a mistake.
 
 ## Supported platforms
 - Linux/X11
@@ -47,11 +70,7 @@ Pinc's current API is fundamentally incompatible with multithreading at the mome
 These are top priority
 - Windows
     - Win32 API
-- Posix
-    - Wayland
-    - I am not aware of any Posix windowing systems other than X11 and Wayland
 - Macos
-    - X11
     - Coacoa
 
 ## Planned supported platforms in the future
@@ -61,19 +80,25 @@ These are top priority
     - Microsoft are the good guys for once, creating Dozen so engines that use Vulkan can run on Xbox. Props to Microsoft for not being a jerk.
 - Nintendo switch
     - There seems to be a lack of info on how this could be done.
+- Wayland, a very low priority because XWayland exists
 
 ## Planned supported platforms in the far future
 None of these are going to be implemented any time soon - if ever.
 - Playstation 4/5
     - their custom proprietary grahpics API will make this difficult as this library is open source and WILL NOT support the existence of closed source components. Sorry playstation developers, your platform is fundamentally incompatible with the open source model.
-    - I've heard they support Vulkan, but their NDA makes it hard to find things out
+    - I've heard they support Vulkan, but their NDA makes it hard to get any information
 - BSD
     - BSD might already work (due to X11), however it is not tested.
 - Haiku
+    - They have an X11 compatibility layer so I'm not too worried at the moment
+
+## Other planned features
+- ability to access native API interactions and convert native objects to/from pinc objects
+    - there are a LOT of these - X display, windows, events, input contexts, colormap, glX context and related objects, the list goes on and on and on.
 
 ## Next steps for this library - not nessesarily in order
 - X11
-    - The last revision to the header was in 1997. I think there won't be any problems running on older systems.
+    - literally just copying GLFW's usage of X11
 - Create the graphics API
     - Refer to [include/readme.md](./include/readme.md)
 - OpenGL 2.1
@@ -84,12 +109,6 @@ None of these are going to be implemented any time soon - if ever.
 - Cocoa backend
 - any final touches to the API
     - At this point, Pinc is (hopefully) fully usable on all major desktop platforms
-- Vulkan backend
-- OpenGL 3.3 backend
-- OpenGL 4.1 backend
-- Software rasterizer backend
-- Wayland
-    - This is a lower priority because XWayland exists and the Wayland protocol is still undergoing frequent and substantial changes.
 
 ## Todo
 - Test zero-dependency compilation
@@ -100,22 +119,3 @@ None of these are going to be implemented any time soon - if ever.
     - duplicate key events
     - duplicate cursor movement events
     - This could be placed in some kind of validation layer system. Might need to wait until everything is placed through interfaces.
-
-## Q&A
-- Why make this when other libraries like Kinc, Raylib, V-EZ, bgfx, and however many others already exist?
-    - None of them met the criteria for my own projects, so I did it myself. My criteria are:
-        - easy integration into existing build systems and projects (this is painfully rare among C/C++ codebases)
-        - easy cross-compilation
-        - usable in Zig and other languages (aka C api)
-        - zero compile time dependencies (other than a compiler)
-        - multiple windows on desktop platforms
-        - arbitrary draw surfaces
-- Why support OpenGL 2.1. It's so old! (and deprecated)
-    - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. It sounds stupid, but as a stupid person myself, I think it's a great reason. This was partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
-    - It's the most widely supported graphics API, hands down. You'd be hard pressed to find a platform that doesn't have some way to get OpenGL 2 apps running.
-        - I would use OpenGL 1.x but that doesn't have shaders which are pretty much fundamental to any half-decent graphics API.
-    - It's the simplest low-level cross platform graphics API, so getting started is easier.
-- Why use X11 / Win32 / Cocoa directly
-    - To minimize dependencies
-    - GLFW is hardwired to bond each window to a GL context permanently, which is fundamentally incompatible to how this library works
-    - SDL is difficult to work with in terms of getting it to cross-compile

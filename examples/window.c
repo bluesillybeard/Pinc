@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
         pinc_wait_events(1);
         do {
             // Get the current event
-            pinc_event_type_t event_type = pinc_event_type();
+            pinc_event_type_enum event_type = pinc_event_type();
             switch (event_type)
             {
                 case pinc_event_window_resize:

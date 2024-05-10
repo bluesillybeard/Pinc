@@ -1,4 +1,4 @@
-﻿//
+//
 // This code file is licenced under any of Public Domain, WTFPL or CC0.
 // There are no restrictions in the use of this file.
 //
@@ -7,7 +7,7 @@
 // Generation parameters:
 // API:        GL_VERSION_2_1
 // Profile:    core
-// Extensions: 
+// Extensions:
 //
 
 //
@@ -69,7 +69,6 @@ pub const GLDEBUGPROCAMD = *const fn (id: GLuint, category: GLenum, severity: GL
 pub const GLhalfNV = u16;
 pub const GLvdpauSurfaceNV = GLintptr;
 pub const GLVULKANPROCNV = *const fn () callconv(.C) void;
-
 
 pub const DEPTH_BUFFER_BIT = 0x00000100;
 pub const STENCIL_BUFFER_BIT = 0x00000400;
@@ -944,7 +943,6 @@ pub const SLUMINANCE8 = 0x8C47;
 pub const COMPRESSED_SLUMINANCE = 0x8C4A;
 pub const COMPRESSED_SLUMINANCE_ALPHA = 0x8C4B;
 
-
 pub fn cullFace(_mode: GLenum) callconv(.C) void {
     return @call(.always_tail, function_pointers.glCullFace, .{_mode});
 }
@@ -954,7 +952,7 @@ pub fn frontFace(_mode: GLenum) callconv(.C) void {
 }
 
 pub fn hint(_target: GLenum, _mode: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glHint, .{_target, _mode});
+    return @call(.always_tail, function_pointers.glHint, .{ _target, _mode });
 }
 
 pub fn lineWidth(_width: GLfloat) callconv(.C) void {
@@ -966,35 +964,35 @@ pub fn pointSize(_size: GLfloat) callconv(.C) void {
 }
 
 pub fn polygonMode(_face: GLenum, _mode: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPolygonMode, .{_face, _mode});
+    return @call(.always_tail, function_pointers.glPolygonMode, .{ _face, _mode });
 }
 
 pub fn scissor(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glScissor, .{_x, _y, _width, _height});
+    return @call(.always_tail, function_pointers.glScissor, .{ _x, _y, _width, _height });
 }
 
 pub fn texParameterf(_target: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexParameterf, .{_target, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexParameterf, .{ _target, _pname, _param });
 }
 
 pub fn texParameterfv(_target: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexParameterfv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexParameterfv, .{ _target, _pname, _params });
 }
 
 pub fn texParameteri(_target: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexParameteri, .{_target, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexParameteri, .{ _target, _pname, _param });
 }
 
 pub fn texParameteriv(_target: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexParameteriv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexParameteriv, .{ _target, _pname, _params });
 }
 
 pub fn texImage1D(_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexImage1D, .{_target, _level, _internalformat, _width, _border, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glTexImage1D, .{ _target, _level, _internalformat, _width, _border, _format, _type, _pixels });
 }
 
 pub fn texImage2D(_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _height: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexImage2D, .{_target, _level, _internalformat, _width, _height, _border, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glTexImage2D, .{ _target, _level, _internalformat, _width, _height, _border, _format, _type, _pixels });
 }
 
 pub fn drawBuffer(_buf: GLenum) callconv(.C) void {
@@ -1006,7 +1004,7 @@ pub fn clear(_mask: GLbitfield) callconv(.C) void {
 }
 
 pub fn clearColor(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glClearColor, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glClearColor, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn clearStencil(_s: GLint) callconv(.C) void {
@@ -1022,7 +1020,7 @@ pub fn stencilMask(_mask: GLuint) callconv(.C) void {
 }
 
 pub fn colorMask(_red: GLboolean, _green: GLboolean, _blue: GLboolean, _alpha: GLboolean) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColorMask, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColorMask, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn depthMask(_flag: GLboolean) callconv(.C) void {
@@ -1046,7 +1044,7 @@ pub fn flush() callconv(.C) void {
 }
 
 pub fn blendFunc(_sfactor: GLenum, _dfactor: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBlendFunc, .{_sfactor, _dfactor});
+    return @call(.always_tail, function_pointers.glBlendFunc, .{ _sfactor, _dfactor });
 }
 
 pub fn logicOp(_opcode: GLenum) callconv(.C) void {
@@ -1054,11 +1052,11 @@ pub fn logicOp(_opcode: GLenum) callconv(.C) void {
 }
 
 pub fn stencilFunc(_func: GLenum, _ref: GLint, _mask: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glStencilFunc, .{_func, _ref, _mask});
+    return @call(.always_tail, function_pointers.glStencilFunc, .{ _func, _ref, _mask });
 }
 
 pub fn stencilOp(_fail: GLenum, _zfail: GLenum, _zpass: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glStencilOp, .{_fail, _zfail, _zpass});
+    return @call(.always_tail, function_pointers.glStencilOp, .{ _fail, _zfail, _zpass });
 }
 
 pub fn depthFunc(_func: GLenum) callconv(.C) void {
@@ -1066,11 +1064,11 @@ pub fn depthFunc(_func: GLenum) callconv(.C) void {
 }
 
 pub fn pixelStoref(_pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelStoref, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glPixelStoref, .{ _pname, _param });
 }
 
 pub fn pixelStorei(_pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelStorei, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glPixelStorei, .{ _pname, _param });
 }
 
 pub fn readBuffer(_src: GLenum) callconv(.C) void {
@@ -1078,15 +1076,15 @@ pub fn readBuffer(_src: GLenum) callconv(.C) void {
 }
 
 pub fn readPixels(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glReadPixels, .{_x, _y, _width, _height, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glReadPixels, .{ _x, _y, _width, _height, _format, _type, _pixels });
 }
 
 pub fn getBooleanv(_pname: GLenum, _data: [*c]GLboolean) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetBooleanv, .{_pname, _data});
+    return @call(.always_tail, function_pointers.glGetBooleanv, .{ _pname, _data });
 }
 
 pub fn getDoublev(_pname: GLenum, _data: [*c]GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetDoublev, .{_pname, _data});
+    return @call(.always_tail, function_pointers.glGetDoublev, .{ _pname, _data });
 }
 
 pub fn getError() callconv(.C) GLenum {
@@ -1094,11 +1092,11 @@ pub fn getError() callconv(.C) GLenum {
 }
 
 pub fn getFloatv(_pname: GLenum, _data: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetFloatv, .{_pname, _data});
+    return @call(.always_tail, function_pointers.glGetFloatv, .{ _pname, _data });
 }
 
 pub fn getIntegerv(_pname: GLenum, _data: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetIntegerv, .{_pname, _data});
+    return @call(.always_tail, function_pointers.glGetIntegerv, .{ _pname, _data });
 }
 
 pub fn getString(_name: GLenum) callconv(.C) ?[*:0]const GLubyte {
@@ -1106,23 +1104,23 @@ pub fn getString(_name: GLenum) callconv(.C) ?[*:0]const GLubyte {
 }
 
 pub fn getTexImage(_target: GLenum, _level: GLint, _format: GLenum, _type: GLenum, _pixels: ?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexImage, .{_target, _level, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glGetTexImage, .{ _target, _level, _format, _type, _pixels });
 }
 
 pub fn getTexParameterfv(_target: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexParameterfv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexParameterfv, .{ _target, _pname, _params });
 }
 
 pub fn getTexParameteriv(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexParameteriv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexParameteriv, .{ _target, _pname, _params });
 }
 
 pub fn getTexLevelParameterfv(_target: GLenum, _level: GLint, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexLevelParameterfv, .{_target, _level, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexLevelParameterfv, .{ _target, _level, _pname, _params });
 }
 
 pub fn getTexLevelParameteriv(_target: GLenum, _level: GLint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexLevelParameteriv, .{_target, _level, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexLevelParameteriv, .{ _target, _level, _pname, _params });
 }
 
 pub fn isEnabled(_cap: GLenum) callconv(.C) GLboolean {
@@ -1130,15 +1128,15 @@ pub fn isEnabled(_cap: GLenum) callconv(.C) GLboolean {
 }
 
 pub fn depthRange(_n: GLdouble, _f: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDepthRange, .{_n, _f});
+    return @call(.always_tail, function_pointers.glDepthRange, .{ _n, _f });
 }
 
 pub fn viewport(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glViewport, .{_x, _y, _width, _height});
+    return @call(.always_tail, function_pointers.glViewport, .{ _x, _y, _width, _height });
 }
 
 pub fn newList(_list: GLuint, _mode: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNewList, .{_list, _mode});
+    return @call(.always_tail, function_pointers.glNewList, .{ _list, _mode });
 }
 
 pub fn endList() callconv(.C) void {
@@ -1150,11 +1148,11 @@ pub fn callList(_list: GLuint) callconv(.C) void {
 }
 
 pub fn callLists(_n: GLsizei, _type: GLenum, _lists: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCallLists, .{_n, _type, _lists});
+    return @call(.always_tail, function_pointers.glCallLists, .{ _n, _type, _lists });
 }
 
 pub fn deleteLists(_list: GLuint, _range: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDeleteLists, .{_list, _range});
+    return @call(.always_tail, function_pointers.glDeleteLists, .{ _list, _range });
 }
 
 pub fn genLists(_range: GLsizei) callconv(.C) GLuint {
@@ -1170,11 +1168,11 @@ pub fn begin(_mode: GLenum) callconv(.C) void {
 }
 
 pub fn bitmap(_width: GLsizei, _height: GLsizei, _xorig: GLfloat, _yorig: GLfloat, _xmove: GLfloat, _ymove: GLfloat, _bitmap: ?[*:0]const GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBitmap, .{_width, _height, _xorig, _yorig, _xmove, _ymove, _bitmap});
+    return @call(.always_tail, function_pointers.glBitmap, .{ _width, _height, _xorig, _yorig, _xmove, _ymove, _bitmap });
 }
 
 pub fn color3b(_red: GLbyte, _green: GLbyte, _blue: GLbyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3b, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3b, .{ _red, _green, _blue });
 }
 
 pub fn color3bv(_v: [*c]const GLbyte) callconv(.C) void {
@@ -1182,7 +1180,7 @@ pub fn color3bv(_v: [*c]const GLbyte) callconv(.C) void {
 }
 
 pub fn color3d(_red: GLdouble, _green: GLdouble, _blue: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3d, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3d, .{ _red, _green, _blue });
 }
 
 pub fn color3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1190,7 +1188,7 @@ pub fn color3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn color3f(_red: GLfloat, _green: GLfloat, _blue: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3f, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3f, .{ _red, _green, _blue });
 }
 
 pub fn color3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1198,7 +1196,7 @@ pub fn color3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn color3i(_red: GLint, _green: GLint, _blue: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3i, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3i, .{ _red, _green, _blue });
 }
 
 pub fn color3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1206,7 +1204,7 @@ pub fn color3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn color3s(_red: GLshort, _green: GLshort, _blue: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3s, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3s, .{ _red, _green, _blue });
 }
 
 pub fn color3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1214,7 +1212,7 @@ pub fn color3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn color3ub(_red: GLubyte, _green: GLubyte, _blue: GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3ub, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3ub, .{ _red, _green, _blue });
 }
 
 pub fn color3ubv(_v: ?[*:0]const GLubyte) callconv(.C) void {
@@ -1222,7 +1220,7 @@ pub fn color3ubv(_v: ?[*:0]const GLubyte) callconv(.C) void {
 }
 
 pub fn color3ui(_red: GLuint, _green: GLuint, _blue: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3ui, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3ui, .{ _red, _green, _blue });
 }
 
 pub fn color3uiv(_v: [*c]const GLuint) callconv(.C) void {
@@ -1230,7 +1228,7 @@ pub fn color3uiv(_v: [*c]const GLuint) callconv(.C) void {
 }
 
 pub fn color3us(_red: GLushort, _green: GLushort, _blue: GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor3us, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glColor3us, .{ _red, _green, _blue });
 }
 
 pub fn color3usv(_v: [*c]const GLushort) callconv(.C) void {
@@ -1238,7 +1236,7 @@ pub fn color3usv(_v: [*c]const GLushort) callconv(.C) void {
 }
 
 pub fn color4b(_red: GLbyte, _green: GLbyte, _blue: GLbyte, _alpha: GLbyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4b, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4b, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4bv(_v: [*c]const GLbyte) callconv(.C) void {
@@ -1246,7 +1244,7 @@ pub fn color4bv(_v: [*c]const GLbyte) callconv(.C) void {
 }
 
 pub fn color4d(_red: GLdouble, _green: GLdouble, _blue: GLdouble, _alpha: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4d, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4d, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1254,7 +1252,7 @@ pub fn color4dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn color4f(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4f, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4f, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1262,7 +1260,7 @@ pub fn color4fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn color4i(_red: GLint, _green: GLint, _blue: GLint, _alpha: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4i, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4i, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1270,7 +1268,7 @@ pub fn color4iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn color4s(_red: GLshort, _green: GLshort, _blue: GLshort, _alpha: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4s, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4s, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1278,7 +1276,7 @@ pub fn color4sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn color4ub(_red: GLubyte, _green: GLubyte, _blue: GLubyte, _alpha: GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4ub, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4ub, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4ubv(_v: ?[*:0]const GLubyte) callconv(.C) void {
@@ -1286,7 +1284,7 @@ pub fn color4ubv(_v: ?[*:0]const GLubyte) callconv(.C) void {
 }
 
 pub fn color4ui(_red: GLuint, _green: GLuint, _blue: GLuint, _alpha: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4ui, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4ui, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4uiv(_v: [*c]const GLuint) callconv(.C) void {
@@ -1294,7 +1292,7 @@ pub fn color4uiv(_v: [*c]const GLuint) callconv(.C) void {
 }
 
 pub fn color4us(_red: GLushort, _green: GLushort, _blue: GLushort, _alpha: GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColor4us, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glColor4us, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn color4usv(_v: [*c]const GLushort) callconv(.C) void {
@@ -1346,7 +1344,7 @@ pub fn indexsv(_c: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn normal3b(_nx: GLbyte, _ny: GLbyte, _nz: GLbyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNormal3b, .{_nx, _ny, _nz});
+    return @call(.always_tail, function_pointers.glNormal3b, .{ _nx, _ny, _nz });
 }
 
 pub fn normal3bv(_v: [*c]const GLbyte) callconv(.C) void {
@@ -1354,7 +1352,7 @@ pub fn normal3bv(_v: [*c]const GLbyte) callconv(.C) void {
 }
 
 pub fn normal3d(_nx: GLdouble, _ny: GLdouble, _nz: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNormal3d, .{_nx, _ny, _nz});
+    return @call(.always_tail, function_pointers.glNormal3d, .{ _nx, _ny, _nz });
 }
 
 pub fn normal3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1362,7 +1360,7 @@ pub fn normal3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn normal3f(_nx: GLfloat, _ny: GLfloat, _nz: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNormal3f, .{_nx, _ny, _nz});
+    return @call(.always_tail, function_pointers.glNormal3f, .{ _nx, _ny, _nz });
 }
 
 pub fn normal3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1370,7 +1368,7 @@ pub fn normal3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn normal3i(_nx: GLint, _ny: GLint, _nz: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNormal3i, .{_nx, _ny, _nz});
+    return @call(.always_tail, function_pointers.glNormal3i, .{ _nx, _ny, _nz });
 }
 
 pub fn normal3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1378,7 +1376,7 @@ pub fn normal3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn normal3s(_nx: GLshort, _ny: GLshort, _nz: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNormal3s, .{_nx, _ny, _nz});
+    return @call(.always_tail, function_pointers.glNormal3s, .{ _nx, _ny, _nz });
 }
 
 pub fn normal3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1386,7 +1384,7 @@ pub fn normal3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn rasterPos2d(_x: GLdouble, _y: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos2d, .{_x, _y});
+    return @call(.always_tail, function_pointers.glRasterPos2d, .{ _x, _y });
 }
 
 pub fn rasterPos2dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1394,7 +1392,7 @@ pub fn rasterPos2dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn rasterPos2f(_x: GLfloat, _y: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos2f, .{_x, _y});
+    return @call(.always_tail, function_pointers.glRasterPos2f, .{ _x, _y });
 }
 
 pub fn rasterPos2fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1402,7 +1400,7 @@ pub fn rasterPos2fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn rasterPos2i(_x: GLint, _y: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos2i, .{_x, _y});
+    return @call(.always_tail, function_pointers.glRasterPos2i, .{ _x, _y });
 }
 
 pub fn rasterPos2iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1410,7 +1408,7 @@ pub fn rasterPos2iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn rasterPos2s(_x: GLshort, _y: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos2s, .{_x, _y});
+    return @call(.always_tail, function_pointers.glRasterPos2s, .{ _x, _y });
 }
 
 pub fn rasterPos2sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1418,7 +1416,7 @@ pub fn rasterPos2sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn rasterPos3d(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos3d, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glRasterPos3d, .{ _x, _y, _z });
 }
 
 pub fn rasterPos3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1426,7 +1424,7 @@ pub fn rasterPos3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn rasterPos3f(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos3f, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glRasterPos3f, .{ _x, _y, _z });
 }
 
 pub fn rasterPos3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1434,7 +1432,7 @@ pub fn rasterPos3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn rasterPos3i(_x: GLint, _y: GLint, _z: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos3i, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glRasterPos3i, .{ _x, _y, _z });
 }
 
 pub fn rasterPos3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1442,7 +1440,7 @@ pub fn rasterPos3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn rasterPos3s(_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos3s, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glRasterPos3s, .{ _x, _y, _z });
 }
 
 pub fn rasterPos3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1450,7 +1448,7 @@ pub fn rasterPos3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn rasterPos4d(_x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos4d, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glRasterPos4d, .{ _x, _y, _z, _w });
 }
 
 pub fn rasterPos4dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1458,7 +1456,7 @@ pub fn rasterPos4dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn rasterPos4f(_x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos4f, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glRasterPos4f, .{ _x, _y, _z, _w });
 }
 
 pub fn rasterPos4fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1466,7 +1464,7 @@ pub fn rasterPos4fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn rasterPos4i(_x: GLint, _y: GLint, _z: GLint, _w: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos4i, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glRasterPos4i, .{ _x, _y, _z, _w });
 }
 
 pub fn rasterPos4iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1474,7 +1472,7 @@ pub fn rasterPos4iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn rasterPos4s(_x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRasterPos4s, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glRasterPos4s, .{ _x, _y, _z, _w });
 }
 
 pub fn rasterPos4sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1482,35 +1480,35 @@ pub fn rasterPos4sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn rectd(_x1: GLdouble, _y1: GLdouble, _x2: GLdouble, _y2: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRectd, .{_x1, _y1, _x2, _y2});
+    return @call(.always_tail, function_pointers.glRectd, .{ _x1, _y1, _x2, _y2 });
 }
 
 pub fn rectdv(_v1: [*c]const GLdouble, _v2: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRectdv, .{_v1, _v2});
+    return @call(.always_tail, function_pointers.glRectdv, .{ _v1, _v2 });
 }
 
 pub fn rectf(_x1: GLfloat, _y1: GLfloat, _x2: GLfloat, _y2: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRectf, .{_x1, _y1, _x2, _y2});
+    return @call(.always_tail, function_pointers.glRectf, .{ _x1, _y1, _x2, _y2 });
 }
 
 pub fn rectfv(_v1: [*c]const GLfloat, _v2: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRectfv, .{_v1, _v2});
+    return @call(.always_tail, function_pointers.glRectfv, .{ _v1, _v2 });
 }
 
 pub fn recti(_x1: GLint, _y1: GLint, _x2: GLint, _y2: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRecti, .{_x1, _y1, _x2, _y2});
+    return @call(.always_tail, function_pointers.glRecti, .{ _x1, _y1, _x2, _y2 });
 }
 
 pub fn rectiv(_v1: [*c]const GLint, _v2: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRectiv, .{_v1, _v2});
+    return @call(.always_tail, function_pointers.glRectiv, .{ _v1, _v2 });
 }
 
 pub fn rects(_x1: GLshort, _y1: GLshort, _x2: GLshort, _y2: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRects, .{_x1, _y1, _x2, _y2});
+    return @call(.always_tail, function_pointers.glRects, .{ _x1, _y1, _x2, _y2 });
 }
 
 pub fn rectsv(_v1: [*c]const GLshort, _v2: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRectsv, .{_v1, _v2});
+    return @call(.always_tail, function_pointers.glRectsv, .{ _v1, _v2 });
 }
 
 pub fn texCoord1d(_s: GLdouble) callconv(.C) void {
@@ -1546,7 +1544,7 @@ pub fn texCoord1sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn texCoord2d(_s: GLdouble, _t: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord2d, .{_s, _t});
+    return @call(.always_tail, function_pointers.glTexCoord2d, .{ _s, _t });
 }
 
 pub fn texCoord2dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1554,7 +1552,7 @@ pub fn texCoord2dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn texCoord2f(_s: GLfloat, _t: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord2f, .{_s, _t});
+    return @call(.always_tail, function_pointers.glTexCoord2f, .{ _s, _t });
 }
 
 pub fn texCoord2fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1562,7 +1560,7 @@ pub fn texCoord2fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn texCoord2i(_s: GLint, _t: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord2i, .{_s, _t});
+    return @call(.always_tail, function_pointers.glTexCoord2i, .{ _s, _t });
 }
 
 pub fn texCoord2iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1570,7 +1568,7 @@ pub fn texCoord2iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn texCoord2s(_s: GLshort, _t: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord2s, .{_s, _t});
+    return @call(.always_tail, function_pointers.glTexCoord2s, .{ _s, _t });
 }
 
 pub fn texCoord2sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1578,7 +1576,7 @@ pub fn texCoord2sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn texCoord3d(_s: GLdouble, _t: GLdouble, _r: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord3d, .{_s, _t, _r});
+    return @call(.always_tail, function_pointers.glTexCoord3d, .{ _s, _t, _r });
 }
 
 pub fn texCoord3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1586,7 +1584,7 @@ pub fn texCoord3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn texCoord3f(_s: GLfloat, _t: GLfloat, _r: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord3f, .{_s, _t, _r});
+    return @call(.always_tail, function_pointers.glTexCoord3f, .{ _s, _t, _r });
 }
 
 pub fn texCoord3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1594,7 +1592,7 @@ pub fn texCoord3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn texCoord3i(_s: GLint, _t: GLint, _r: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord3i, .{_s, _t, _r});
+    return @call(.always_tail, function_pointers.glTexCoord3i, .{ _s, _t, _r });
 }
 
 pub fn texCoord3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1602,7 +1600,7 @@ pub fn texCoord3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn texCoord3s(_s: GLshort, _t: GLshort, _r: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord3s, .{_s, _t, _r});
+    return @call(.always_tail, function_pointers.glTexCoord3s, .{ _s, _t, _r });
 }
 
 pub fn texCoord3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1610,7 +1608,7 @@ pub fn texCoord3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn texCoord4d(_s: GLdouble, _t: GLdouble, _r: GLdouble, _q: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord4d, .{_s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glTexCoord4d, .{ _s, _t, _r, _q });
 }
 
 pub fn texCoord4dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1618,7 +1616,7 @@ pub fn texCoord4dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn texCoord4f(_s: GLfloat, _t: GLfloat, _r: GLfloat, _q: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord4f, .{_s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glTexCoord4f, .{ _s, _t, _r, _q });
 }
 
 pub fn texCoord4fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1626,7 +1624,7 @@ pub fn texCoord4fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn texCoord4i(_s: GLint, _t: GLint, _r: GLint, _q: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord4i, .{_s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glTexCoord4i, .{ _s, _t, _r, _q });
 }
 
 pub fn texCoord4iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1634,7 +1632,7 @@ pub fn texCoord4iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn texCoord4s(_s: GLshort, _t: GLshort, _r: GLshort, _q: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoord4s, .{_s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glTexCoord4s, .{ _s, _t, _r, _q });
 }
 
 pub fn texCoord4sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1642,7 +1640,7 @@ pub fn texCoord4sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn vertex2d(_x: GLdouble, _y: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex2d, .{_x, _y});
+    return @call(.always_tail, function_pointers.glVertex2d, .{ _x, _y });
 }
 
 pub fn vertex2dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1650,7 +1648,7 @@ pub fn vertex2dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn vertex2f(_x: GLfloat, _y: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex2f, .{_x, _y});
+    return @call(.always_tail, function_pointers.glVertex2f, .{ _x, _y });
 }
 
 pub fn vertex2fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1658,7 +1656,7 @@ pub fn vertex2fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn vertex2i(_x: GLint, _y: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex2i, .{_x, _y});
+    return @call(.always_tail, function_pointers.glVertex2i, .{ _x, _y });
 }
 
 pub fn vertex2iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1666,7 +1664,7 @@ pub fn vertex2iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn vertex2s(_x: GLshort, _y: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex2s, .{_x, _y});
+    return @call(.always_tail, function_pointers.glVertex2s, .{ _x, _y });
 }
 
 pub fn vertex2sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1674,7 +1672,7 @@ pub fn vertex2sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn vertex3d(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex3d, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertex3d, .{ _x, _y, _z });
 }
 
 pub fn vertex3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1682,7 +1680,7 @@ pub fn vertex3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn vertex3f(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex3f, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertex3f, .{ _x, _y, _z });
 }
 
 pub fn vertex3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1690,7 +1688,7 @@ pub fn vertex3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn vertex3i(_x: GLint, _y: GLint, _z: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex3i, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertex3i, .{ _x, _y, _z });
 }
 
 pub fn vertex3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1698,7 +1696,7 @@ pub fn vertex3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn vertex3s(_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex3s, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertex3s, .{ _x, _y, _z });
 }
 
 pub fn vertex3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1706,7 +1704,7 @@ pub fn vertex3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn vertex4d(_x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex4d, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertex4d, .{ _x, _y, _z, _w });
 }
 
 pub fn vertex4dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -1714,7 +1712,7 @@ pub fn vertex4dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn vertex4f(_x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex4f, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertex4f, .{ _x, _y, _z, _w });
 }
 
 pub fn vertex4fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -1722,7 +1720,7 @@ pub fn vertex4fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn vertex4i(_x: GLint, _y: GLint, _z: GLint, _w: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex4i, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertex4i, .{ _x, _y, _z, _w });
 }
 
 pub fn vertex4iv(_v: [*c]const GLint) callconv(.C) void {
@@ -1730,7 +1728,7 @@ pub fn vertex4iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn vertex4s(_x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertex4s, .{_x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertex4s, .{ _x, _y, _z, _w });
 }
 
 pub fn vertex4sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -1738,79 +1736,79 @@ pub fn vertex4sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn clipPlane(_plane: GLenum, _equation: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glClipPlane, .{_plane, _equation});
+    return @call(.always_tail, function_pointers.glClipPlane, .{ _plane, _equation });
 }
 
 pub fn colorMaterial(_face: GLenum, _mode: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColorMaterial, .{_face, _mode});
+    return @call(.always_tail, function_pointers.glColorMaterial, .{ _face, _mode });
 }
 
 pub fn fogf(_pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFogf, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glFogf, .{ _pname, _param });
 }
 
 pub fn fogfv(_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFogfv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glFogfv, .{ _pname, _params });
 }
 
 pub fn fogi(_pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFogi, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glFogi, .{ _pname, _param });
 }
 
 pub fn fogiv(_pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFogiv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glFogiv, .{ _pname, _params });
 }
 
 pub fn lightf(_light: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightf, .{_light, _pname, _param});
+    return @call(.always_tail, function_pointers.glLightf, .{ _light, _pname, _param });
 }
 
 pub fn lightfv(_light: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightfv, .{_light, _pname, _params});
+    return @call(.always_tail, function_pointers.glLightfv, .{ _light, _pname, _params });
 }
 
 pub fn lighti(_light: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLighti, .{_light, _pname, _param});
+    return @call(.always_tail, function_pointers.glLighti, .{ _light, _pname, _param });
 }
 
 pub fn lightiv(_light: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightiv, .{_light, _pname, _params});
+    return @call(.always_tail, function_pointers.glLightiv, .{ _light, _pname, _params });
 }
 
 pub fn lightModelf(_pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightModelf, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glLightModelf, .{ _pname, _param });
 }
 
 pub fn lightModelfv(_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightModelfv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glLightModelfv, .{ _pname, _params });
 }
 
 pub fn lightModeli(_pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightModeli, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glLightModeli, .{ _pname, _param });
 }
 
 pub fn lightModeliv(_pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLightModeliv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glLightModeliv, .{ _pname, _params });
 }
 
 pub fn lineStipple(_factor: GLint, _pattern: GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glLineStipple, .{_factor, _pattern});
+    return @call(.always_tail, function_pointers.glLineStipple, .{ _factor, _pattern });
 }
 
 pub fn materialf(_face: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMaterialf, .{_face, _pname, _param});
+    return @call(.always_tail, function_pointers.glMaterialf, .{ _face, _pname, _param });
 }
 
 pub fn materialfv(_face: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMaterialfv, .{_face, _pname, _params});
+    return @call(.always_tail, function_pointers.glMaterialfv, .{ _face, _pname, _params });
 }
 
 pub fn materiali(_face: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMateriali, .{_face, _pname, _param});
+    return @call(.always_tail, function_pointers.glMateriali, .{ _face, _pname, _param });
 }
 
 pub fn materialiv(_face: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMaterialiv, .{_face, _pname, _params});
+    return @call(.always_tail, function_pointers.glMaterialiv, .{ _face, _pname, _params });
 }
 
 pub fn polygonStipple(_mask: ?[*:0]const GLubyte) callconv(.C) void {
@@ -1822,51 +1820,51 @@ pub fn shadeModel(_mode: GLenum) callconv(.C) void {
 }
 
 pub fn texEnvf(_target: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexEnvf, .{_target, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexEnvf, .{ _target, _pname, _param });
 }
 
 pub fn texEnvfv(_target: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexEnvfv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexEnvfv, .{ _target, _pname, _params });
 }
 
 pub fn texEnvi(_target: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexEnvi, .{_target, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexEnvi, .{ _target, _pname, _param });
 }
 
 pub fn texEnviv(_target: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexEnviv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexEnviv, .{ _target, _pname, _params });
 }
 
 pub fn texGend(_coord: GLenum, _pname: GLenum, _param: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexGend, .{_coord, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexGend, .{ _coord, _pname, _param });
 }
 
 pub fn texGendv(_coord: GLenum, _pname: GLenum, _params: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexGendv, .{_coord, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexGendv, .{ _coord, _pname, _params });
 }
 
 pub fn texGenf(_coord: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexGenf, .{_coord, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexGenf, .{ _coord, _pname, _param });
 }
 
 pub fn texGenfv(_coord: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexGenfv, .{_coord, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexGenfv, .{ _coord, _pname, _params });
 }
 
 pub fn texGeni(_coord: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexGeni, .{_coord, _pname, _param});
+    return @call(.always_tail, function_pointers.glTexGeni, .{ _coord, _pname, _param });
 }
 
 pub fn texGeniv(_coord: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexGeniv, .{_coord, _pname, _params});
+    return @call(.always_tail, function_pointers.glTexGeniv, .{ _coord, _pname, _params });
 }
 
 pub fn feedbackBuffer(_size: GLsizei, _type: GLenum, _buffer: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFeedbackBuffer, .{_size, _type, _buffer});
+    return @call(.always_tail, function_pointers.glFeedbackBuffer, .{ _size, _type, _buffer });
 }
 
 pub fn selectBuffer(_size: GLsizei, _buffer: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSelectBuffer, .{_size, _buffer});
+    return @call(.always_tail, function_pointers.glSelectBuffer, .{ _size, _buffer });
 }
 
 pub fn renderMode(_mode: GLenum) callconv(.C) GLint {
@@ -1894,7 +1892,7 @@ pub fn pushName(_name: GLuint) callconv(.C) void {
 }
 
 pub fn clearAccum(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glClearAccum, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glClearAccum, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn clearIndex(_c: GLfloat) callconv(.C) void {
@@ -1906,7 +1904,7 @@ pub fn indexMask(_mask: GLuint) callconv(.C) void {
 }
 
 pub fn accum(_op: GLenum, _value: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glAccum, .{_op, _value});
+    return @call(.always_tail, function_pointers.glAccum, .{ _op, _value });
 }
 
 pub fn popAttrib() callconv(.C) void {
@@ -1918,35 +1916,35 @@ pub fn pushAttrib(_mask: GLbitfield) callconv(.C) void {
 }
 
 pub fn map1d(_target: GLenum, _u1: GLdouble, _u2: GLdouble, _stride: GLint, _order: GLint, _points: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMap1d, .{_target, _u1, _u2, _stride, _order, _points});
+    return @call(.always_tail, function_pointers.glMap1d, .{ _target, _u1, _u2, _stride, _order, _points });
 }
 
 pub fn map1f(_target: GLenum, _u1: GLfloat, _u2: GLfloat, _stride: GLint, _order: GLint, _points: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMap1f, .{_target, _u1, _u2, _stride, _order, _points});
+    return @call(.always_tail, function_pointers.glMap1f, .{ _target, _u1, _u2, _stride, _order, _points });
 }
 
 pub fn map2d(_target: GLenum, _u1: GLdouble, _u2: GLdouble, _ustride: GLint, _uorder: GLint, _v1: GLdouble, _v2: GLdouble, _vstride: GLint, _vorder: GLint, _points: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMap2d, .{_target, _u1, _u2, _ustride, _uorder, _v1, _v2, _vstride, _vorder, _points});
+    return @call(.always_tail, function_pointers.glMap2d, .{ _target, _u1, _u2, _ustride, _uorder, _v1, _v2, _vstride, _vorder, _points });
 }
 
 pub fn map2f(_target: GLenum, _u1: GLfloat, _u2: GLfloat, _ustride: GLint, _uorder: GLint, _v1: GLfloat, _v2: GLfloat, _vstride: GLint, _vorder: GLint, _points: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMap2f, .{_target, _u1, _u2, _ustride, _uorder, _v1, _v2, _vstride, _vorder, _points});
+    return @call(.always_tail, function_pointers.glMap2f, .{ _target, _u1, _u2, _ustride, _uorder, _v1, _v2, _vstride, _vorder, _points });
 }
 
 pub fn mapGrid1d(_un: GLint, _u1: GLdouble, _u2: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMapGrid1d, .{_un, _u1, _u2});
+    return @call(.always_tail, function_pointers.glMapGrid1d, .{ _un, _u1, _u2 });
 }
 
 pub fn mapGrid1f(_un: GLint, _u1: GLfloat, _u2: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMapGrid1f, .{_un, _u1, _u2});
+    return @call(.always_tail, function_pointers.glMapGrid1f, .{ _un, _u1, _u2 });
 }
 
 pub fn mapGrid2d(_un: GLint, _u1: GLdouble, _u2: GLdouble, _vn: GLint, _v1: GLdouble, _v2: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMapGrid2d, .{_un, _u1, _u2, _vn, _v1, _v2});
+    return @call(.always_tail, function_pointers.glMapGrid2d, .{ _un, _u1, _u2, _vn, _v1, _v2 });
 }
 
 pub fn mapGrid2f(_un: GLint, _u1: GLfloat, _u2: GLfloat, _vn: GLint, _v1: GLfloat, _v2: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMapGrid2f, .{_un, _u1, _u2, _vn, _v1, _v2});
+    return @call(.always_tail, function_pointers.glMapGrid2f, .{ _un, _u1, _u2, _vn, _v1, _v2 });
 }
 
 pub fn evalCoord1d(_u: GLdouble) callconv(.C) void {
@@ -1966,7 +1964,7 @@ pub fn evalCoord1fv(_u: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn evalCoord2d(_u: GLdouble, _v: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glEvalCoord2d, .{_u, _v});
+    return @call(.always_tail, function_pointers.glEvalCoord2d, .{ _u, _v });
 }
 
 pub fn evalCoord2dv(_u: [*c]const GLdouble) callconv(.C) void {
@@ -1974,7 +1972,7 @@ pub fn evalCoord2dv(_u: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn evalCoord2f(_u: GLfloat, _v: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glEvalCoord2f, .{_u, _v});
+    return @call(.always_tail, function_pointers.glEvalCoord2f, .{ _u, _v });
 }
 
 pub fn evalCoord2fv(_u: [*c]const GLfloat) callconv(.C) void {
@@ -1982,7 +1980,7 @@ pub fn evalCoord2fv(_u: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn evalMesh1(_mode: GLenum, _i1: GLint, _i2: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glEvalMesh1, .{_mode, _i1, _i2});
+    return @call(.always_tail, function_pointers.glEvalMesh1, .{ _mode, _i1, _i2 });
 }
 
 pub fn evalPoint1(_i: GLint) callconv(.C) void {
@@ -1990,91 +1988,91 @@ pub fn evalPoint1(_i: GLint) callconv(.C) void {
 }
 
 pub fn evalMesh2(_mode: GLenum, _i1: GLint, _i2: GLint, _j1: GLint, _j2: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glEvalMesh2, .{_mode, _i1, _i2, _j1, _j2});
+    return @call(.always_tail, function_pointers.glEvalMesh2, .{ _mode, _i1, _i2, _j1, _j2 });
 }
 
 pub fn evalPoint2(_i: GLint, _j: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glEvalPoint2, .{_i, _j});
+    return @call(.always_tail, function_pointers.glEvalPoint2, .{ _i, _j });
 }
 
 pub fn alphaFunc(_func: GLenum, _ref: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glAlphaFunc, .{_func, _ref});
+    return @call(.always_tail, function_pointers.glAlphaFunc, .{ _func, _ref });
 }
 
 pub fn pixelZoom(_xfactor: GLfloat, _yfactor: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelZoom, .{_xfactor, _yfactor});
+    return @call(.always_tail, function_pointers.glPixelZoom, .{ _xfactor, _yfactor });
 }
 
 pub fn pixelTransferf(_pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelTransferf, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glPixelTransferf, .{ _pname, _param });
 }
 
 pub fn pixelTransferi(_pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelTransferi, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glPixelTransferi, .{ _pname, _param });
 }
 
 pub fn pixelMapfv(_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelMapfv, .{_map, _mapsize, _values});
+    return @call(.always_tail, function_pointers.glPixelMapfv, .{ _map, _mapsize, _values });
 }
 
 pub fn pixelMapuiv(_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelMapuiv, .{_map, _mapsize, _values});
+    return @call(.always_tail, function_pointers.glPixelMapuiv, .{ _map, _mapsize, _values });
 }
 
 pub fn pixelMapusv(_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPixelMapusv, .{_map, _mapsize, _values});
+    return @call(.always_tail, function_pointers.glPixelMapusv, .{ _map, _mapsize, _values });
 }
 
 pub fn copyPixels(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _type: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCopyPixels, .{_x, _y, _width, _height, _type});
+    return @call(.always_tail, function_pointers.glCopyPixels, .{ _x, _y, _width, _height, _type });
 }
 
 pub fn drawPixels(_width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDrawPixels, .{_width, _height, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glDrawPixels, .{ _width, _height, _format, _type, _pixels });
 }
 
 pub fn getClipPlane(_plane: GLenum, _equation: [*c]GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetClipPlane, .{_plane, _equation});
+    return @call(.always_tail, function_pointers.glGetClipPlane, .{ _plane, _equation });
 }
 
 pub fn getLightfv(_light: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetLightfv, .{_light, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetLightfv, .{ _light, _pname, _params });
 }
 
 pub fn getLightiv(_light: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetLightiv, .{_light, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetLightiv, .{ _light, _pname, _params });
 }
 
 pub fn getMapdv(_target: GLenum, _query: GLenum, _v: [*c]GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetMapdv, .{_target, _query, _v});
+    return @call(.always_tail, function_pointers.glGetMapdv, .{ _target, _query, _v });
 }
 
 pub fn getMapfv(_target: GLenum, _query: GLenum, _v: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetMapfv, .{_target, _query, _v});
+    return @call(.always_tail, function_pointers.glGetMapfv, .{ _target, _query, _v });
 }
 
 pub fn getMapiv(_target: GLenum, _query: GLenum, _v: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetMapiv, .{_target, _query, _v});
+    return @call(.always_tail, function_pointers.glGetMapiv, .{ _target, _query, _v });
 }
 
 pub fn getMaterialfv(_face: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetMaterialfv, .{_face, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetMaterialfv, .{ _face, _pname, _params });
 }
 
 pub fn getMaterialiv(_face: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetMaterialiv, .{_face, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetMaterialiv, .{ _face, _pname, _params });
 }
 
 pub fn getPixelMapfv(_map: GLenum, _values: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetPixelMapfv, .{_map, _values});
+    return @call(.always_tail, function_pointers.glGetPixelMapfv, .{ _map, _values });
 }
 
 pub fn getPixelMapuiv(_map: GLenum, _values: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetPixelMapuiv, .{_map, _values});
+    return @call(.always_tail, function_pointers.glGetPixelMapuiv, .{ _map, _values });
 }
 
 pub fn getPixelMapusv(_map: GLenum, _values: [*c]GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetPixelMapusv, .{_map, _values});
+    return @call(.always_tail, function_pointers.glGetPixelMapusv, .{ _map, _values });
 }
 
 pub fn getPolygonStipple(_mask: [*c]GLubyte) callconv(.C) void {
@@ -2082,23 +2080,23 @@ pub fn getPolygonStipple(_mask: [*c]GLubyte) callconv(.C) void {
 }
 
 pub fn getTexEnvfv(_target: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexEnvfv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexEnvfv, .{ _target, _pname, _params });
 }
 
 pub fn getTexEnviv(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexEnviv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexEnviv, .{ _target, _pname, _params });
 }
 
 pub fn getTexGendv(_coord: GLenum, _pname: GLenum, _params: [*c]GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexGendv, .{_coord, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexGendv, .{ _coord, _pname, _params });
 }
 
 pub fn getTexGenfv(_coord: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexGenfv, .{_coord, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexGenfv, .{ _coord, _pname, _params });
 }
 
 pub fn getTexGeniv(_coord: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetTexGeniv, .{_coord, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetTexGeniv, .{ _coord, _pname, _params });
 }
 
 pub fn isList(_list: GLuint) callconv(.C) GLboolean {
@@ -2106,7 +2104,7 @@ pub fn isList(_list: GLuint) callconv(.C) GLboolean {
 }
 
 pub fn frustum(_left: GLdouble, _right: GLdouble, _bottom: GLdouble, _top: GLdouble, _zNear: GLdouble, _zFar: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFrustum, .{_left, _right, _bottom, _top, _zNear, _zFar});
+    return @call(.always_tail, function_pointers.glFrustum, .{ _left, _right, _bottom, _top, _zNear, _zFar });
 }
 
 pub fn loadIdentity() callconv(.C) void {
@@ -2134,7 +2132,7 @@ pub fn multMatrixd(_m: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn ortho(_left: GLdouble, _right: GLdouble, _bottom: GLdouble, _top: GLdouble, _zNear: GLdouble, _zFar: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glOrtho, .{_left, _right, _bottom, _top, _zNear, _zFar});
+    return @call(.always_tail, function_pointers.glOrtho, .{ _left, _right, _bottom, _top, _zNear, _zFar });
 }
 
 pub fn popMatrix() callconv(.C) void {
@@ -2146,79 +2144,79 @@ pub fn pushMatrix() callconv(.C) void {
 }
 
 pub fn rotated(_angle: GLdouble, _x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRotated, .{_angle, _x, _y, _z});
+    return @call(.always_tail, function_pointers.glRotated, .{ _angle, _x, _y, _z });
 }
 
 pub fn rotatef(_angle: GLfloat, _x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glRotatef, .{_angle, _x, _y, _z});
+    return @call(.always_tail, function_pointers.glRotatef, .{ _angle, _x, _y, _z });
 }
 
 pub fn scaled(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glScaled, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glScaled, .{ _x, _y, _z });
 }
 
 pub fn scalef(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glScalef, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glScalef, .{ _x, _y, _z });
 }
 
 pub fn translated(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTranslated, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glTranslated, .{ _x, _y, _z });
 }
 
 pub fn translatef(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTranslatef, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glTranslatef, .{ _x, _y, _z });
 }
 
 pub fn drawArrays(_mode: GLenum, _first: GLint, _count: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDrawArrays, .{_mode, _first, _count});
+    return @call(.always_tail, function_pointers.glDrawArrays, .{ _mode, _first, _count });
 }
 
 pub fn drawElements(_mode: GLenum, _count: GLsizei, _type: GLenum, _indices: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDrawElements, .{_mode, _count, _type, _indices});
+    return @call(.always_tail, function_pointers.glDrawElements, .{ _mode, _count, _type, _indices });
 }
 
 pub fn getPointerv(_pname: GLenum, _params: ?*?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetPointerv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glGetPointerv, .{ _pname, _params });
 }
 
 pub fn polygonOffset(_factor: GLfloat, _units: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPolygonOffset, .{_factor, _units});
+    return @call(.always_tail, function_pointers.glPolygonOffset, .{ _factor, _units });
 }
 
 pub fn copyTexImage1D(_target: GLenum, _level: GLint, _internalformat: GLenum, _x: GLint, _y: GLint, _width: GLsizei, _border: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCopyTexImage1D, .{_target, _level, _internalformat, _x, _y, _width, _border});
+    return @call(.always_tail, function_pointers.glCopyTexImage1D, .{ _target, _level, _internalformat, _x, _y, _width, _border });
 }
 
 pub fn copyTexImage2D(_target: GLenum, _level: GLint, _internalformat: GLenum, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _border: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCopyTexImage2D, .{_target, _level, _internalformat, _x, _y, _width, _height, _border});
+    return @call(.always_tail, function_pointers.glCopyTexImage2D, .{ _target, _level, _internalformat, _x, _y, _width, _height, _border });
 }
 
 pub fn copyTexSubImage1D(_target: GLenum, _level: GLint, _xoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCopyTexSubImage1D, .{_target, _level, _xoffset, _x, _y, _width});
+    return @call(.always_tail, function_pointers.glCopyTexSubImage1D, .{ _target, _level, _xoffset, _x, _y, _width });
 }
 
 pub fn copyTexSubImage2D(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCopyTexSubImage2D, .{_target, _level, _xoffset, _yoffset, _x, _y, _width, _height});
+    return @call(.always_tail, function_pointers.glCopyTexSubImage2D, .{ _target, _level, _xoffset, _yoffset, _x, _y, _width, _height });
 }
 
 pub fn texSubImage1D(_target: GLenum, _level: GLint, _xoffset: GLint, _width: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexSubImage1D, .{_target, _level, _xoffset, _width, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glTexSubImage1D, .{ _target, _level, _xoffset, _width, _format, _type, _pixels });
 }
 
 pub fn texSubImage2D(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexSubImage2D, .{_target, _level, _xoffset, _yoffset, _width, _height, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glTexSubImage2D, .{ _target, _level, _xoffset, _yoffset, _width, _height, _format, _type, _pixels });
 }
 
 pub fn bindTexture(_target: GLenum, _texture: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBindTexture, .{_target, _texture});
+    return @call(.always_tail, function_pointers.glBindTexture, .{ _target, _texture });
 }
 
 pub fn deleteTextures(_n: GLsizei, _textures: [*c]const GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDeleteTextures, .{_n, _textures});
+    return @call(.always_tail, function_pointers.glDeleteTextures, .{ _n, _textures });
 }
 
 pub fn genTextures(_n: GLsizei, _textures: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGenTextures, .{_n, _textures});
+    return @call(.always_tail, function_pointers.glGenTextures, .{ _n, _textures });
 }
 
 pub fn isTexture(_texture: GLuint) callconv(.C) GLboolean {
@@ -2230,7 +2228,7 @@ pub fn arrayElement(_i: GLint) callconv(.C) void {
 }
 
 pub fn colorPointer(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glColorPointer, .{_size, _type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glColorPointer, .{ _size, _type, _stride, _pointer });
 }
 
 pub fn disableClientState(_array: GLenum) callconv(.C) void {
@@ -2238,7 +2236,7 @@ pub fn disableClientState(_array: GLenum) callconv(.C) void {
 }
 
 pub fn edgeFlagPointer(_stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glEdgeFlagPointer, .{_stride, _pointer});
+    return @call(.always_tail, function_pointers.glEdgeFlagPointer, .{ _stride, _pointer });
 }
 
 pub fn enableClientState(_array: GLenum) callconv(.C) void {
@@ -2246,31 +2244,31 @@ pub fn enableClientState(_array: GLenum) callconv(.C) void {
 }
 
 pub fn indexPointer(_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glIndexPointer, .{_type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glIndexPointer, .{ _type, _stride, _pointer });
 }
 
 pub fn interleavedArrays(_format: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glInterleavedArrays, .{_format, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glInterleavedArrays, .{ _format, _stride, _pointer });
 }
 
 pub fn normalPointer(_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glNormalPointer, .{_type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glNormalPointer, .{ _type, _stride, _pointer });
 }
 
 pub fn texCoordPointer(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexCoordPointer, .{_size, _type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glTexCoordPointer, .{ _size, _type, _stride, _pointer });
 }
 
 pub fn vertexPointer(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexPointer, .{_size, _type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glVertexPointer, .{ _size, _type, _stride, _pointer });
 }
 
 pub fn areTexturesResident(_n: GLsizei, _textures: [*c]const GLuint, _residences: [*c]GLboolean) callconv(.C) GLboolean {
-    return @call(.always_tail, function_pointers.glAreTexturesResident, .{_n, _textures, _residences});
+    return @call(.always_tail, function_pointers.glAreTexturesResident, .{ _n, _textures, _residences });
 }
 
 pub fn prioritizeTextures(_n: GLsizei, _textures: [*c]const GLuint, _priorities: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPrioritizeTextures, .{_n, _textures, _priorities});
+    return @call(.always_tail, function_pointers.glPrioritizeTextures, .{ _n, _textures, _priorities });
 }
 
 pub fn indexub(_c: GLubyte) callconv(.C) void {
@@ -2290,19 +2288,19 @@ pub fn pushClientAttrib(_mask: GLbitfield) callconv(.C) void {
 }
 
 pub fn drawRangeElements(_mode: GLenum, _start: GLuint, _end: GLuint, _count: GLsizei, _type: GLenum, _indices: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDrawRangeElements, .{_mode, _start, _end, _count, _type, _indices});
+    return @call(.always_tail, function_pointers.glDrawRangeElements, .{ _mode, _start, _end, _count, _type, _indices });
 }
 
 pub fn texImage3D(_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexImage3D, .{_target, _level, _internalformat, _width, _height, _depth, _border, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glTexImage3D, .{ _target, _level, _internalformat, _width, _height, _depth, _border, _format, _type, _pixels });
 }
 
 pub fn texSubImage3D(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glTexSubImage3D, .{_target, _level, _xoffset, _yoffset, _zoffset, _width, _height, _depth, _format, _type, _pixels});
+    return @call(.always_tail, function_pointers.glTexSubImage3D, .{ _target, _level, _xoffset, _yoffset, _zoffset, _width, _height, _depth, _format, _type, _pixels });
 }
 
 pub fn copyTexSubImage3D(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCopyTexSubImage3D, .{_target, _level, _xoffset, _yoffset, _zoffset, _x, _y, _width, _height});
+    return @call(.always_tail, function_pointers.glCopyTexSubImage3D, .{ _target, _level, _xoffset, _yoffset, _zoffset, _x, _y, _width, _height });
 }
 
 pub fn activeTexture(_texture: GLenum) callconv(.C) void {
@@ -2310,35 +2308,35 @@ pub fn activeTexture(_texture: GLenum) callconv(.C) void {
 }
 
 pub fn sampleCoverage(_value: GLfloat, _invert: GLboolean) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSampleCoverage, .{_value, _invert});
+    return @call(.always_tail, function_pointers.glSampleCoverage, .{ _value, _invert });
 }
 
 pub fn compressedTexImage3D(_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCompressedTexImage3D, .{_target, _level, _internalformat, _width, _height, _depth, _border, _imageSize, _data});
+    return @call(.always_tail, function_pointers.glCompressedTexImage3D, .{ _target, _level, _internalformat, _width, _height, _depth, _border, _imageSize, _data });
 }
 
 pub fn compressedTexImage2D(_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _height: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCompressedTexImage2D, .{_target, _level, _internalformat, _width, _height, _border, _imageSize, _data});
+    return @call(.always_tail, function_pointers.glCompressedTexImage2D, .{ _target, _level, _internalformat, _width, _height, _border, _imageSize, _data });
 }
 
 pub fn compressedTexImage1D(_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCompressedTexImage1D, .{_target, _level, _internalformat, _width, _border, _imageSize, _data});
+    return @call(.always_tail, function_pointers.glCompressedTexImage1D, .{ _target, _level, _internalformat, _width, _border, _imageSize, _data });
 }
 
 pub fn compressedTexSubImage3D(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCompressedTexSubImage3D, .{_target, _level, _xoffset, _yoffset, _zoffset, _width, _height, _depth, _format, _imageSize, _data});
+    return @call(.always_tail, function_pointers.glCompressedTexSubImage3D, .{ _target, _level, _xoffset, _yoffset, _zoffset, _width, _height, _depth, _format, _imageSize, _data });
 }
 
 pub fn compressedTexSubImage2D(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCompressedTexSubImage2D, .{_target, _level, _xoffset, _yoffset, _width, _height, _format, _imageSize, _data});
+    return @call(.always_tail, function_pointers.glCompressedTexSubImage2D, .{ _target, _level, _xoffset, _yoffset, _width, _height, _format, _imageSize, _data });
 }
 
 pub fn compressedTexSubImage1D(_target: GLenum, _level: GLint, _xoffset: GLint, _width: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glCompressedTexSubImage1D, .{_target, _level, _xoffset, _width, _format, _imageSize, _data});
+    return @call(.always_tail, function_pointers.glCompressedTexSubImage1D, .{ _target, _level, _xoffset, _width, _format, _imageSize, _data });
 }
 
 pub fn getCompressedTexImage(_target: GLenum, _level: GLint, _img: ?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetCompressedTexImage, .{_target, _level, _img});
+    return @call(.always_tail, function_pointers.glGetCompressedTexImage, .{ _target, _level, _img });
 }
 
 pub fn clientActiveTexture(_texture: GLenum) callconv(.C) void {
@@ -2346,131 +2344,131 @@ pub fn clientActiveTexture(_texture: GLenum) callconv(.C) void {
 }
 
 pub fn multiTexCoord1d(_target: GLenum, _s: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1d, .{_target, _s});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1d, .{ _target, _s });
 }
 
 pub fn multiTexCoord1dv(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1dv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1dv, .{ _target, _v });
 }
 
 pub fn multiTexCoord1f(_target: GLenum, _s: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1f, .{_target, _s});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1f, .{ _target, _s });
 }
 
 pub fn multiTexCoord1fv(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1fv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1fv, .{ _target, _v });
 }
 
 pub fn multiTexCoord1i(_target: GLenum, _s: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1i, .{_target, _s});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1i, .{ _target, _s });
 }
 
 pub fn multiTexCoord1iv(_target: GLenum, _v: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1iv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1iv, .{ _target, _v });
 }
 
 pub fn multiTexCoord1s(_target: GLenum, _s: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1s, .{_target, _s});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1s, .{ _target, _s });
 }
 
 pub fn multiTexCoord1sv(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord1sv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord1sv, .{ _target, _v });
 }
 
 pub fn multiTexCoord2d(_target: GLenum, _s: GLdouble, _t: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2d, .{_target, _s, _t});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2d, .{ _target, _s, _t });
 }
 
 pub fn multiTexCoord2dv(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2dv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2dv, .{ _target, _v });
 }
 
 pub fn multiTexCoord2f(_target: GLenum, _s: GLfloat, _t: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2f, .{_target, _s, _t});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2f, .{ _target, _s, _t });
 }
 
 pub fn multiTexCoord2fv(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2fv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2fv, .{ _target, _v });
 }
 
 pub fn multiTexCoord2i(_target: GLenum, _s: GLint, _t: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2i, .{_target, _s, _t});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2i, .{ _target, _s, _t });
 }
 
 pub fn multiTexCoord2iv(_target: GLenum, _v: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2iv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2iv, .{ _target, _v });
 }
 
 pub fn multiTexCoord2s(_target: GLenum, _s: GLshort, _t: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2s, .{_target, _s, _t});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2s, .{ _target, _s, _t });
 }
 
 pub fn multiTexCoord2sv(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord2sv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord2sv, .{ _target, _v });
 }
 
 pub fn multiTexCoord3d(_target: GLenum, _s: GLdouble, _t: GLdouble, _r: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3d, .{_target, _s, _t, _r});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3d, .{ _target, _s, _t, _r });
 }
 
 pub fn multiTexCoord3dv(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3dv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3dv, .{ _target, _v });
 }
 
 pub fn multiTexCoord3f(_target: GLenum, _s: GLfloat, _t: GLfloat, _r: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3f, .{_target, _s, _t, _r});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3f, .{ _target, _s, _t, _r });
 }
 
 pub fn multiTexCoord3fv(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3fv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3fv, .{ _target, _v });
 }
 
 pub fn multiTexCoord3i(_target: GLenum, _s: GLint, _t: GLint, _r: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3i, .{_target, _s, _t, _r});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3i, .{ _target, _s, _t, _r });
 }
 
 pub fn multiTexCoord3iv(_target: GLenum, _v: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3iv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3iv, .{ _target, _v });
 }
 
 pub fn multiTexCoord3s(_target: GLenum, _s: GLshort, _t: GLshort, _r: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3s, .{_target, _s, _t, _r});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3s, .{ _target, _s, _t, _r });
 }
 
 pub fn multiTexCoord3sv(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord3sv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord3sv, .{ _target, _v });
 }
 
 pub fn multiTexCoord4d(_target: GLenum, _s: GLdouble, _t: GLdouble, _r: GLdouble, _q: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4d, .{_target, _s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4d, .{ _target, _s, _t, _r, _q });
 }
 
 pub fn multiTexCoord4dv(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4dv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4dv, .{ _target, _v });
 }
 
 pub fn multiTexCoord4f(_target: GLenum, _s: GLfloat, _t: GLfloat, _r: GLfloat, _q: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4f, .{_target, _s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4f, .{ _target, _s, _t, _r, _q });
 }
 
 pub fn multiTexCoord4fv(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4fv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4fv, .{ _target, _v });
 }
 
 pub fn multiTexCoord4i(_target: GLenum, _s: GLint, _t: GLint, _r: GLint, _q: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4i, .{_target, _s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4i, .{ _target, _s, _t, _r, _q });
 }
 
 pub fn multiTexCoord4iv(_target: GLenum, _v: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4iv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4iv, .{ _target, _v });
 }
 
 pub fn multiTexCoord4s(_target: GLenum, _s: GLshort, _t: GLshort, _r: GLshort, _q: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4s, .{_target, _s, _t, _r, _q});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4s, .{ _target, _s, _t, _r, _q });
 }
 
 pub fn multiTexCoord4sv(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiTexCoord4sv, .{_target, _v});
+    return @call(.always_tail, function_pointers.glMultiTexCoord4sv, .{ _target, _v });
 }
 
 pub fn loadTransposeMatrixf(_m: [*c]const GLfloat) callconv(.C) void {
@@ -2490,31 +2488,31 @@ pub fn multTransposeMatrixd(_m: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn blendFuncSeparate(_sfactorRGB: GLenum, _dfactorRGB: GLenum, _sfactorAlpha: GLenum, _dfactorAlpha: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBlendFuncSeparate, .{_sfactorRGB, _dfactorRGB, _sfactorAlpha, _dfactorAlpha});
+    return @call(.always_tail, function_pointers.glBlendFuncSeparate, .{ _sfactorRGB, _dfactorRGB, _sfactorAlpha, _dfactorAlpha });
 }
 
 pub fn multiDrawArrays(_mode: GLenum, _first: [*c]const GLint, _count: [*c]const GLsizei, _drawcount: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiDrawArrays, .{_mode, _first, _count, _drawcount});
+    return @call(.always_tail, function_pointers.glMultiDrawArrays, .{ _mode, _first, _count, _drawcount });
 }
 
 pub fn multiDrawElements(_mode: GLenum, _count: [*c]const GLsizei, _type: GLenum, _indices: [*c]const ?*const anyopaque, _drawcount: GLsizei) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glMultiDrawElements, .{_mode, _count, _type, _indices, _drawcount});
+    return @call(.always_tail, function_pointers.glMultiDrawElements, .{ _mode, _count, _type, _indices, _drawcount });
 }
 
 pub fn pointParameterf(_pname: GLenum, _param: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPointParameterf, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glPointParameterf, .{ _pname, _param });
 }
 
 pub fn pointParameterfv(_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPointParameterfv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glPointParameterfv, .{ _pname, _params });
 }
 
 pub fn pointParameteri(_pname: GLenum, _param: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPointParameteri, .{_pname, _param});
+    return @call(.always_tail, function_pointers.glPointParameteri, .{ _pname, _param });
 }
 
 pub fn pointParameteriv(_pname: GLenum, _params: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glPointParameteriv, .{_pname, _params});
+    return @call(.always_tail, function_pointers.glPointParameteriv, .{ _pname, _params });
 }
 
 pub fn fogCoordf(_coord: GLfloat) callconv(.C) void {
@@ -2534,11 +2532,11 @@ pub fn fogCoorddv(_coord: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn fogCoordPointer(_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glFogCoordPointer, .{_type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glFogCoordPointer, .{ _type, _stride, _pointer });
 }
 
 pub fn secondaryColor3b(_red: GLbyte, _green: GLbyte, _blue: GLbyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3b, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3b, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3bv(_v: [*c]const GLbyte) callconv(.C) void {
@@ -2546,7 +2544,7 @@ pub fn secondaryColor3bv(_v: [*c]const GLbyte) callconv(.C) void {
 }
 
 pub fn secondaryColor3d(_red: GLdouble, _green: GLdouble, _blue: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3d, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3d, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -2554,7 +2552,7 @@ pub fn secondaryColor3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn secondaryColor3f(_red: GLfloat, _green: GLfloat, _blue: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3f, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3f, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -2562,7 +2560,7 @@ pub fn secondaryColor3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn secondaryColor3i(_red: GLint, _green: GLint, _blue: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3i, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3i, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -2570,7 +2568,7 @@ pub fn secondaryColor3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn secondaryColor3s(_red: GLshort, _green: GLshort, _blue: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3s, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3s, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -2578,7 +2576,7 @@ pub fn secondaryColor3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn secondaryColor3ub(_red: GLubyte, _green: GLubyte, _blue: GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3ub, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3ub, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3ubv(_v: ?[*:0]const GLubyte) callconv(.C) void {
@@ -2586,7 +2584,7 @@ pub fn secondaryColor3ubv(_v: ?[*:0]const GLubyte) callconv(.C) void {
 }
 
 pub fn secondaryColor3ui(_red: GLuint, _green: GLuint, _blue: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3ui, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3ui, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3uiv(_v: [*c]const GLuint) callconv(.C) void {
@@ -2594,7 +2592,7 @@ pub fn secondaryColor3uiv(_v: [*c]const GLuint) callconv(.C) void {
 }
 
 pub fn secondaryColor3us(_red: GLushort, _green: GLushort, _blue: GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColor3us, .{_red, _green, _blue});
+    return @call(.always_tail, function_pointers.glSecondaryColor3us, .{ _red, _green, _blue });
 }
 
 pub fn secondaryColor3usv(_v: [*c]const GLushort) callconv(.C) void {
@@ -2602,11 +2600,11 @@ pub fn secondaryColor3usv(_v: [*c]const GLushort) callconv(.C) void {
 }
 
 pub fn secondaryColorPointer(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glSecondaryColorPointer, .{_size, _type, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glSecondaryColorPointer, .{ _size, _type, _stride, _pointer });
 }
 
 pub fn windowPos2d(_x: GLdouble, _y: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos2d, .{_x, _y});
+    return @call(.always_tail, function_pointers.glWindowPos2d, .{ _x, _y });
 }
 
 pub fn windowPos2dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -2614,7 +2612,7 @@ pub fn windowPos2dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn windowPos2f(_x: GLfloat, _y: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos2f, .{_x, _y});
+    return @call(.always_tail, function_pointers.glWindowPos2f, .{ _x, _y });
 }
 
 pub fn windowPos2fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -2622,7 +2620,7 @@ pub fn windowPos2fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn windowPos2i(_x: GLint, _y: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos2i, .{_x, _y});
+    return @call(.always_tail, function_pointers.glWindowPos2i, .{ _x, _y });
 }
 
 pub fn windowPos2iv(_v: [*c]const GLint) callconv(.C) void {
@@ -2630,7 +2628,7 @@ pub fn windowPos2iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn windowPos2s(_x: GLshort, _y: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos2s, .{_x, _y});
+    return @call(.always_tail, function_pointers.glWindowPos2s, .{ _x, _y });
 }
 
 pub fn windowPos2sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -2638,7 +2636,7 @@ pub fn windowPos2sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn windowPos3d(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos3d, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glWindowPos3d, .{ _x, _y, _z });
 }
 
 pub fn windowPos3dv(_v: [*c]const GLdouble) callconv(.C) void {
@@ -2646,7 +2644,7 @@ pub fn windowPos3dv(_v: [*c]const GLdouble) callconv(.C) void {
 }
 
 pub fn windowPos3f(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos3f, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glWindowPos3f, .{ _x, _y, _z });
 }
 
 pub fn windowPos3fv(_v: [*c]const GLfloat) callconv(.C) void {
@@ -2654,7 +2652,7 @@ pub fn windowPos3fv(_v: [*c]const GLfloat) callconv(.C) void {
 }
 
 pub fn windowPos3i(_x: GLint, _y: GLint, _z: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos3i, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glWindowPos3i, .{ _x, _y, _z });
 }
 
 pub fn windowPos3iv(_v: [*c]const GLint) callconv(.C) void {
@@ -2662,7 +2660,7 @@ pub fn windowPos3iv(_v: [*c]const GLint) callconv(.C) void {
 }
 
 pub fn windowPos3s(_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glWindowPos3s, .{_x, _y, _z});
+    return @call(.always_tail, function_pointers.glWindowPos3s, .{ _x, _y, _z });
 }
 
 pub fn windowPos3sv(_v: [*c]const GLshort) callconv(.C) void {
@@ -2670,7 +2668,7 @@ pub fn windowPos3sv(_v: [*c]const GLshort) callconv(.C) void {
 }
 
 pub fn blendColor(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBlendColor, .{_red, _green, _blue, _alpha});
+    return @call(.always_tail, function_pointers.glBlendColor, .{ _red, _green, _blue, _alpha });
 }
 
 pub fn blendEquation(_mode: GLenum) callconv(.C) void {
@@ -2678,11 +2676,11 @@ pub fn blendEquation(_mode: GLenum) callconv(.C) void {
 }
 
 pub fn genQueries(_n: GLsizei, _ids: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGenQueries, .{_n, _ids});
+    return @call(.always_tail, function_pointers.glGenQueries, .{ _n, _ids });
 }
 
 pub fn deleteQueries(_n: GLsizei, _ids: [*c]const GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDeleteQueries, .{_n, _ids});
+    return @call(.always_tail, function_pointers.glDeleteQueries, .{ _n, _ids });
 }
 
 pub fn isQuery(_id: GLuint) callconv(.C) GLboolean {
@@ -2690,7 +2688,7 @@ pub fn isQuery(_id: GLuint) callconv(.C) GLboolean {
 }
 
 pub fn beginQuery(_target: GLenum, _id: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBeginQuery, .{_target, _id});
+    return @call(.always_tail, function_pointers.glBeginQuery, .{ _target, _id });
 }
 
 pub fn endQuery(_target: GLenum) callconv(.C) void {
@@ -2698,27 +2696,27 @@ pub fn endQuery(_target: GLenum) callconv(.C) void {
 }
 
 pub fn getQueryiv(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetQueryiv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetQueryiv, .{ _target, _pname, _params });
 }
 
 pub fn getQueryObjectiv(_id: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetQueryObjectiv, .{_id, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetQueryObjectiv, .{ _id, _pname, _params });
 }
 
 pub fn getQueryObjectuiv(_id: GLuint, _pname: GLenum, _params: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetQueryObjectuiv, .{_id, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetQueryObjectuiv, .{ _id, _pname, _params });
 }
 
 pub fn bindBuffer(_target: GLenum, _buffer: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBindBuffer, .{_target, _buffer});
+    return @call(.always_tail, function_pointers.glBindBuffer, .{ _target, _buffer });
 }
 
 pub fn deleteBuffers(_n: GLsizei, _buffers: [*c]const GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDeleteBuffers, .{_n, _buffers});
+    return @call(.always_tail, function_pointers.glDeleteBuffers, .{ _n, _buffers });
 }
 
 pub fn genBuffers(_n: GLsizei, _buffers: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGenBuffers, .{_n, _buffers});
+    return @call(.always_tail, function_pointers.glGenBuffers, .{ _n, _buffers });
 }
 
 pub fn isBuffer(_buffer: GLuint) callconv(.C) GLboolean {
@@ -2726,19 +2724,19 @@ pub fn isBuffer(_buffer: GLuint) callconv(.C) GLboolean {
 }
 
 pub fn bufferData(_target: GLenum, _size: GLsizeiptr, _data: ?*const anyopaque, _usage: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBufferData, .{_target, _size, _data, _usage});
+    return @call(.always_tail, function_pointers.glBufferData, .{ _target, _size, _data, _usage });
 }
 
 pub fn bufferSubData(_target: GLenum, _offset: GLintptr, _size: GLsizeiptr, _data: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBufferSubData, .{_target, _offset, _size, _data});
+    return @call(.always_tail, function_pointers.glBufferSubData, .{ _target, _offset, _size, _data });
 }
 
 pub fn getBufferSubData(_target: GLenum, _offset: GLintptr, _size: GLsizeiptr, _data: ?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetBufferSubData, .{_target, _offset, _size, _data});
+    return @call(.always_tail, function_pointers.glGetBufferSubData, .{ _target, _offset, _size, _data });
 }
 
 pub fn mapBuffer(_target: GLenum, _access: GLenum) callconv(.C) ?*anyopaque {
-    return @call(.always_tail, function_pointers.glMapBuffer, .{_target, _access});
+    return @call(.always_tail, function_pointers.glMapBuffer, .{ _target, _access });
 }
 
 pub fn unmapBuffer(_target: GLenum) callconv(.C) GLboolean {
@@ -2746,39 +2744,39 @@ pub fn unmapBuffer(_target: GLenum) callconv(.C) GLboolean {
 }
 
 pub fn getBufferParameteriv(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetBufferParameteriv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetBufferParameteriv, .{ _target, _pname, _params });
 }
 
 pub fn getBufferPointerv(_target: GLenum, _pname: GLenum, _params: ?*?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetBufferPointerv, .{_target, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetBufferPointerv, .{ _target, _pname, _params });
 }
 
 pub fn blendEquationSeparate(_modeRGB: GLenum, _modeAlpha: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBlendEquationSeparate, .{_modeRGB, _modeAlpha});
+    return @call(.always_tail, function_pointers.glBlendEquationSeparate, .{ _modeRGB, _modeAlpha });
 }
 
 pub fn drawBuffers(_n: GLsizei, _bufs: [*c]const GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDrawBuffers, .{_n, _bufs});
+    return @call(.always_tail, function_pointers.glDrawBuffers, .{ _n, _bufs });
 }
 
 pub fn stencilOpSeparate(_face: GLenum, _sfail: GLenum, _dpfail: GLenum, _dppass: GLenum) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glStencilOpSeparate, .{_face, _sfail, _dpfail, _dppass});
+    return @call(.always_tail, function_pointers.glStencilOpSeparate, .{ _face, _sfail, _dpfail, _dppass });
 }
 
 pub fn stencilFuncSeparate(_face: GLenum, _func: GLenum, _ref: GLint, _mask: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glStencilFuncSeparate, .{_face, _func, _ref, _mask});
+    return @call(.always_tail, function_pointers.glStencilFuncSeparate, .{ _face, _func, _ref, _mask });
 }
 
 pub fn stencilMaskSeparate(_face: GLenum, _mask: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glStencilMaskSeparate, .{_face, _mask});
+    return @call(.always_tail, function_pointers.glStencilMaskSeparate, .{ _face, _mask });
 }
 
 pub fn attachShader(_program: GLuint, _shader: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glAttachShader, .{_program, _shader});
+    return @call(.always_tail, function_pointers.glAttachShader, .{ _program, _shader });
 }
 
 pub fn bindAttribLocation(_program: GLuint, _index: GLuint, _name: [*c]const GLchar) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glBindAttribLocation, .{_program, _index, _name});
+    return @call(.always_tail, function_pointers.glBindAttribLocation, .{ _program, _index, _name });
 }
 
 pub fn compileShader(_shader: GLuint) callconv(.C) void {
@@ -2802,7 +2800,7 @@ pub fn deleteShader(_shader: GLuint) callconv(.C) void {
 }
 
 pub fn detachShader(_program: GLuint, _shader: GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glDetachShader, .{_program, _shader});
+    return @call(.always_tail, function_pointers.glDetachShader, .{ _program, _shader });
 }
 
 pub fn disableVertexAttribArray(_index: GLuint) callconv(.C) void {
@@ -2814,67 +2812,67 @@ pub fn enableVertexAttribArray(_index: GLuint) callconv(.C) void {
 }
 
 pub fn getActiveAttrib(_program: GLuint, _index: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _size: [*c]GLint, _type: [*c]GLenum, _name: [*c]GLchar) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetActiveAttrib, .{_program, _index, _bufSize, _length, _size, _type, _name});
+    return @call(.always_tail, function_pointers.glGetActiveAttrib, .{ _program, _index, _bufSize, _length, _size, _type, _name });
 }
 
 pub fn getActiveUniform(_program: GLuint, _index: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _size: [*c]GLint, _type: [*c]GLenum, _name: [*c]GLchar) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetActiveUniform, .{_program, _index, _bufSize, _length, _size, _type, _name});
+    return @call(.always_tail, function_pointers.glGetActiveUniform, .{ _program, _index, _bufSize, _length, _size, _type, _name });
 }
 
 pub fn getAttachedShaders(_program: GLuint, _maxCount: GLsizei, _count: [*c]GLsizei, _shaders: [*c]GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetAttachedShaders, .{_program, _maxCount, _count, _shaders});
+    return @call(.always_tail, function_pointers.glGetAttachedShaders, .{ _program, _maxCount, _count, _shaders });
 }
 
 pub fn getAttribLocation(_program: GLuint, _name: [*c]const GLchar) callconv(.C) GLint {
-    return @call(.always_tail, function_pointers.glGetAttribLocation, .{_program, _name});
+    return @call(.always_tail, function_pointers.glGetAttribLocation, .{ _program, _name });
 }
 
 pub fn getProgramiv(_program: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetProgramiv, .{_program, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetProgramiv, .{ _program, _pname, _params });
 }
 
 pub fn getProgramInfoLog(_program: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _infoLog: [*c]GLchar) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetProgramInfoLog, .{_program, _bufSize, _length, _infoLog});
+    return @call(.always_tail, function_pointers.glGetProgramInfoLog, .{ _program, _bufSize, _length, _infoLog });
 }
 
 pub fn getShaderiv(_shader: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetShaderiv, .{_shader, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetShaderiv, .{ _shader, _pname, _params });
 }
 
 pub fn getShaderInfoLog(_shader: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _infoLog: [*c]GLchar) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetShaderInfoLog, .{_shader, _bufSize, _length, _infoLog});
+    return @call(.always_tail, function_pointers.glGetShaderInfoLog, .{ _shader, _bufSize, _length, _infoLog });
 }
 
 pub fn getShaderSource(_shader: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _source: [*c]GLchar) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetShaderSource, .{_shader, _bufSize, _length, _source});
+    return @call(.always_tail, function_pointers.glGetShaderSource, .{ _shader, _bufSize, _length, _source });
 }
 
 pub fn getUniformLocation(_program: GLuint, _name: [*c]const GLchar) callconv(.C) GLint {
-    return @call(.always_tail, function_pointers.glGetUniformLocation, .{_program, _name});
+    return @call(.always_tail, function_pointers.glGetUniformLocation, .{ _program, _name });
 }
 
 pub fn getUniformfv(_program: GLuint, _location: GLint, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetUniformfv, .{_program, _location, _params});
+    return @call(.always_tail, function_pointers.glGetUniformfv, .{ _program, _location, _params });
 }
 
 pub fn getUniformiv(_program: GLuint, _location: GLint, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetUniformiv, .{_program, _location, _params});
+    return @call(.always_tail, function_pointers.glGetUniformiv, .{ _program, _location, _params });
 }
 
 pub fn getVertexAttribdv(_index: GLuint, _pname: GLenum, _params: [*c]GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetVertexAttribdv, .{_index, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetVertexAttribdv, .{ _index, _pname, _params });
 }
 
 pub fn getVertexAttribfv(_index: GLuint, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetVertexAttribfv, .{_index, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetVertexAttribfv, .{ _index, _pname, _params });
 }
 
 pub fn getVertexAttribiv(_index: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetVertexAttribiv, .{_index, _pname, _params});
+    return @call(.always_tail, function_pointers.glGetVertexAttribiv, .{ _index, _pname, _params });
 }
 
 pub fn getVertexAttribPointerv(_index: GLuint, _pname: GLenum, _pointer: ?*?*anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glGetVertexAttribPointerv, .{_index, _pname, _pointer});
+    return @call(.always_tail, function_pointers.glGetVertexAttribPointerv, .{ _index, _pname, _pointer });
 }
 
 pub fn isProgram(_program: GLuint) callconv(.C) GLboolean {
@@ -2890,7 +2888,7 @@ pub fn linkProgram(_program: GLuint) callconv(.C) void {
 }
 
 pub fn shaderSource(_shader: GLuint, _count: GLsizei, _string: [*c]const [*c]const GLchar, _length: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glShaderSource, .{_shader, _count, _string, _length});
+    return @call(.always_tail, function_pointers.glShaderSource, .{ _shader, _count, _string, _length });
 }
 
 pub fn useProgram(_program: GLuint) callconv(.C) void {
@@ -2898,79 +2896,79 @@ pub fn useProgram(_program: GLuint) callconv(.C) void {
 }
 
 pub fn uniform1f(_location: GLint, _v0: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform1f, .{_location, _v0});
+    return @call(.always_tail, function_pointers.glUniform1f, .{ _location, _v0 });
 }
 
 pub fn uniform2f(_location: GLint, _v0: GLfloat, _v1: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform2f, .{_location, _v0, _v1});
+    return @call(.always_tail, function_pointers.glUniform2f, .{ _location, _v0, _v1 });
 }
 
 pub fn uniform3f(_location: GLint, _v0: GLfloat, _v1: GLfloat, _v2: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform3f, .{_location, _v0, _v1, _v2});
+    return @call(.always_tail, function_pointers.glUniform3f, .{ _location, _v0, _v1, _v2 });
 }
 
 pub fn uniform4f(_location: GLint, _v0: GLfloat, _v1: GLfloat, _v2: GLfloat, _v3: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform4f, .{_location, _v0, _v1, _v2, _v3});
+    return @call(.always_tail, function_pointers.glUniform4f, .{ _location, _v0, _v1, _v2, _v3 });
 }
 
 pub fn uniform1i(_location: GLint, _v0: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform1i, .{_location, _v0});
+    return @call(.always_tail, function_pointers.glUniform1i, .{ _location, _v0 });
 }
 
 pub fn uniform2i(_location: GLint, _v0: GLint, _v1: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform2i, .{_location, _v0, _v1});
+    return @call(.always_tail, function_pointers.glUniform2i, .{ _location, _v0, _v1 });
 }
 
 pub fn uniform3i(_location: GLint, _v0: GLint, _v1: GLint, _v2: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform3i, .{_location, _v0, _v1, _v2});
+    return @call(.always_tail, function_pointers.glUniform3i, .{ _location, _v0, _v1, _v2 });
 }
 
 pub fn uniform4i(_location: GLint, _v0: GLint, _v1: GLint, _v2: GLint, _v3: GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform4i, .{_location, _v0, _v1, _v2, _v3});
+    return @call(.always_tail, function_pointers.glUniform4i, .{ _location, _v0, _v1, _v2, _v3 });
 }
 
 pub fn uniform1fv(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform1fv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform1fv, .{ _location, _count, _value });
 }
 
 pub fn uniform2fv(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform2fv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform2fv, .{ _location, _count, _value });
 }
 
 pub fn uniform3fv(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform3fv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform3fv, .{ _location, _count, _value });
 }
 
 pub fn uniform4fv(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform4fv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform4fv, .{ _location, _count, _value });
 }
 
 pub fn uniform1iv(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform1iv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform1iv, .{ _location, _count, _value });
 }
 
 pub fn uniform2iv(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform2iv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform2iv, .{ _location, _count, _value });
 }
 
 pub fn uniform3iv(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform3iv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform3iv, .{ _location, _count, _value });
 }
 
 pub fn uniform4iv(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniform4iv, .{_location, _count, _value});
+    return @call(.always_tail, function_pointers.glUniform4iv, .{ _location, _count, _value });
 }
 
 pub fn uniformMatrix2fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix2fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix2fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix3fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix3fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix3fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix4fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix4fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix4fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn validateProgram(_program: GLuint) callconv(.C) void {
@@ -2978,4043 +2976,4043 @@ pub fn validateProgram(_program: GLuint) callconv(.C) void {
 }
 
 pub fn vertexAttrib1d(_index: GLuint, _x: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib1d, .{_index, _x});
+    return @call(.always_tail, function_pointers.glVertexAttrib1d, .{ _index, _x });
 }
 
 pub fn vertexAttrib1dv(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib1dv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib1dv, .{ _index, _v });
 }
 
 pub fn vertexAttrib1f(_index: GLuint, _x: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib1f, .{_index, _x});
+    return @call(.always_tail, function_pointers.glVertexAttrib1f, .{ _index, _x });
 }
 
 pub fn vertexAttrib1fv(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib1fv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib1fv, .{ _index, _v });
 }
 
 pub fn vertexAttrib1s(_index: GLuint, _x: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib1s, .{_index, _x});
+    return @call(.always_tail, function_pointers.glVertexAttrib1s, .{ _index, _x });
 }
 
 pub fn vertexAttrib1sv(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib1sv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib1sv, .{ _index, _v });
 }
 
 pub fn vertexAttrib2d(_index: GLuint, _x: GLdouble, _y: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib2d, .{_index, _x, _y});
+    return @call(.always_tail, function_pointers.glVertexAttrib2d, .{ _index, _x, _y });
 }
 
 pub fn vertexAttrib2dv(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib2dv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib2dv, .{ _index, _v });
 }
 
 pub fn vertexAttrib2f(_index: GLuint, _x: GLfloat, _y: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib2f, .{_index, _x, _y});
+    return @call(.always_tail, function_pointers.glVertexAttrib2f, .{ _index, _x, _y });
 }
 
 pub fn vertexAttrib2fv(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib2fv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib2fv, .{ _index, _v });
 }
 
 pub fn vertexAttrib2s(_index: GLuint, _x: GLshort, _y: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib2s, .{_index, _x, _y});
+    return @call(.always_tail, function_pointers.glVertexAttrib2s, .{ _index, _x, _y });
 }
 
 pub fn vertexAttrib2sv(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib2sv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib2sv, .{ _index, _v });
 }
 
 pub fn vertexAttrib3d(_index: GLuint, _x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib3d, .{_index, _x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertexAttrib3d, .{ _index, _x, _y, _z });
 }
 
 pub fn vertexAttrib3dv(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib3dv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib3dv, .{ _index, _v });
 }
 
 pub fn vertexAttrib3f(_index: GLuint, _x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib3f, .{_index, _x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertexAttrib3f, .{ _index, _x, _y, _z });
 }
 
 pub fn vertexAttrib3fv(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib3fv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib3fv, .{ _index, _v });
 }
 
 pub fn vertexAttrib3s(_index: GLuint, _x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib3s, .{_index, _x, _y, _z});
+    return @call(.always_tail, function_pointers.glVertexAttrib3s, .{ _index, _x, _y, _z });
 }
 
 pub fn vertexAttrib3sv(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib3sv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib3sv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4Nbv(_index: GLuint, _v: [*c]const GLbyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Nbv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Nbv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4Niv(_index: GLuint, _v: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Niv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Niv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4Nsv(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Nsv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Nsv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4Nub(_index: GLuint, _x: GLubyte, _y: GLubyte, _z: GLubyte, _w: GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Nub, .{_index, _x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Nub, .{ _index, _x, _y, _z, _w });
 }
 
 pub fn vertexAttrib4Nubv(_index: GLuint, _v: ?[*:0]const GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Nubv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Nubv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4Nuiv(_index: GLuint, _v: [*c]const GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Nuiv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Nuiv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4Nusv(_index: GLuint, _v: [*c]const GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4Nusv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4Nusv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4bv(_index: GLuint, _v: [*c]const GLbyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4bv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4bv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4d(_index: GLuint, _x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4d, .{_index, _x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertexAttrib4d, .{ _index, _x, _y, _z, _w });
 }
 
 pub fn vertexAttrib4dv(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4dv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4dv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4f(_index: GLuint, _x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4f, .{_index, _x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertexAttrib4f, .{ _index, _x, _y, _z, _w });
 }
 
 pub fn vertexAttrib4fv(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4fv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4fv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4iv(_index: GLuint, _v: [*c]const GLint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4iv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4iv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4s(_index: GLuint, _x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4s, .{_index, _x, _y, _z, _w});
+    return @call(.always_tail, function_pointers.glVertexAttrib4s, .{ _index, _x, _y, _z, _w });
 }
 
 pub fn vertexAttrib4sv(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4sv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4sv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4ubv(_index: GLuint, _v: ?[*:0]const GLubyte) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4ubv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4ubv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4uiv(_index: GLuint, _v: [*c]const GLuint) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4uiv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4uiv, .{ _index, _v });
 }
 
 pub fn vertexAttrib4usv(_index: GLuint, _v: [*c]const GLushort) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttrib4usv, .{_index, _v});
+    return @call(.always_tail, function_pointers.glVertexAttrib4usv, .{ _index, _v });
 }
 
 pub fn vertexAttribPointer(_index: GLuint, _size: GLint, _type: GLenum, _normalized: GLboolean, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glVertexAttribPointer, .{_index, _size, _type, _normalized, _stride, _pointer});
+    return @call(.always_tail, function_pointers.glVertexAttribPointer, .{ _index, _size, _type, _normalized, _stride, _pointer });
 }
 
 pub fn uniformMatrix2x3fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix2x3fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix2x3fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix3x2fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix3x2fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix3x2fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix2x4fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix2x4fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix2x4fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix4x2fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix4x2fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix4x2fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix3x4fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix3x4fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix3x4fv, .{ _location, _count, _transpose, _value });
 }
 
 pub fn uniformMatrix4x3fv(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void {
-    return @call(.always_tail, function_pointers.glUniformMatrix4x3fv, .{_location, _count, _transpose, _value});
+    return @call(.always_tail, function_pointers.glUniformMatrix4x3fv, .{ _location, _count, _transpose, _value });
 }
 // Extensions:
 
 // Loader API:
-pub fn load(load_ctx: anytype, get_proc_address: fn(@TypeOf(load_ctx), [:0]const u8) ?FunctionPointer) !void {
+pub fn load(load_ctx: anytype, get_proc_address: fn (@TypeOf(load_ctx), [:0]const u8) ?FunctionPointer) !void {
     var success = true;
-    if(get_proc_address(load_ctx, "glCullFace")) |proc| {
+    if (get_proc_address(load_ctx, "glCullFace")) |proc| {
         function_pointers.glCullFace = @ptrCast(proc);
     } else {
         log.err("entry point glCullFace not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFrontFace")) |proc| {
+    if (get_proc_address(load_ctx, "glFrontFace")) |proc| {
         function_pointers.glFrontFace = @ptrCast(proc);
     } else {
         log.err("entry point glFrontFace not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glHint")) |proc| {
+    if (get_proc_address(load_ctx, "glHint")) |proc| {
         function_pointers.glHint = @ptrCast(proc);
     } else {
         log.err("entry point glHint not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLineWidth")) |proc| {
+    if (get_proc_address(load_ctx, "glLineWidth")) |proc| {
         function_pointers.glLineWidth = @ptrCast(proc);
     } else {
         log.err("entry point glLineWidth not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPointSize")) |proc| {
+    if (get_proc_address(load_ctx, "glPointSize")) |proc| {
         function_pointers.glPointSize = @ptrCast(proc);
     } else {
         log.err("entry point glPointSize not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPolygonMode")) |proc| {
+    if (get_proc_address(load_ctx, "glPolygonMode")) |proc| {
         function_pointers.glPolygonMode = @ptrCast(proc);
     } else {
         log.err("entry point glPolygonMode not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glScissor")) |proc| {
+    if (get_proc_address(load_ctx, "glScissor")) |proc| {
         function_pointers.glScissor = @ptrCast(proc);
     } else {
         log.err("entry point glScissor not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexParameterf")) |proc| {
+    if (get_proc_address(load_ctx, "glTexParameterf")) |proc| {
         function_pointers.glTexParameterf = @ptrCast(proc);
     } else {
         log.err("entry point glTexParameterf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexParameterfv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexParameterfv")) |proc| {
         function_pointers.glTexParameterfv = @ptrCast(proc);
     } else {
         log.err("entry point glTexParameterfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexParameteri")) |proc| {
+    if (get_proc_address(load_ctx, "glTexParameteri")) |proc| {
         function_pointers.glTexParameteri = @ptrCast(proc);
     } else {
         log.err("entry point glTexParameteri not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexParameteriv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexParameteriv")) |proc| {
         function_pointers.glTexParameteriv = @ptrCast(proc);
     } else {
         log.err("entry point glTexParameteriv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexImage1D")) |proc| {
+    if (get_proc_address(load_ctx, "glTexImage1D")) |proc| {
         function_pointers.glTexImage1D = @ptrCast(proc);
     } else {
         log.err("entry point glTexImage1D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexImage2D")) |proc| {
+    if (get_proc_address(load_ctx, "glTexImage2D")) |proc| {
         function_pointers.glTexImage2D = @ptrCast(proc);
     } else {
         log.err("entry point glTexImage2D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDrawBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glDrawBuffer")) |proc| {
         function_pointers.glDrawBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glDrawBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClear")) |proc| {
+    if (get_proc_address(load_ctx, "glClear")) |proc| {
         function_pointers.glClear = @ptrCast(proc);
     } else {
         log.err("entry point glClear not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClearColor")) |proc| {
+    if (get_proc_address(load_ctx, "glClearColor")) |proc| {
         function_pointers.glClearColor = @ptrCast(proc);
     } else {
         log.err("entry point glClearColor not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClearStencil")) |proc| {
+    if (get_proc_address(load_ctx, "glClearStencil")) |proc| {
         function_pointers.glClearStencil = @ptrCast(proc);
     } else {
         log.err("entry point glClearStencil not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClearDepth")) |proc| {
+    if (get_proc_address(load_ctx, "glClearDepth")) |proc| {
         function_pointers.glClearDepth = @ptrCast(proc);
     } else {
         log.err("entry point glClearDepth not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glStencilMask")) |proc| {
+    if (get_proc_address(load_ctx, "glStencilMask")) |proc| {
         function_pointers.glStencilMask = @ptrCast(proc);
     } else {
         log.err("entry point glStencilMask not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColorMask")) |proc| {
+    if (get_proc_address(load_ctx, "glColorMask")) |proc| {
         function_pointers.glColorMask = @ptrCast(proc);
     } else {
         log.err("entry point glColorMask not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDepthMask")) |proc| {
+    if (get_proc_address(load_ctx, "glDepthMask")) |proc| {
         function_pointers.glDepthMask = @ptrCast(proc);
     } else {
         log.err("entry point glDepthMask not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDisable")) |proc| {
+    if (get_proc_address(load_ctx, "glDisable")) |proc| {
         function_pointers.glDisable = @ptrCast(proc);
     } else {
         log.err("entry point glDisable not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEnable")) |proc| {
+    if (get_proc_address(load_ctx, "glEnable")) |proc| {
         function_pointers.glEnable = @ptrCast(proc);
     } else {
         log.err("entry point glEnable not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFinish")) |proc| {
+    if (get_proc_address(load_ctx, "glFinish")) |proc| {
         function_pointers.glFinish = @ptrCast(proc);
     } else {
         log.err("entry point glFinish not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFlush")) |proc| {
+    if (get_proc_address(load_ctx, "glFlush")) |proc| {
         function_pointers.glFlush = @ptrCast(proc);
     } else {
         log.err("entry point glFlush not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBlendFunc")) |proc| {
+    if (get_proc_address(load_ctx, "glBlendFunc")) |proc| {
         function_pointers.glBlendFunc = @ptrCast(proc);
     } else {
         log.err("entry point glBlendFunc not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLogicOp")) |proc| {
+    if (get_proc_address(load_ctx, "glLogicOp")) |proc| {
         function_pointers.glLogicOp = @ptrCast(proc);
     } else {
         log.err("entry point glLogicOp not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glStencilFunc")) |proc| {
+    if (get_proc_address(load_ctx, "glStencilFunc")) |proc| {
         function_pointers.glStencilFunc = @ptrCast(proc);
     } else {
         log.err("entry point glStencilFunc not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glStencilOp")) |proc| {
+    if (get_proc_address(load_ctx, "glStencilOp")) |proc| {
         function_pointers.glStencilOp = @ptrCast(proc);
     } else {
         log.err("entry point glStencilOp not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDepthFunc")) |proc| {
+    if (get_proc_address(load_ctx, "glDepthFunc")) |proc| {
         function_pointers.glDepthFunc = @ptrCast(proc);
     } else {
         log.err("entry point glDepthFunc not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelStoref")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelStoref")) |proc| {
         function_pointers.glPixelStoref = @ptrCast(proc);
     } else {
         log.err("entry point glPixelStoref not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelStorei")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelStorei")) |proc| {
         function_pointers.glPixelStorei = @ptrCast(proc);
     } else {
         log.err("entry point glPixelStorei not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glReadBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glReadBuffer")) |proc| {
         function_pointers.glReadBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glReadBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glReadPixels")) |proc| {
+    if (get_proc_address(load_ctx, "glReadPixels")) |proc| {
         function_pointers.glReadPixels = @ptrCast(proc);
     } else {
         log.err("entry point glReadPixels not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetBooleanv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetBooleanv")) |proc| {
         function_pointers.glGetBooleanv = @ptrCast(proc);
     } else {
         log.err("entry point glGetBooleanv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetDoublev")) |proc| {
+    if (get_proc_address(load_ctx, "glGetDoublev")) |proc| {
         function_pointers.glGetDoublev = @ptrCast(proc);
     } else {
         log.err("entry point glGetDoublev not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetError")) |proc| {
+    if (get_proc_address(load_ctx, "glGetError")) |proc| {
         function_pointers.glGetError = @ptrCast(proc);
     } else {
         log.err("entry point glGetError not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetFloatv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetFloatv")) |proc| {
         function_pointers.glGetFloatv = @ptrCast(proc);
     } else {
         log.err("entry point glGetFloatv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetIntegerv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetIntegerv")) |proc| {
         function_pointers.glGetIntegerv = @ptrCast(proc);
     } else {
         log.err("entry point glGetIntegerv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetString")) |proc| {
+    if (get_proc_address(load_ctx, "glGetString")) |proc| {
         function_pointers.glGetString = @ptrCast(proc);
     } else {
         log.err("entry point glGetString not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexImage")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexImage")) |proc| {
         function_pointers.glGetTexImage = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexImage not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexParameterfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexParameterfv")) |proc| {
         function_pointers.glGetTexParameterfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexParameterfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexParameteriv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexParameteriv")) |proc| {
         function_pointers.glGetTexParameteriv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexParameteriv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexLevelParameterfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexLevelParameterfv")) |proc| {
         function_pointers.glGetTexLevelParameterfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexLevelParameterfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexLevelParameteriv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexLevelParameteriv")) |proc| {
         function_pointers.glGetTexLevelParameteriv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexLevelParameteriv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsEnabled")) |proc| {
+    if (get_proc_address(load_ctx, "glIsEnabled")) |proc| {
         function_pointers.glIsEnabled = @ptrCast(proc);
     } else {
         log.err("entry point glIsEnabled not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDepthRange")) |proc| {
+    if (get_proc_address(load_ctx, "glDepthRange")) |proc| {
         function_pointers.glDepthRange = @ptrCast(proc);
     } else {
         log.err("entry point glDepthRange not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glViewport")) |proc| {
+    if (get_proc_address(load_ctx, "glViewport")) |proc| {
         function_pointers.glViewport = @ptrCast(proc);
     } else {
         log.err("entry point glViewport not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNewList")) |proc| {
+    if (get_proc_address(load_ctx, "glNewList")) |proc| {
         function_pointers.glNewList = @ptrCast(proc);
     } else {
         log.err("entry point glNewList not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEndList")) |proc| {
+    if (get_proc_address(load_ctx, "glEndList")) |proc| {
         function_pointers.glEndList = @ptrCast(proc);
     } else {
         log.err("entry point glEndList not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCallList")) |proc| {
+    if (get_proc_address(load_ctx, "glCallList")) |proc| {
         function_pointers.glCallList = @ptrCast(proc);
     } else {
         log.err("entry point glCallList not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCallLists")) |proc| {
+    if (get_proc_address(load_ctx, "glCallLists")) |proc| {
         function_pointers.glCallLists = @ptrCast(proc);
     } else {
         log.err("entry point glCallLists not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDeleteLists")) |proc| {
+    if (get_proc_address(load_ctx, "glDeleteLists")) |proc| {
         function_pointers.glDeleteLists = @ptrCast(proc);
     } else {
         log.err("entry point glDeleteLists not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGenLists")) |proc| {
+    if (get_proc_address(load_ctx, "glGenLists")) |proc| {
         function_pointers.glGenLists = @ptrCast(proc);
     } else {
         log.err("entry point glGenLists not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glListBase")) |proc| {
+    if (get_proc_address(load_ctx, "glListBase")) |proc| {
         function_pointers.glListBase = @ptrCast(proc);
     } else {
         log.err("entry point glListBase not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBegin")) |proc| {
+    if (get_proc_address(load_ctx, "glBegin")) |proc| {
         function_pointers.glBegin = @ptrCast(proc);
     } else {
         log.err("entry point glBegin not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBitmap")) |proc| {
+    if (get_proc_address(load_ctx, "glBitmap")) |proc| {
         function_pointers.glBitmap = @ptrCast(proc);
     } else {
         log.err("entry point glBitmap not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3b")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3b")) |proc| {
         function_pointers.glColor3b = @ptrCast(proc);
     } else {
         log.err("entry point glColor3b not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3bv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3bv")) |proc| {
         function_pointers.glColor3bv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3bv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3d")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3d")) |proc| {
         function_pointers.glColor3d = @ptrCast(proc);
     } else {
         log.err("entry point glColor3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3dv")) |proc| {
         function_pointers.glColor3dv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3f")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3f")) |proc| {
         function_pointers.glColor3f = @ptrCast(proc);
     } else {
         log.err("entry point glColor3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3fv")) |proc| {
         function_pointers.glColor3fv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3i")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3i")) |proc| {
         function_pointers.glColor3i = @ptrCast(proc);
     } else {
         log.err("entry point glColor3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3iv")) |proc| {
         function_pointers.glColor3iv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3s")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3s")) |proc| {
         function_pointers.glColor3s = @ptrCast(proc);
     } else {
         log.err("entry point glColor3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3sv")) |proc| {
         function_pointers.glColor3sv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3ub")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3ub")) |proc| {
         function_pointers.glColor3ub = @ptrCast(proc);
     } else {
         log.err("entry point glColor3ub not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3ubv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3ubv")) |proc| {
         function_pointers.glColor3ubv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3ubv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3ui")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3ui")) |proc| {
         function_pointers.glColor3ui = @ptrCast(proc);
     } else {
         log.err("entry point glColor3ui not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3uiv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3uiv")) |proc| {
         function_pointers.glColor3uiv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3uiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3us")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3us")) |proc| {
         function_pointers.glColor3us = @ptrCast(proc);
     } else {
         log.err("entry point glColor3us not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor3usv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor3usv")) |proc| {
         function_pointers.glColor3usv = @ptrCast(proc);
     } else {
         log.err("entry point glColor3usv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4b")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4b")) |proc| {
         function_pointers.glColor4b = @ptrCast(proc);
     } else {
         log.err("entry point glColor4b not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4bv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4bv")) |proc| {
         function_pointers.glColor4bv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4bv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4d")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4d")) |proc| {
         function_pointers.glColor4d = @ptrCast(proc);
     } else {
         log.err("entry point glColor4d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4dv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4dv")) |proc| {
         function_pointers.glColor4dv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4f")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4f")) |proc| {
         function_pointers.glColor4f = @ptrCast(proc);
     } else {
         log.err("entry point glColor4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4fv")) |proc| {
         function_pointers.glColor4fv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4i")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4i")) |proc| {
         function_pointers.glColor4i = @ptrCast(proc);
     } else {
         log.err("entry point glColor4i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4iv")) |proc| {
         function_pointers.glColor4iv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4s")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4s")) |proc| {
         function_pointers.glColor4s = @ptrCast(proc);
     } else {
         log.err("entry point glColor4s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4sv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4sv")) |proc| {
         function_pointers.glColor4sv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4ub")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4ub")) |proc| {
         function_pointers.glColor4ub = @ptrCast(proc);
     } else {
         log.err("entry point glColor4ub not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4ubv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4ubv")) |proc| {
         function_pointers.glColor4ubv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4ubv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4ui")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4ui")) |proc| {
         function_pointers.glColor4ui = @ptrCast(proc);
     } else {
         log.err("entry point glColor4ui not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4uiv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4uiv")) |proc| {
         function_pointers.glColor4uiv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4uiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4us")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4us")) |proc| {
         function_pointers.glColor4us = @ptrCast(proc);
     } else {
         log.err("entry point glColor4us not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColor4usv")) |proc| {
+    if (get_proc_address(load_ctx, "glColor4usv")) |proc| {
         function_pointers.glColor4usv = @ptrCast(proc);
     } else {
         log.err("entry point glColor4usv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEdgeFlag")) |proc| {
+    if (get_proc_address(load_ctx, "glEdgeFlag")) |proc| {
         function_pointers.glEdgeFlag = @ptrCast(proc);
     } else {
         log.err("entry point glEdgeFlag not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEdgeFlagv")) |proc| {
+    if (get_proc_address(load_ctx, "glEdgeFlagv")) |proc| {
         function_pointers.glEdgeFlagv = @ptrCast(proc);
     } else {
         log.err("entry point glEdgeFlagv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEnd")) |proc| {
+    if (get_proc_address(load_ctx, "glEnd")) |proc| {
         function_pointers.glEnd = @ptrCast(proc);
     } else {
         log.err("entry point glEnd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexd")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexd")) |proc| {
         function_pointers.glIndexd = @ptrCast(proc);
     } else {
         log.err("entry point glIndexd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexdv")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexdv")) |proc| {
         function_pointers.glIndexdv = @ptrCast(proc);
     } else {
         log.err("entry point glIndexdv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexf")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexf")) |proc| {
         function_pointers.glIndexf = @ptrCast(proc);
     } else {
         log.err("entry point glIndexf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexfv")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexfv")) |proc| {
         function_pointers.glIndexfv = @ptrCast(proc);
     } else {
         log.err("entry point glIndexfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexi")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexi")) |proc| {
         function_pointers.glIndexi = @ptrCast(proc);
     } else {
         log.err("entry point glIndexi not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexiv")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexiv")) |proc| {
         function_pointers.glIndexiv = @ptrCast(proc);
     } else {
         log.err("entry point glIndexiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexs")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexs")) |proc| {
         function_pointers.glIndexs = @ptrCast(proc);
     } else {
         log.err("entry point glIndexs not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexsv")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexsv")) |proc| {
         function_pointers.glIndexsv = @ptrCast(proc);
     } else {
         log.err("entry point glIndexsv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3b")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3b")) |proc| {
         function_pointers.glNormal3b = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3b not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3bv")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3bv")) |proc| {
         function_pointers.glNormal3bv = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3bv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3d")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3d")) |proc| {
         function_pointers.glNormal3d = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3dv")) |proc| {
         function_pointers.glNormal3dv = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3f")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3f")) |proc| {
         function_pointers.glNormal3f = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3fv")) |proc| {
         function_pointers.glNormal3fv = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3i")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3i")) |proc| {
         function_pointers.glNormal3i = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3iv")) |proc| {
         function_pointers.glNormal3iv = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3s")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3s")) |proc| {
         function_pointers.glNormal3s = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormal3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glNormal3sv")) |proc| {
         function_pointers.glNormal3sv = @ptrCast(proc);
     } else {
         log.err("entry point glNormal3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2d")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2d")) |proc| {
         function_pointers.glRasterPos2d = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2dv")) |proc| {
         function_pointers.glRasterPos2dv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2f")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2f")) |proc| {
         function_pointers.glRasterPos2f = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2fv")) |proc| {
         function_pointers.glRasterPos2fv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2i")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2i")) |proc| {
         function_pointers.glRasterPos2i = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2iv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2iv")) |proc| {
         function_pointers.glRasterPos2iv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2s")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2s")) |proc| {
         function_pointers.glRasterPos2s = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos2sv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos2sv")) |proc| {
         function_pointers.glRasterPos2sv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos2sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3d")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3d")) |proc| {
         function_pointers.glRasterPos3d = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3dv")) |proc| {
         function_pointers.glRasterPos3dv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3f")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3f")) |proc| {
         function_pointers.glRasterPos3f = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3fv")) |proc| {
         function_pointers.glRasterPos3fv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3i")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3i")) |proc| {
         function_pointers.glRasterPos3i = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3iv")) |proc| {
         function_pointers.glRasterPos3iv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3s")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3s")) |proc| {
         function_pointers.glRasterPos3s = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos3sv")) |proc| {
         function_pointers.glRasterPos3sv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4d")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4d")) |proc| {
         function_pointers.glRasterPos4d = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4dv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4dv")) |proc| {
         function_pointers.glRasterPos4dv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4f")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4f")) |proc| {
         function_pointers.glRasterPos4f = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4fv")) |proc| {
         function_pointers.glRasterPos4fv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4i")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4i")) |proc| {
         function_pointers.glRasterPos4i = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4iv")) |proc| {
         function_pointers.glRasterPos4iv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4s")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4s")) |proc| {
         function_pointers.glRasterPos4s = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRasterPos4sv")) |proc| {
+    if (get_proc_address(load_ctx, "glRasterPos4sv")) |proc| {
         function_pointers.glRasterPos4sv = @ptrCast(proc);
     } else {
         log.err("entry point glRasterPos4sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRectd")) |proc| {
+    if (get_proc_address(load_ctx, "glRectd")) |proc| {
         function_pointers.glRectd = @ptrCast(proc);
     } else {
         log.err("entry point glRectd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRectdv")) |proc| {
+    if (get_proc_address(load_ctx, "glRectdv")) |proc| {
         function_pointers.glRectdv = @ptrCast(proc);
     } else {
         log.err("entry point glRectdv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRectf")) |proc| {
+    if (get_proc_address(load_ctx, "glRectf")) |proc| {
         function_pointers.glRectf = @ptrCast(proc);
     } else {
         log.err("entry point glRectf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRectfv")) |proc| {
+    if (get_proc_address(load_ctx, "glRectfv")) |proc| {
         function_pointers.glRectfv = @ptrCast(proc);
     } else {
         log.err("entry point glRectfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRecti")) |proc| {
+    if (get_proc_address(load_ctx, "glRecti")) |proc| {
         function_pointers.glRecti = @ptrCast(proc);
     } else {
         log.err("entry point glRecti not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRectiv")) |proc| {
+    if (get_proc_address(load_ctx, "glRectiv")) |proc| {
         function_pointers.glRectiv = @ptrCast(proc);
     } else {
         log.err("entry point glRectiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRects")) |proc| {
+    if (get_proc_address(load_ctx, "glRects")) |proc| {
         function_pointers.glRects = @ptrCast(proc);
     } else {
         log.err("entry point glRects not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRectsv")) |proc| {
+    if (get_proc_address(load_ctx, "glRectsv")) |proc| {
         function_pointers.glRectsv = @ptrCast(proc);
     } else {
         log.err("entry point glRectsv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1d")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1d")) |proc| {
         function_pointers.glTexCoord1d = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1dv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1dv")) |proc| {
         function_pointers.glTexCoord1dv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1f")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1f")) |proc| {
         function_pointers.glTexCoord1f = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1fv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1fv")) |proc| {
         function_pointers.glTexCoord1fv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1i")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1i")) |proc| {
         function_pointers.glTexCoord1i = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1iv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1iv")) |proc| {
         function_pointers.glTexCoord1iv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1s")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1s")) |proc| {
         function_pointers.glTexCoord1s = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord1sv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord1sv")) |proc| {
         function_pointers.glTexCoord1sv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord1sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2d")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2d")) |proc| {
         function_pointers.glTexCoord2d = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2dv")) |proc| {
         function_pointers.glTexCoord2dv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2f")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2f")) |proc| {
         function_pointers.glTexCoord2f = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2fv")) |proc| {
         function_pointers.glTexCoord2fv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2i")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2i")) |proc| {
         function_pointers.glTexCoord2i = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2iv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2iv")) |proc| {
         function_pointers.glTexCoord2iv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2s")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2s")) |proc| {
         function_pointers.glTexCoord2s = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord2sv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord2sv")) |proc| {
         function_pointers.glTexCoord2sv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord2sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3d")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3d")) |proc| {
         function_pointers.glTexCoord3d = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3dv")) |proc| {
         function_pointers.glTexCoord3dv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3f")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3f")) |proc| {
         function_pointers.glTexCoord3f = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3fv")) |proc| {
         function_pointers.glTexCoord3fv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3i")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3i")) |proc| {
         function_pointers.glTexCoord3i = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3iv")) |proc| {
         function_pointers.glTexCoord3iv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3s")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3s")) |proc| {
         function_pointers.glTexCoord3s = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord3sv")) |proc| {
         function_pointers.glTexCoord3sv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4d")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4d")) |proc| {
         function_pointers.glTexCoord4d = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4dv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4dv")) |proc| {
         function_pointers.glTexCoord4dv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4f")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4f")) |proc| {
         function_pointers.glTexCoord4f = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4fv")) |proc| {
         function_pointers.glTexCoord4fv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4i")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4i")) |proc| {
         function_pointers.glTexCoord4i = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4iv")) |proc| {
         function_pointers.glTexCoord4iv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4s")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4s")) |proc| {
         function_pointers.glTexCoord4s = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoord4sv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoord4sv")) |proc| {
         function_pointers.glTexCoord4sv = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoord4sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2d")) |proc| {
         function_pointers.glVertex2d = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2dv")) |proc| {
         function_pointers.glVertex2dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2f")) |proc| {
         function_pointers.glVertex2f = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2fv")) |proc| {
         function_pointers.glVertex2fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2i")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2i")) |proc| {
         function_pointers.glVertex2i = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2iv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2iv")) |proc| {
         function_pointers.glVertex2iv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2s")) |proc| {
         function_pointers.glVertex2s = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex2sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex2sv")) |proc| {
         function_pointers.glVertex2sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex2sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3d")) |proc| {
         function_pointers.glVertex3d = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3dv")) |proc| {
         function_pointers.glVertex3dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3f")) |proc| {
         function_pointers.glVertex3f = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3fv")) |proc| {
         function_pointers.glVertex3fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3i")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3i")) |proc| {
         function_pointers.glVertex3i = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3iv")) |proc| {
         function_pointers.glVertex3iv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3s")) |proc| {
         function_pointers.glVertex3s = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex3sv")) |proc| {
         function_pointers.glVertex3sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4d")) |proc| {
         function_pointers.glVertex4d = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4dv")) |proc| {
         function_pointers.glVertex4dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4f")) |proc| {
         function_pointers.glVertex4f = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4fv")) |proc| {
         function_pointers.glVertex4fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4i")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4i")) |proc| {
         function_pointers.glVertex4i = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4iv")) |proc| {
         function_pointers.glVertex4iv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4s")) |proc| {
         function_pointers.glVertex4s = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertex4sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertex4sv")) |proc| {
         function_pointers.glVertex4sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertex4sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClipPlane")) |proc| {
+    if (get_proc_address(load_ctx, "glClipPlane")) |proc| {
         function_pointers.glClipPlane = @ptrCast(proc);
     } else {
         log.err("entry point glClipPlane not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColorMaterial")) |proc| {
+    if (get_proc_address(load_ctx, "glColorMaterial")) |proc| {
         function_pointers.glColorMaterial = @ptrCast(proc);
     } else {
         log.err("entry point glColorMaterial not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogf")) |proc| {
+    if (get_proc_address(load_ctx, "glFogf")) |proc| {
         function_pointers.glFogf = @ptrCast(proc);
     } else {
         log.err("entry point glFogf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogfv")) |proc| {
+    if (get_proc_address(load_ctx, "glFogfv")) |proc| {
         function_pointers.glFogfv = @ptrCast(proc);
     } else {
         log.err("entry point glFogfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogi")) |proc| {
+    if (get_proc_address(load_ctx, "glFogi")) |proc| {
         function_pointers.glFogi = @ptrCast(proc);
     } else {
         log.err("entry point glFogi not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogiv")) |proc| {
+    if (get_proc_address(load_ctx, "glFogiv")) |proc| {
         function_pointers.glFogiv = @ptrCast(proc);
     } else {
         log.err("entry point glFogiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightf")) |proc| {
+    if (get_proc_address(load_ctx, "glLightf")) |proc| {
         function_pointers.glLightf = @ptrCast(proc);
     } else {
         log.err("entry point glLightf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightfv")) |proc| {
+    if (get_proc_address(load_ctx, "glLightfv")) |proc| {
         function_pointers.glLightfv = @ptrCast(proc);
     } else {
         log.err("entry point glLightfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLighti")) |proc| {
+    if (get_proc_address(load_ctx, "glLighti")) |proc| {
         function_pointers.glLighti = @ptrCast(proc);
     } else {
         log.err("entry point glLighti not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightiv")) |proc| {
+    if (get_proc_address(load_ctx, "glLightiv")) |proc| {
         function_pointers.glLightiv = @ptrCast(proc);
     } else {
         log.err("entry point glLightiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightModelf")) |proc| {
+    if (get_proc_address(load_ctx, "glLightModelf")) |proc| {
         function_pointers.glLightModelf = @ptrCast(proc);
     } else {
         log.err("entry point glLightModelf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightModelfv")) |proc| {
+    if (get_proc_address(load_ctx, "glLightModelfv")) |proc| {
         function_pointers.glLightModelfv = @ptrCast(proc);
     } else {
         log.err("entry point glLightModelfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightModeli")) |proc| {
+    if (get_proc_address(load_ctx, "glLightModeli")) |proc| {
         function_pointers.glLightModeli = @ptrCast(proc);
     } else {
         log.err("entry point glLightModeli not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLightModeliv")) |proc| {
+    if (get_proc_address(load_ctx, "glLightModeliv")) |proc| {
         function_pointers.glLightModeliv = @ptrCast(proc);
     } else {
         log.err("entry point glLightModeliv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLineStipple")) |proc| {
+    if (get_proc_address(load_ctx, "glLineStipple")) |proc| {
         function_pointers.glLineStipple = @ptrCast(proc);
     } else {
         log.err("entry point glLineStipple not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMaterialf")) |proc| {
+    if (get_proc_address(load_ctx, "glMaterialf")) |proc| {
         function_pointers.glMaterialf = @ptrCast(proc);
     } else {
         log.err("entry point glMaterialf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMaterialfv")) |proc| {
+    if (get_proc_address(load_ctx, "glMaterialfv")) |proc| {
         function_pointers.glMaterialfv = @ptrCast(proc);
     } else {
         log.err("entry point glMaterialfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMateriali")) |proc| {
+    if (get_proc_address(load_ctx, "glMateriali")) |proc| {
         function_pointers.glMateriali = @ptrCast(proc);
     } else {
         log.err("entry point glMateriali not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMaterialiv")) |proc| {
+    if (get_proc_address(load_ctx, "glMaterialiv")) |proc| {
         function_pointers.glMaterialiv = @ptrCast(proc);
     } else {
         log.err("entry point glMaterialiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPolygonStipple")) |proc| {
+    if (get_proc_address(load_ctx, "glPolygonStipple")) |proc| {
         function_pointers.glPolygonStipple = @ptrCast(proc);
     } else {
         log.err("entry point glPolygonStipple not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glShadeModel")) |proc| {
+    if (get_proc_address(load_ctx, "glShadeModel")) |proc| {
         function_pointers.glShadeModel = @ptrCast(proc);
     } else {
         log.err("entry point glShadeModel not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexEnvf")) |proc| {
+    if (get_proc_address(load_ctx, "glTexEnvf")) |proc| {
         function_pointers.glTexEnvf = @ptrCast(proc);
     } else {
         log.err("entry point glTexEnvf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexEnvfv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexEnvfv")) |proc| {
         function_pointers.glTexEnvfv = @ptrCast(proc);
     } else {
         log.err("entry point glTexEnvfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexEnvi")) |proc| {
+    if (get_proc_address(load_ctx, "glTexEnvi")) |proc| {
         function_pointers.glTexEnvi = @ptrCast(proc);
     } else {
         log.err("entry point glTexEnvi not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexEnviv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexEnviv")) |proc| {
         function_pointers.glTexEnviv = @ptrCast(proc);
     } else {
         log.err("entry point glTexEnviv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexGend")) |proc| {
+    if (get_proc_address(load_ctx, "glTexGend")) |proc| {
         function_pointers.glTexGend = @ptrCast(proc);
     } else {
         log.err("entry point glTexGend not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexGendv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexGendv")) |proc| {
         function_pointers.glTexGendv = @ptrCast(proc);
     } else {
         log.err("entry point glTexGendv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexGenf")) |proc| {
+    if (get_proc_address(load_ctx, "glTexGenf")) |proc| {
         function_pointers.glTexGenf = @ptrCast(proc);
     } else {
         log.err("entry point glTexGenf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexGenfv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexGenfv")) |proc| {
         function_pointers.glTexGenfv = @ptrCast(proc);
     } else {
         log.err("entry point glTexGenfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexGeni")) |proc| {
+    if (get_proc_address(load_ctx, "glTexGeni")) |proc| {
         function_pointers.glTexGeni = @ptrCast(proc);
     } else {
         log.err("entry point glTexGeni not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexGeniv")) |proc| {
+    if (get_proc_address(load_ctx, "glTexGeniv")) |proc| {
         function_pointers.glTexGeniv = @ptrCast(proc);
     } else {
         log.err("entry point glTexGeniv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFeedbackBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glFeedbackBuffer")) |proc| {
         function_pointers.glFeedbackBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glFeedbackBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSelectBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glSelectBuffer")) |proc| {
         function_pointers.glSelectBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glSelectBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRenderMode")) |proc| {
+    if (get_proc_address(load_ctx, "glRenderMode")) |proc| {
         function_pointers.glRenderMode = @ptrCast(proc);
     } else {
         log.err("entry point glRenderMode not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glInitNames")) |proc| {
+    if (get_proc_address(load_ctx, "glInitNames")) |proc| {
         function_pointers.glInitNames = @ptrCast(proc);
     } else {
         log.err("entry point glInitNames not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLoadName")) |proc| {
+    if (get_proc_address(load_ctx, "glLoadName")) |proc| {
         function_pointers.glLoadName = @ptrCast(proc);
     } else {
         log.err("entry point glLoadName not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPassThrough")) |proc| {
+    if (get_proc_address(load_ctx, "glPassThrough")) |proc| {
         function_pointers.glPassThrough = @ptrCast(proc);
     } else {
         log.err("entry point glPassThrough not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPopName")) |proc| {
+    if (get_proc_address(load_ctx, "glPopName")) |proc| {
         function_pointers.glPopName = @ptrCast(proc);
     } else {
         log.err("entry point glPopName not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPushName")) |proc| {
+    if (get_proc_address(load_ctx, "glPushName")) |proc| {
         function_pointers.glPushName = @ptrCast(proc);
     } else {
         log.err("entry point glPushName not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClearAccum")) |proc| {
+    if (get_proc_address(load_ctx, "glClearAccum")) |proc| {
         function_pointers.glClearAccum = @ptrCast(proc);
     } else {
         log.err("entry point glClearAccum not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClearIndex")) |proc| {
+    if (get_proc_address(load_ctx, "glClearIndex")) |proc| {
         function_pointers.glClearIndex = @ptrCast(proc);
     } else {
         log.err("entry point glClearIndex not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexMask")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexMask")) |proc| {
         function_pointers.glIndexMask = @ptrCast(proc);
     } else {
         log.err("entry point glIndexMask not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glAccum")) |proc| {
+    if (get_proc_address(load_ctx, "glAccum")) |proc| {
         function_pointers.glAccum = @ptrCast(proc);
     } else {
         log.err("entry point glAccum not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPopAttrib")) |proc| {
+    if (get_proc_address(load_ctx, "glPopAttrib")) |proc| {
         function_pointers.glPopAttrib = @ptrCast(proc);
     } else {
         log.err("entry point glPopAttrib not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPushAttrib")) |proc| {
+    if (get_proc_address(load_ctx, "glPushAttrib")) |proc| {
         function_pointers.glPushAttrib = @ptrCast(proc);
     } else {
         log.err("entry point glPushAttrib not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMap1d")) |proc| {
+    if (get_proc_address(load_ctx, "glMap1d")) |proc| {
         function_pointers.glMap1d = @ptrCast(proc);
     } else {
         log.err("entry point glMap1d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMap1f")) |proc| {
+    if (get_proc_address(load_ctx, "glMap1f")) |proc| {
         function_pointers.glMap1f = @ptrCast(proc);
     } else {
         log.err("entry point glMap1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMap2d")) |proc| {
+    if (get_proc_address(load_ctx, "glMap2d")) |proc| {
         function_pointers.glMap2d = @ptrCast(proc);
     } else {
         log.err("entry point glMap2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMap2f")) |proc| {
+    if (get_proc_address(load_ctx, "glMap2f")) |proc| {
         function_pointers.glMap2f = @ptrCast(proc);
     } else {
         log.err("entry point glMap2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMapGrid1d")) |proc| {
+    if (get_proc_address(load_ctx, "glMapGrid1d")) |proc| {
         function_pointers.glMapGrid1d = @ptrCast(proc);
     } else {
         log.err("entry point glMapGrid1d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMapGrid1f")) |proc| {
+    if (get_proc_address(load_ctx, "glMapGrid1f")) |proc| {
         function_pointers.glMapGrid1f = @ptrCast(proc);
     } else {
         log.err("entry point glMapGrid1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMapGrid2d")) |proc| {
+    if (get_proc_address(load_ctx, "glMapGrid2d")) |proc| {
         function_pointers.glMapGrid2d = @ptrCast(proc);
     } else {
         log.err("entry point glMapGrid2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMapGrid2f")) |proc| {
+    if (get_proc_address(load_ctx, "glMapGrid2f")) |proc| {
         function_pointers.glMapGrid2f = @ptrCast(proc);
     } else {
         log.err("entry point glMapGrid2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord1d")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord1d")) |proc| {
         function_pointers.glEvalCoord1d = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord1d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord1dv")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord1dv")) |proc| {
         function_pointers.glEvalCoord1dv = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord1dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord1f")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord1f")) |proc| {
         function_pointers.glEvalCoord1f = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord1fv")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord1fv")) |proc| {
         function_pointers.glEvalCoord1fv = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord1fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord2d")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord2d")) |proc| {
         function_pointers.glEvalCoord2d = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord2dv")) |proc| {
         function_pointers.glEvalCoord2dv = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord2f")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord2f")) |proc| {
         function_pointers.glEvalCoord2f = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalCoord2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalCoord2fv")) |proc| {
         function_pointers.glEvalCoord2fv = @ptrCast(proc);
     } else {
         log.err("entry point glEvalCoord2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalMesh1")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalMesh1")) |proc| {
         function_pointers.glEvalMesh1 = @ptrCast(proc);
     } else {
         log.err("entry point glEvalMesh1 not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalPoint1")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalPoint1")) |proc| {
         function_pointers.glEvalPoint1 = @ptrCast(proc);
     } else {
         log.err("entry point glEvalPoint1 not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalMesh2")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalMesh2")) |proc| {
         function_pointers.glEvalMesh2 = @ptrCast(proc);
     } else {
         log.err("entry point glEvalMesh2 not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEvalPoint2")) |proc| {
+    if (get_proc_address(load_ctx, "glEvalPoint2")) |proc| {
         function_pointers.glEvalPoint2 = @ptrCast(proc);
     } else {
         log.err("entry point glEvalPoint2 not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glAlphaFunc")) |proc| {
+    if (get_proc_address(load_ctx, "glAlphaFunc")) |proc| {
         function_pointers.glAlphaFunc = @ptrCast(proc);
     } else {
         log.err("entry point glAlphaFunc not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelZoom")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelZoom")) |proc| {
         function_pointers.glPixelZoom = @ptrCast(proc);
     } else {
         log.err("entry point glPixelZoom not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelTransferf")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelTransferf")) |proc| {
         function_pointers.glPixelTransferf = @ptrCast(proc);
     } else {
         log.err("entry point glPixelTransferf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelTransferi")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelTransferi")) |proc| {
         function_pointers.glPixelTransferi = @ptrCast(proc);
     } else {
         log.err("entry point glPixelTransferi not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelMapfv")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelMapfv")) |proc| {
         function_pointers.glPixelMapfv = @ptrCast(proc);
     } else {
         log.err("entry point glPixelMapfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelMapuiv")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelMapuiv")) |proc| {
         function_pointers.glPixelMapuiv = @ptrCast(proc);
     } else {
         log.err("entry point glPixelMapuiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPixelMapusv")) |proc| {
+    if (get_proc_address(load_ctx, "glPixelMapusv")) |proc| {
         function_pointers.glPixelMapusv = @ptrCast(proc);
     } else {
         log.err("entry point glPixelMapusv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCopyPixels")) |proc| {
+    if (get_proc_address(load_ctx, "glCopyPixels")) |proc| {
         function_pointers.glCopyPixels = @ptrCast(proc);
     } else {
         log.err("entry point glCopyPixels not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDrawPixels")) |proc| {
+    if (get_proc_address(load_ctx, "glDrawPixels")) |proc| {
         function_pointers.glDrawPixels = @ptrCast(proc);
     } else {
         log.err("entry point glDrawPixels not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetClipPlane")) |proc| {
+    if (get_proc_address(load_ctx, "glGetClipPlane")) |proc| {
         function_pointers.glGetClipPlane = @ptrCast(proc);
     } else {
         log.err("entry point glGetClipPlane not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetLightfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetLightfv")) |proc| {
         function_pointers.glGetLightfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetLightfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetLightiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetLightiv")) |proc| {
         function_pointers.glGetLightiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetLightiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetMapdv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetMapdv")) |proc| {
         function_pointers.glGetMapdv = @ptrCast(proc);
     } else {
         log.err("entry point glGetMapdv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetMapfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetMapfv")) |proc| {
         function_pointers.glGetMapfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetMapfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetMapiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetMapiv")) |proc| {
         function_pointers.glGetMapiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetMapiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetMaterialfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetMaterialfv")) |proc| {
         function_pointers.glGetMaterialfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetMaterialfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetMaterialiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetMaterialiv")) |proc| {
         function_pointers.glGetMaterialiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetMaterialiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetPixelMapfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetPixelMapfv")) |proc| {
         function_pointers.glGetPixelMapfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetPixelMapfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetPixelMapuiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetPixelMapuiv")) |proc| {
         function_pointers.glGetPixelMapuiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetPixelMapuiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetPixelMapusv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetPixelMapusv")) |proc| {
         function_pointers.glGetPixelMapusv = @ptrCast(proc);
     } else {
         log.err("entry point glGetPixelMapusv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetPolygonStipple")) |proc| {
+    if (get_proc_address(load_ctx, "glGetPolygonStipple")) |proc| {
         function_pointers.glGetPolygonStipple = @ptrCast(proc);
     } else {
         log.err("entry point glGetPolygonStipple not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexEnvfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexEnvfv")) |proc| {
         function_pointers.glGetTexEnvfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexEnvfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexEnviv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexEnviv")) |proc| {
         function_pointers.glGetTexEnviv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexEnviv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexGendv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexGendv")) |proc| {
         function_pointers.glGetTexGendv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexGendv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexGenfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexGenfv")) |proc| {
         function_pointers.glGetTexGenfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexGenfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetTexGeniv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetTexGeniv")) |proc| {
         function_pointers.glGetTexGeniv = @ptrCast(proc);
     } else {
         log.err("entry point glGetTexGeniv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsList")) |proc| {
+    if (get_proc_address(load_ctx, "glIsList")) |proc| {
         function_pointers.glIsList = @ptrCast(proc);
     } else {
         log.err("entry point glIsList not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFrustum")) |proc| {
+    if (get_proc_address(load_ctx, "glFrustum")) |proc| {
         function_pointers.glFrustum = @ptrCast(proc);
     } else {
         log.err("entry point glFrustum not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLoadIdentity")) |proc| {
+    if (get_proc_address(load_ctx, "glLoadIdentity")) |proc| {
         function_pointers.glLoadIdentity = @ptrCast(proc);
     } else {
         log.err("entry point glLoadIdentity not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLoadMatrixf")) |proc| {
+    if (get_proc_address(load_ctx, "glLoadMatrixf")) |proc| {
         function_pointers.glLoadMatrixf = @ptrCast(proc);
     } else {
         log.err("entry point glLoadMatrixf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLoadMatrixd")) |proc| {
+    if (get_proc_address(load_ctx, "glLoadMatrixd")) |proc| {
         function_pointers.glLoadMatrixd = @ptrCast(proc);
     } else {
         log.err("entry point glLoadMatrixd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMatrixMode")) |proc| {
+    if (get_proc_address(load_ctx, "glMatrixMode")) |proc| {
         function_pointers.glMatrixMode = @ptrCast(proc);
     } else {
         log.err("entry point glMatrixMode not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultMatrixf")) |proc| {
+    if (get_proc_address(load_ctx, "glMultMatrixf")) |proc| {
         function_pointers.glMultMatrixf = @ptrCast(proc);
     } else {
         log.err("entry point glMultMatrixf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultMatrixd")) |proc| {
+    if (get_proc_address(load_ctx, "glMultMatrixd")) |proc| {
         function_pointers.glMultMatrixd = @ptrCast(proc);
     } else {
         log.err("entry point glMultMatrixd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glOrtho")) |proc| {
+    if (get_proc_address(load_ctx, "glOrtho")) |proc| {
         function_pointers.glOrtho = @ptrCast(proc);
     } else {
         log.err("entry point glOrtho not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPopMatrix")) |proc| {
+    if (get_proc_address(load_ctx, "glPopMatrix")) |proc| {
         function_pointers.glPopMatrix = @ptrCast(proc);
     } else {
         log.err("entry point glPopMatrix not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPushMatrix")) |proc| {
+    if (get_proc_address(load_ctx, "glPushMatrix")) |proc| {
         function_pointers.glPushMatrix = @ptrCast(proc);
     } else {
         log.err("entry point glPushMatrix not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRotated")) |proc| {
+    if (get_proc_address(load_ctx, "glRotated")) |proc| {
         function_pointers.glRotated = @ptrCast(proc);
     } else {
         log.err("entry point glRotated not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glRotatef")) |proc| {
+    if (get_proc_address(load_ctx, "glRotatef")) |proc| {
         function_pointers.glRotatef = @ptrCast(proc);
     } else {
         log.err("entry point glRotatef not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glScaled")) |proc| {
+    if (get_proc_address(load_ctx, "glScaled")) |proc| {
         function_pointers.glScaled = @ptrCast(proc);
     } else {
         log.err("entry point glScaled not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glScalef")) |proc| {
+    if (get_proc_address(load_ctx, "glScalef")) |proc| {
         function_pointers.glScalef = @ptrCast(proc);
     } else {
         log.err("entry point glScalef not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTranslated")) |proc| {
+    if (get_proc_address(load_ctx, "glTranslated")) |proc| {
         function_pointers.glTranslated = @ptrCast(proc);
     } else {
         log.err("entry point glTranslated not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTranslatef")) |proc| {
+    if (get_proc_address(load_ctx, "glTranslatef")) |proc| {
         function_pointers.glTranslatef = @ptrCast(proc);
     } else {
         log.err("entry point glTranslatef not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDrawArrays")) |proc| {
+    if (get_proc_address(load_ctx, "glDrawArrays")) |proc| {
         function_pointers.glDrawArrays = @ptrCast(proc);
     } else {
         log.err("entry point glDrawArrays not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDrawElements")) |proc| {
+    if (get_proc_address(load_ctx, "glDrawElements")) |proc| {
         function_pointers.glDrawElements = @ptrCast(proc);
     } else {
         log.err("entry point glDrawElements not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetPointerv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetPointerv")) |proc| {
         function_pointers.glGetPointerv = @ptrCast(proc);
     } else {
         log.err("entry point glGetPointerv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPolygonOffset")) |proc| {
+    if (get_proc_address(load_ctx, "glPolygonOffset")) |proc| {
         function_pointers.glPolygonOffset = @ptrCast(proc);
     } else {
         log.err("entry point glPolygonOffset not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCopyTexImage1D")) |proc| {
+    if (get_proc_address(load_ctx, "glCopyTexImage1D")) |proc| {
         function_pointers.glCopyTexImage1D = @ptrCast(proc);
     } else {
         log.err("entry point glCopyTexImage1D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCopyTexImage2D")) |proc| {
+    if (get_proc_address(load_ctx, "glCopyTexImage2D")) |proc| {
         function_pointers.glCopyTexImage2D = @ptrCast(proc);
     } else {
         log.err("entry point glCopyTexImage2D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCopyTexSubImage1D")) |proc| {
+    if (get_proc_address(load_ctx, "glCopyTexSubImage1D")) |proc| {
         function_pointers.glCopyTexSubImage1D = @ptrCast(proc);
     } else {
         log.err("entry point glCopyTexSubImage1D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCopyTexSubImage2D")) |proc| {
+    if (get_proc_address(load_ctx, "glCopyTexSubImage2D")) |proc| {
         function_pointers.glCopyTexSubImage2D = @ptrCast(proc);
     } else {
         log.err("entry point glCopyTexSubImage2D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexSubImage1D")) |proc| {
+    if (get_proc_address(load_ctx, "glTexSubImage1D")) |proc| {
         function_pointers.glTexSubImage1D = @ptrCast(proc);
     } else {
         log.err("entry point glTexSubImage1D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexSubImage2D")) |proc| {
+    if (get_proc_address(load_ctx, "glTexSubImage2D")) |proc| {
         function_pointers.glTexSubImage2D = @ptrCast(proc);
     } else {
         log.err("entry point glTexSubImage2D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBindTexture")) |proc| {
+    if (get_proc_address(load_ctx, "glBindTexture")) |proc| {
         function_pointers.glBindTexture = @ptrCast(proc);
     } else {
         log.err("entry point glBindTexture not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDeleteTextures")) |proc| {
+    if (get_proc_address(load_ctx, "glDeleteTextures")) |proc| {
         function_pointers.glDeleteTextures = @ptrCast(proc);
     } else {
         log.err("entry point glDeleteTextures not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGenTextures")) |proc| {
+    if (get_proc_address(load_ctx, "glGenTextures")) |proc| {
         function_pointers.glGenTextures = @ptrCast(proc);
     } else {
         log.err("entry point glGenTextures not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsTexture")) |proc| {
+    if (get_proc_address(load_ctx, "glIsTexture")) |proc| {
         function_pointers.glIsTexture = @ptrCast(proc);
     } else {
         log.err("entry point glIsTexture not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glArrayElement")) |proc| {
+    if (get_proc_address(load_ctx, "glArrayElement")) |proc| {
         function_pointers.glArrayElement = @ptrCast(proc);
     } else {
         log.err("entry point glArrayElement not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glColorPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glColorPointer")) |proc| {
         function_pointers.glColorPointer = @ptrCast(proc);
     } else {
         log.err("entry point glColorPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDisableClientState")) |proc| {
+    if (get_proc_address(load_ctx, "glDisableClientState")) |proc| {
         function_pointers.glDisableClientState = @ptrCast(proc);
     } else {
         log.err("entry point glDisableClientState not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEdgeFlagPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glEdgeFlagPointer")) |proc| {
         function_pointers.glEdgeFlagPointer = @ptrCast(proc);
     } else {
         log.err("entry point glEdgeFlagPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEnableClientState")) |proc| {
+    if (get_proc_address(load_ctx, "glEnableClientState")) |proc| {
         function_pointers.glEnableClientState = @ptrCast(proc);
     } else {
         log.err("entry point glEnableClientState not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexPointer")) |proc| {
         function_pointers.glIndexPointer = @ptrCast(proc);
     } else {
         log.err("entry point glIndexPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glInterleavedArrays")) |proc| {
+    if (get_proc_address(load_ctx, "glInterleavedArrays")) |proc| {
         function_pointers.glInterleavedArrays = @ptrCast(proc);
     } else {
         log.err("entry point glInterleavedArrays not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glNormalPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glNormalPointer")) |proc| {
         function_pointers.glNormalPointer = @ptrCast(proc);
     } else {
         log.err("entry point glNormalPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexCoordPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glTexCoordPointer")) |proc| {
         function_pointers.glTexCoordPointer = @ptrCast(proc);
     } else {
         log.err("entry point glTexCoordPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexPointer")) |proc| {
         function_pointers.glVertexPointer = @ptrCast(proc);
     } else {
         log.err("entry point glVertexPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glAreTexturesResident")) |proc| {
+    if (get_proc_address(load_ctx, "glAreTexturesResident")) |proc| {
         function_pointers.glAreTexturesResident = @ptrCast(proc);
     } else {
         log.err("entry point glAreTexturesResident not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPrioritizeTextures")) |proc| {
+    if (get_proc_address(load_ctx, "glPrioritizeTextures")) |proc| {
         function_pointers.glPrioritizeTextures = @ptrCast(proc);
     } else {
         log.err("entry point glPrioritizeTextures not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexub")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexub")) |proc| {
         function_pointers.glIndexub = @ptrCast(proc);
     } else {
         log.err("entry point glIndexub not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIndexubv")) |proc| {
+    if (get_proc_address(load_ctx, "glIndexubv")) |proc| {
         function_pointers.glIndexubv = @ptrCast(proc);
     } else {
         log.err("entry point glIndexubv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPopClientAttrib")) |proc| {
+    if (get_proc_address(load_ctx, "glPopClientAttrib")) |proc| {
         function_pointers.glPopClientAttrib = @ptrCast(proc);
     } else {
         log.err("entry point glPopClientAttrib not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPushClientAttrib")) |proc| {
+    if (get_proc_address(load_ctx, "glPushClientAttrib")) |proc| {
         function_pointers.glPushClientAttrib = @ptrCast(proc);
     } else {
         log.err("entry point glPushClientAttrib not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDrawRangeElements")) |proc| {
+    if (get_proc_address(load_ctx, "glDrawRangeElements")) |proc| {
         function_pointers.glDrawRangeElements = @ptrCast(proc);
     } else {
         log.err("entry point glDrawRangeElements not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexImage3D")) |proc| {
+    if (get_proc_address(load_ctx, "glTexImage3D")) |proc| {
         function_pointers.glTexImage3D = @ptrCast(proc);
     } else {
         log.err("entry point glTexImage3D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glTexSubImage3D")) |proc| {
+    if (get_proc_address(load_ctx, "glTexSubImage3D")) |proc| {
         function_pointers.glTexSubImage3D = @ptrCast(proc);
     } else {
         log.err("entry point glTexSubImage3D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCopyTexSubImage3D")) |proc| {
+    if (get_proc_address(load_ctx, "glCopyTexSubImage3D")) |proc| {
         function_pointers.glCopyTexSubImage3D = @ptrCast(proc);
     } else {
         log.err("entry point glCopyTexSubImage3D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glActiveTexture")) |proc| {
+    if (get_proc_address(load_ctx, "glActiveTexture")) |proc| {
         function_pointers.glActiveTexture = @ptrCast(proc);
     } else {
         log.err("entry point glActiveTexture not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSampleCoverage")) |proc| {
+    if (get_proc_address(load_ctx, "glSampleCoverage")) |proc| {
         function_pointers.glSampleCoverage = @ptrCast(proc);
     } else {
         log.err("entry point glSampleCoverage not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompressedTexImage3D")) |proc| {
+    if (get_proc_address(load_ctx, "glCompressedTexImage3D")) |proc| {
         function_pointers.glCompressedTexImage3D = @ptrCast(proc);
     } else {
         log.err("entry point glCompressedTexImage3D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompressedTexImage2D")) |proc| {
+    if (get_proc_address(load_ctx, "glCompressedTexImage2D")) |proc| {
         function_pointers.glCompressedTexImage2D = @ptrCast(proc);
     } else {
         log.err("entry point glCompressedTexImage2D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompressedTexImage1D")) |proc| {
+    if (get_proc_address(load_ctx, "glCompressedTexImage1D")) |proc| {
         function_pointers.glCompressedTexImage1D = @ptrCast(proc);
     } else {
         log.err("entry point glCompressedTexImage1D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompressedTexSubImage3D")) |proc| {
+    if (get_proc_address(load_ctx, "glCompressedTexSubImage3D")) |proc| {
         function_pointers.glCompressedTexSubImage3D = @ptrCast(proc);
     } else {
         log.err("entry point glCompressedTexSubImage3D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompressedTexSubImage2D")) |proc| {
+    if (get_proc_address(load_ctx, "glCompressedTexSubImage2D")) |proc| {
         function_pointers.glCompressedTexSubImage2D = @ptrCast(proc);
     } else {
         log.err("entry point glCompressedTexSubImage2D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompressedTexSubImage1D")) |proc| {
+    if (get_proc_address(load_ctx, "glCompressedTexSubImage1D")) |proc| {
         function_pointers.glCompressedTexSubImage1D = @ptrCast(proc);
     } else {
         log.err("entry point glCompressedTexSubImage1D not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetCompressedTexImage")) |proc| {
+    if (get_proc_address(load_ctx, "glGetCompressedTexImage")) |proc| {
         function_pointers.glGetCompressedTexImage = @ptrCast(proc);
     } else {
         log.err("entry point glGetCompressedTexImage not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glClientActiveTexture")) |proc| {
+    if (get_proc_address(load_ctx, "glClientActiveTexture")) |proc| {
         function_pointers.glClientActiveTexture = @ptrCast(proc);
     } else {
         log.err("entry point glClientActiveTexture not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1d")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1d")) |proc| {
         function_pointers.glMultiTexCoord1d = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1dv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1dv")) |proc| {
         function_pointers.glMultiTexCoord1dv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1f")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1f")) |proc| {
         function_pointers.glMultiTexCoord1f = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1fv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1fv")) |proc| {
         function_pointers.glMultiTexCoord1fv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1i")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1i")) |proc| {
         function_pointers.glMultiTexCoord1i = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1iv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1iv")) |proc| {
         function_pointers.glMultiTexCoord1iv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1s")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1s")) |proc| {
         function_pointers.glMultiTexCoord1s = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord1sv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord1sv")) |proc| {
         function_pointers.glMultiTexCoord1sv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord1sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2d")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2d")) |proc| {
         function_pointers.glMultiTexCoord2d = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2dv")) |proc| {
         function_pointers.glMultiTexCoord2dv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2f")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2f")) |proc| {
         function_pointers.glMultiTexCoord2f = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2fv")) |proc| {
         function_pointers.glMultiTexCoord2fv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2i")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2i")) |proc| {
         function_pointers.glMultiTexCoord2i = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2iv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2iv")) |proc| {
         function_pointers.glMultiTexCoord2iv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2s")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2s")) |proc| {
         function_pointers.glMultiTexCoord2s = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord2sv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord2sv")) |proc| {
         function_pointers.glMultiTexCoord2sv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord2sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3d")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3d")) |proc| {
         function_pointers.glMultiTexCoord3d = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3dv")) |proc| {
         function_pointers.glMultiTexCoord3dv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3f")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3f")) |proc| {
         function_pointers.glMultiTexCoord3f = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3fv")) |proc| {
         function_pointers.glMultiTexCoord3fv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3i")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3i")) |proc| {
         function_pointers.glMultiTexCoord3i = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3iv")) |proc| {
         function_pointers.glMultiTexCoord3iv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3s")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3s")) |proc| {
         function_pointers.glMultiTexCoord3s = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord3sv")) |proc| {
         function_pointers.glMultiTexCoord3sv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4d")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4d")) |proc| {
         function_pointers.glMultiTexCoord4d = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4dv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4dv")) |proc| {
         function_pointers.glMultiTexCoord4dv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4f")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4f")) |proc| {
         function_pointers.glMultiTexCoord4f = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4fv")) |proc| {
         function_pointers.glMultiTexCoord4fv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4i")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4i")) |proc| {
         function_pointers.glMultiTexCoord4i = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4iv")) |proc| {
         function_pointers.glMultiTexCoord4iv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4s")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4s")) |proc| {
         function_pointers.glMultiTexCoord4s = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiTexCoord4sv")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiTexCoord4sv")) |proc| {
         function_pointers.glMultiTexCoord4sv = @ptrCast(proc);
     } else {
         log.err("entry point glMultiTexCoord4sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLoadTransposeMatrixf")) |proc| {
+    if (get_proc_address(load_ctx, "glLoadTransposeMatrixf")) |proc| {
         function_pointers.glLoadTransposeMatrixf = @ptrCast(proc);
     } else {
         log.err("entry point glLoadTransposeMatrixf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLoadTransposeMatrixd")) |proc| {
+    if (get_proc_address(load_ctx, "glLoadTransposeMatrixd")) |proc| {
         function_pointers.glLoadTransposeMatrixd = @ptrCast(proc);
     } else {
         log.err("entry point glLoadTransposeMatrixd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultTransposeMatrixf")) |proc| {
+    if (get_proc_address(load_ctx, "glMultTransposeMatrixf")) |proc| {
         function_pointers.glMultTransposeMatrixf = @ptrCast(proc);
     } else {
         log.err("entry point glMultTransposeMatrixf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultTransposeMatrixd")) |proc| {
+    if (get_proc_address(load_ctx, "glMultTransposeMatrixd")) |proc| {
         function_pointers.glMultTransposeMatrixd = @ptrCast(proc);
     } else {
         log.err("entry point glMultTransposeMatrixd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBlendFuncSeparate")) |proc| {
+    if (get_proc_address(load_ctx, "glBlendFuncSeparate")) |proc| {
         function_pointers.glBlendFuncSeparate = @ptrCast(proc);
     } else {
         log.err("entry point glBlendFuncSeparate not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiDrawArrays")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiDrawArrays")) |proc| {
         function_pointers.glMultiDrawArrays = @ptrCast(proc);
     } else {
         log.err("entry point glMultiDrawArrays not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMultiDrawElements")) |proc| {
+    if (get_proc_address(load_ctx, "glMultiDrawElements")) |proc| {
         function_pointers.glMultiDrawElements = @ptrCast(proc);
     } else {
         log.err("entry point glMultiDrawElements not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPointParameterf")) |proc| {
+    if (get_proc_address(load_ctx, "glPointParameterf")) |proc| {
         function_pointers.glPointParameterf = @ptrCast(proc);
     } else {
         log.err("entry point glPointParameterf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPointParameterfv")) |proc| {
+    if (get_proc_address(load_ctx, "glPointParameterfv")) |proc| {
         function_pointers.glPointParameterfv = @ptrCast(proc);
     } else {
         log.err("entry point glPointParameterfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPointParameteri")) |proc| {
+    if (get_proc_address(load_ctx, "glPointParameteri")) |proc| {
         function_pointers.glPointParameteri = @ptrCast(proc);
     } else {
         log.err("entry point glPointParameteri not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glPointParameteriv")) |proc| {
+    if (get_proc_address(load_ctx, "glPointParameteriv")) |proc| {
         function_pointers.glPointParameteriv = @ptrCast(proc);
     } else {
         log.err("entry point glPointParameteriv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogCoordf")) |proc| {
+    if (get_proc_address(load_ctx, "glFogCoordf")) |proc| {
         function_pointers.glFogCoordf = @ptrCast(proc);
     } else {
         log.err("entry point glFogCoordf not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogCoordfv")) |proc| {
+    if (get_proc_address(load_ctx, "glFogCoordfv")) |proc| {
         function_pointers.glFogCoordfv = @ptrCast(proc);
     } else {
         log.err("entry point glFogCoordfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogCoordd")) |proc| {
+    if (get_proc_address(load_ctx, "glFogCoordd")) |proc| {
         function_pointers.glFogCoordd = @ptrCast(proc);
     } else {
         log.err("entry point glFogCoordd not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogCoorddv")) |proc| {
+    if (get_proc_address(load_ctx, "glFogCoorddv")) |proc| {
         function_pointers.glFogCoorddv = @ptrCast(proc);
     } else {
         log.err("entry point glFogCoorddv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glFogCoordPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glFogCoordPointer")) |proc| {
         function_pointers.glFogCoordPointer = @ptrCast(proc);
     } else {
         log.err("entry point glFogCoordPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3b")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3b")) |proc| {
         function_pointers.glSecondaryColor3b = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3b not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3bv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3bv")) |proc| {
         function_pointers.glSecondaryColor3bv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3bv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3d")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3d")) |proc| {
         function_pointers.glSecondaryColor3d = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3dv")) |proc| {
         function_pointers.glSecondaryColor3dv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3f")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3f")) |proc| {
         function_pointers.glSecondaryColor3f = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3fv")) |proc| {
         function_pointers.glSecondaryColor3fv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3i")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3i")) |proc| {
         function_pointers.glSecondaryColor3i = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3iv")) |proc| {
         function_pointers.glSecondaryColor3iv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3s")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3s")) |proc| {
         function_pointers.glSecondaryColor3s = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3sv")) |proc| {
         function_pointers.glSecondaryColor3sv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3ub")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3ub")) |proc| {
         function_pointers.glSecondaryColor3ub = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3ub not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3ubv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3ubv")) |proc| {
         function_pointers.glSecondaryColor3ubv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3ubv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3ui")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3ui")) |proc| {
         function_pointers.glSecondaryColor3ui = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3ui not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3uiv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3uiv")) |proc| {
         function_pointers.glSecondaryColor3uiv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3uiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3us")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3us")) |proc| {
         function_pointers.glSecondaryColor3us = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3us not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColor3usv")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColor3usv")) |proc| {
         function_pointers.glSecondaryColor3usv = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColor3usv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glSecondaryColorPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glSecondaryColorPointer")) |proc| {
         function_pointers.glSecondaryColorPointer = @ptrCast(proc);
     } else {
         log.err("entry point glSecondaryColorPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2d")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2d")) |proc| {
         function_pointers.glWindowPos2d = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2dv")) |proc| {
         function_pointers.glWindowPos2dv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2f")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2f")) |proc| {
         function_pointers.glWindowPos2f = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2fv")) |proc| {
         function_pointers.glWindowPos2fv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2i")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2i")) |proc| {
         function_pointers.glWindowPos2i = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2iv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2iv")) |proc| {
         function_pointers.glWindowPos2iv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2s")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2s")) |proc| {
         function_pointers.glWindowPos2s = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos2sv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos2sv")) |proc| {
         function_pointers.glWindowPos2sv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos2sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3d")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3d")) |proc| {
         function_pointers.glWindowPos3d = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3dv")) |proc| {
         function_pointers.glWindowPos3dv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3f")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3f")) |proc| {
         function_pointers.glWindowPos3f = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3fv")) |proc| {
         function_pointers.glWindowPos3fv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3i")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3i")) |proc| {
         function_pointers.glWindowPos3i = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3iv")) |proc| {
         function_pointers.glWindowPos3iv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3s")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3s")) |proc| {
         function_pointers.glWindowPos3s = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glWindowPos3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glWindowPos3sv")) |proc| {
         function_pointers.glWindowPos3sv = @ptrCast(proc);
     } else {
         log.err("entry point glWindowPos3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBlendColor")) |proc| {
+    if (get_proc_address(load_ctx, "glBlendColor")) |proc| {
         function_pointers.glBlendColor = @ptrCast(proc);
     } else {
         log.err("entry point glBlendColor not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBlendEquation")) |proc| {
+    if (get_proc_address(load_ctx, "glBlendEquation")) |proc| {
         function_pointers.glBlendEquation = @ptrCast(proc);
     } else {
         log.err("entry point glBlendEquation not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGenQueries")) |proc| {
+    if (get_proc_address(load_ctx, "glGenQueries")) |proc| {
         function_pointers.glGenQueries = @ptrCast(proc);
     } else {
         log.err("entry point glGenQueries not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDeleteQueries")) |proc| {
+    if (get_proc_address(load_ctx, "glDeleteQueries")) |proc| {
         function_pointers.glDeleteQueries = @ptrCast(proc);
     } else {
         log.err("entry point glDeleteQueries not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsQuery")) |proc| {
+    if (get_proc_address(load_ctx, "glIsQuery")) |proc| {
         function_pointers.glIsQuery = @ptrCast(proc);
     } else {
         log.err("entry point glIsQuery not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBeginQuery")) |proc| {
+    if (get_proc_address(load_ctx, "glBeginQuery")) |proc| {
         function_pointers.glBeginQuery = @ptrCast(proc);
     } else {
         log.err("entry point glBeginQuery not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEndQuery")) |proc| {
+    if (get_proc_address(load_ctx, "glEndQuery")) |proc| {
         function_pointers.glEndQuery = @ptrCast(proc);
     } else {
         log.err("entry point glEndQuery not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetQueryiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetQueryiv")) |proc| {
         function_pointers.glGetQueryiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetQueryiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetQueryObjectiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetQueryObjectiv")) |proc| {
         function_pointers.glGetQueryObjectiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetQueryObjectiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetQueryObjectuiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetQueryObjectuiv")) |proc| {
         function_pointers.glGetQueryObjectuiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetQueryObjectuiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBindBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glBindBuffer")) |proc| {
         function_pointers.glBindBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glBindBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDeleteBuffers")) |proc| {
+    if (get_proc_address(load_ctx, "glDeleteBuffers")) |proc| {
         function_pointers.glDeleteBuffers = @ptrCast(proc);
     } else {
         log.err("entry point glDeleteBuffers not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGenBuffers")) |proc| {
+    if (get_proc_address(load_ctx, "glGenBuffers")) |proc| {
         function_pointers.glGenBuffers = @ptrCast(proc);
     } else {
         log.err("entry point glGenBuffers not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glIsBuffer")) |proc| {
         function_pointers.glIsBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glIsBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBufferData")) |proc| {
+    if (get_proc_address(load_ctx, "glBufferData")) |proc| {
         function_pointers.glBufferData = @ptrCast(proc);
     } else {
         log.err("entry point glBufferData not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBufferSubData")) |proc| {
+    if (get_proc_address(load_ctx, "glBufferSubData")) |proc| {
         function_pointers.glBufferSubData = @ptrCast(proc);
     } else {
         log.err("entry point glBufferSubData not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetBufferSubData")) |proc| {
+    if (get_proc_address(load_ctx, "glGetBufferSubData")) |proc| {
         function_pointers.glGetBufferSubData = @ptrCast(proc);
     } else {
         log.err("entry point glGetBufferSubData not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glMapBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glMapBuffer")) |proc| {
         function_pointers.glMapBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glMapBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUnmapBuffer")) |proc| {
+    if (get_proc_address(load_ctx, "glUnmapBuffer")) |proc| {
         function_pointers.glUnmapBuffer = @ptrCast(proc);
     } else {
         log.err("entry point glUnmapBuffer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetBufferParameteriv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetBufferParameteriv")) |proc| {
         function_pointers.glGetBufferParameteriv = @ptrCast(proc);
     } else {
         log.err("entry point glGetBufferParameteriv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetBufferPointerv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetBufferPointerv")) |proc| {
         function_pointers.glGetBufferPointerv = @ptrCast(proc);
     } else {
         log.err("entry point glGetBufferPointerv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBlendEquationSeparate")) |proc| {
+    if (get_proc_address(load_ctx, "glBlendEquationSeparate")) |proc| {
         function_pointers.glBlendEquationSeparate = @ptrCast(proc);
     } else {
         log.err("entry point glBlendEquationSeparate not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDrawBuffers")) |proc| {
+    if (get_proc_address(load_ctx, "glDrawBuffers")) |proc| {
         function_pointers.glDrawBuffers = @ptrCast(proc);
     } else {
         log.err("entry point glDrawBuffers not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glStencilOpSeparate")) |proc| {
+    if (get_proc_address(load_ctx, "glStencilOpSeparate")) |proc| {
         function_pointers.glStencilOpSeparate = @ptrCast(proc);
     } else {
         log.err("entry point glStencilOpSeparate not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glStencilFuncSeparate")) |proc| {
+    if (get_proc_address(load_ctx, "glStencilFuncSeparate")) |proc| {
         function_pointers.glStencilFuncSeparate = @ptrCast(proc);
     } else {
         log.err("entry point glStencilFuncSeparate not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glStencilMaskSeparate")) |proc| {
+    if (get_proc_address(load_ctx, "glStencilMaskSeparate")) |proc| {
         function_pointers.glStencilMaskSeparate = @ptrCast(proc);
     } else {
         log.err("entry point glStencilMaskSeparate not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glAttachShader")) |proc| {
+    if (get_proc_address(load_ctx, "glAttachShader")) |proc| {
         function_pointers.glAttachShader = @ptrCast(proc);
     } else {
         log.err("entry point glAttachShader not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glBindAttribLocation")) |proc| {
+    if (get_proc_address(load_ctx, "glBindAttribLocation")) |proc| {
         function_pointers.glBindAttribLocation = @ptrCast(proc);
     } else {
         log.err("entry point glBindAttribLocation not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCompileShader")) |proc| {
+    if (get_proc_address(load_ctx, "glCompileShader")) |proc| {
         function_pointers.glCompileShader = @ptrCast(proc);
     } else {
         log.err("entry point glCompileShader not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCreateProgram")) |proc| {
+    if (get_proc_address(load_ctx, "glCreateProgram")) |proc| {
         function_pointers.glCreateProgram = @ptrCast(proc);
     } else {
         log.err("entry point glCreateProgram not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glCreateShader")) |proc| {
+    if (get_proc_address(load_ctx, "glCreateShader")) |proc| {
         function_pointers.glCreateShader = @ptrCast(proc);
     } else {
         log.err("entry point glCreateShader not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDeleteProgram")) |proc| {
+    if (get_proc_address(load_ctx, "glDeleteProgram")) |proc| {
         function_pointers.glDeleteProgram = @ptrCast(proc);
     } else {
         log.err("entry point glDeleteProgram not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDeleteShader")) |proc| {
+    if (get_proc_address(load_ctx, "glDeleteShader")) |proc| {
         function_pointers.glDeleteShader = @ptrCast(proc);
     } else {
         log.err("entry point glDeleteShader not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDetachShader")) |proc| {
+    if (get_proc_address(load_ctx, "glDetachShader")) |proc| {
         function_pointers.glDetachShader = @ptrCast(proc);
     } else {
         log.err("entry point glDetachShader not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glDisableVertexAttribArray")) |proc| {
+    if (get_proc_address(load_ctx, "glDisableVertexAttribArray")) |proc| {
         function_pointers.glDisableVertexAttribArray = @ptrCast(proc);
     } else {
         log.err("entry point glDisableVertexAttribArray not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glEnableVertexAttribArray")) |proc| {
+    if (get_proc_address(load_ctx, "glEnableVertexAttribArray")) |proc| {
         function_pointers.glEnableVertexAttribArray = @ptrCast(proc);
     } else {
         log.err("entry point glEnableVertexAttribArray not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetActiveAttrib")) |proc| {
+    if (get_proc_address(load_ctx, "glGetActiveAttrib")) |proc| {
         function_pointers.glGetActiveAttrib = @ptrCast(proc);
     } else {
         log.err("entry point glGetActiveAttrib not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetActiveUniform")) |proc| {
+    if (get_proc_address(load_ctx, "glGetActiveUniform")) |proc| {
         function_pointers.glGetActiveUniform = @ptrCast(proc);
     } else {
         log.err("entry point glGetActiveUniform not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetAttachedShaders")) |proc| {
+    if (get_proc_address(load_ctx, "glGetAttachedShaders")) |proc| {
         function_pointers.glGetAttachedShaders = @ptrCast(proc);
     } else {
         log.err("entry point glGetAttachedShaders not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetAttribLocation")) |proc| {
+    if (get_proc_address(load_ctx, "glGetAttribLocation")) |proc| {
         function_pointers.glGetAttribLocation = @ptrCast(proc);
     } else {
         log.err("entry point glGetAttribLocation not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetProgramiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetProgramiv")) |proc| {
         function_pointers.glGetProgramiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetProgramiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetProgramInfoLog")) |proc| {
+    if (get_proc_address(load_ctx, "glGetProgramInfoLog")) |proc| {
         function_pointers.glGetProgramInfoLog = @ptrCast(proc);
     } else {
         log.err("entry point glGetProgramInfoLog not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetShaderiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetShaderiv")) |proc| {
         function_pointers.glGetShaderiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetShaderiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetShaderInfoLog")) |proc| {
+    if (get_proc_address(load_ctx, "glGetShaderInfoLog")) |proc| {
         function_pointers.glGetShaderInfoLog = @ptrCast(proc);
     } else {
         log.err("entry point glGetShaderInfoLog not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetShaderSource")) |proc| {
+    if (get_proc_address(load_ctx, "glGetShaderSource")) |proc| {
         function_pointers.glGetShaderSource = @ptrCast(proc);
     } else {
         log.err("entry point glGetShaderSource not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetUniformLocation")) |proc| {
+    if (get_proc_address(load_ctx, "glGetUniformLocation")) |proc| {
         function_pointers.glGetUniformLocation = @ptrCast(proc);
     } else {
         log.err("entry point glGetUniformLocation not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetUniformfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetUniformfv")) |proc| {
         function_pointers.glGetUniformfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetUniformfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetUniformiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetUniformiv")) |proc| {
         function_pointers.glGetUniformiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetUniformiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetVertexAttribdv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetVertexAttribdv")) |proc| {
         function_pointers.glGetVertexAttribdv = @ptrCast(proc);
     } else {
         log.err("entry point glGetVertexAttribdv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetVertexAttribfv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetVertexAttribfv")) |proc| {
         function_pointers.glGetVertexAttribfv = @ptrCast(proc);
     } else {
         log.err("entry point glGetVertexAttribfv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetVertexAttribiv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetVertexAttribiv")) |proc| {
         function_pointers.glGetVertexAttribiv = @ptrCast(proc);
     } else {
         log.err("entry point glGetVertexAttribiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glGetVertexAttribPointerv")) |proc| {
+    if (get_proc_address(load_ctx, "glGetVertexAttribPointerv")) |proc| {
         function_pointers.glGetVertexAttribPointerv = @ptrCast(proc);
     } else {
         log.err("entry point glGetVertexAttribPointerv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsProgram")) |proc| {
+    if (get_proc_address(load_ctx, "glIsProgram")) |proc| {
         function_pointers.glIsProgram = @ptrCast(proc);
     } else {
         log.err("entry point glIsProgram not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glIsShader")) |proc| {
+    if (get_proc_address(load_ctx, "glIsShader")) |proc| {
         function_pointers.glIsShader = @ptrCast(proc);
     } else {
         log.err("entry point glIsShader not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glLinkProgram")) |proc| {
+    if (get_proc_address(load_ctx, "glLinkProgram")) |proc| {
         function_pointers.glLinkProgram = @ptrCast(proc);
     } else {
         log.err("entry point glLinkProgram not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glShaderSource")) |proc| {
+    if (get_proc_address(load_ctx, "glShaderSource")) |proc| {
         function_pointers.glShaderSource = @ptrCast(proc);
     } else {
         log.err("entry point glShaderSource not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUseProgram")) |proc| {
+    if (get_proc_address(load_ctx, "glUseProgram")) |proc| {
         function_pointers.glUseProgram = @ptrCast(proc);
     } else {
         log.err("entry point glUseProgram not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform1f")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform1f")) |proc| {
         function_pointers.glUniform1f = @ptrCast(proc);
     } else {
         log.err("entry point glUniform1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform2f")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform2f")) |proc| {
         function_pointers.glUniform2f = @ptrCast(proc);
     } else {
         log.err("entry point glUniform2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform3f")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform3f")) |proc| {
         function_pointers.glUniform3f = @ptrCast(proc);
     } else {
         log.err("entry point glUniform3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform4f")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform4f")) |proc| {
         function_pointers.glUniform4f = @ptrCast(proc);
     } else {
         log.err("entry point glUniform4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform1i")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform1i")) |proc| {
         function_pointers.glUniform1i = @ptrCast(proc);
     } else {
         log.err("entry point glUniform1i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform2i")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform2i")) |proc| {
         function_pointers.glUniform2i = @ptrCast(proc);
     } else {
         log.err("entry point glUniform2i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform3i")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform3i")) |proc| {
         function_pointers.glUniform3i = @ptrCast(proc);
     } else {
         log.err("entry point glUniform3i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform4i")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform4i")) |proc| {
         function_pointers.glUniform4i = @ptrCast(proc);
     } else {
         log.err("entry point glUniform4i not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform1fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform1fv")) |proc| {
         function_pointers.glUniform1fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform1fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform2fv")) |proc| {
         function_pointers.glUniform2fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform3fv")) |proc| {
         function_pointers.glUniform3fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform4fv")) |proc| {
         function_pointers.glUniform4fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform1iv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform1iv")) |proc| {
         function_pointers.glUniform1iv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform1iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform2iv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform2iv")) |proc| {
         function_pointers.glUniform2iv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform2iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform3iv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform3iv")) |proc| {
         function_pointers.glUniform3iv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform3iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniform4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniform4iv")) |proc| {
         function_pointers.glUniform4iv = @ptrCast(proc);
     } else {
         log.err("entry point glUniform4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix2fv")) |proc| {
         function_pointers.glUniformMatrix2fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix3fv")) |proc| {
         function_pointers.glUniformMatrix3fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix4fv")) |proc| {
         function_pointers.glUniformMatrix4fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glValidateProgram")) |proc| {
+    if (get_proc_address(load_ctx, "glValidateProgram")) |proc| {
         function_pointers.glValidateProgram = @ptrCast(proc);
     } else {
         log.err("entry point glValidateProgram not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib1d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib1d")) |proc| {
         function_pointers.glVertexAttrib1d = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib1d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib1dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib1dv")) |proc| {
         function_pointers.glVertexAttrib1dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib1dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib1f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib1f")) |proc| {
         function_pointers.glVertexAttrib1f = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib1f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib1fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib1fv")) |proc| {
         function_pointers.glVertexAttrib1fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib1fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib1s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib1s")) |proc| {
         function_pointers.glVertexAttrib1s = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib1s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib1sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib1sv")) |proc| {
         function_pointers.glVertexAttrib1sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib1sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib2d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib2d")) |proc| {
         function_pointers.glVertexAttrib2d = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib2d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib2dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib2dv")) |proc| {
         function_pointers.glVertexAttrib2dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib2dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib2f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib2f")) |proc| {
         function_pointers.glVertexAttrib2f = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib2f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib2fv")) |proc| {
         function_pointers.glVertexAttrib2fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib2s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib2s")) |proc| {
         function_pointers.glVertexAttrib2s = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib2s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib2sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib2sv")) |proc| {
         function_pointers.glVertexAttrib2sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib2sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib3d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib3d")) |proc| {
         function_pointers.glVertexAttrib3d = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib3d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib3dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib3dv")) |proc| {
         function_pointers.glVertexAttrib3dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib3dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib3f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib3f")) |proc| {
         function_pointers.glVertexAttrib3f = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib3f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib3fv")) |proc| {
         function_pointers.glVertexAttrib3fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib3s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib3s")) |proc| {
         function_pointers.glVertexAttrib3s = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib3s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib3sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib3sv")) |proc| {
         function_pointers.glVertexAttrib3sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib3sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Nbv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Nbv")) |proc| {
         function_pointers.glVertexAttrib4Nbv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Nbv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Niv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Niv")) |proc| {
         function_pointers.glVertexAttrib4Niv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Niv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Nsv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Nsv")) |proc| {
         function_pointers.glVertexAttrib4Nsv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Nsv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Nub")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Nub")) |proc| {
         function_pointers.glVertexAttrib4Nub = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Nub not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Nubv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Nubv")) |proc| {
         function_pointers.glVertexAttrib4Nubv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Nubv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Nuiv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Nuiv")) |proc| {
         function_pointers.glVertexAttrib4Nuiv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Nuiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4Nusv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4Nusv")) |proc| {
         function_pointers.glVertexAttrib4Nusv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4Nusv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4bv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4bv")) |proc| {
         function_pointers.glVertexAttrib4bv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4bv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4d")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4d")) |proc| {
         function_pointers.glVertexAttrib4d = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4d not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4dv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4dv")) |proc| {
         function_pointers.glVertexAttrib4dv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4dv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4f")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4f")) |proc| {
         function_pointers.glVertexAttrib4f = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4f not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4fv")) |proc| {
         function_pointers.glVertexAttrib4fv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4iv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4iv")) |proc| {
         function_pointers.glVertexAttrib4iv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4iv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4s")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4s")) |proc| {
         function_pointers.glVertexAttrib4s = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4s not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4sv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4sv")) |proc| {
         function_pointers.glVertexAttrib4sv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4sv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4ubv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4ubv")) |proc| {
         function_pointers.glVertexAttrib4ubv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4ubv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4uiv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4uiv")) |proc| {
         function_pointers.glVertexAttrib4uiv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4uiv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttrib4usv")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttrib4usv")) |proc| {
         function_pointers.glVertexAttrib4usv = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttrib4usv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glVertexAttribPointer")) |proc| {
+    if (get_proc_address(load_ctx, "glVertexAttribPointer")) |proc| {
         function_pointers.glVertexAttribPointer = @ptrCast(proc);
     } else {
         log.err("entry point glVertexAttribPointer not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix2x3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix2x3fv")) |proc| {
         function_pointers.glUniformMatrix2x3fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix2x3fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix3x2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix3x2fv")) |proc| {
         function_pointers.glUniformMatrix3x2fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix3x2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix2x4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix2x4fv")) |proc| {
         function_pointers.glUniformMatrix2x4fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix2x4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix4x2fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix4x2fv")) |proc| {
         function_pointers.glUniformMatrix4x2fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix4x2fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix3x4fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix3x4fv")) |proc| {
         function_pointers.glUniformMatrix3x4fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix3x4fv not found!", .{});
         success = false;
     }
-    if(get_proc_address(load_ctx, "glUniformMatrix4x3fv")) |proc| {
+    if (get_proc_address(load_ctx, "glUniformMatrix4x3fv")) |proc| {
         function_pointers.glUniformMatrix4x3fv = @ptrCast(proc);
     } else {
         log.err("entry point glUniformMatrix4x3fv not found!", .{});
         success = false;
     }
-    if(!success)
+    if (!success)
         return error.EntryPointNotFound;
 }
 
 const function_signatures = struct {
-    const glCullFace = fn(_mode: GLenum) callconv(.C) void;
-    const glFrontFace = fn(_mode: GLenum) callconv(.C) void;
-    const glHint = fn(_target: GLenum, _mode: GLenum) callconv(.C) void;
-    const glLineWidth = fn(_width: GLfloat) callconv(.C) void;
-    const glPointSize = fn(_size: GLfloat) callconv(.C) void;
-    const glPolygonMode = fn(_face: GLenum, _mode: GLenum) callconv(.C) void;
-    const glScissor = fn(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
-    const glTexParameterf = fn(_target: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glTexParameterfv = fn(_target: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glTexParameteri = fn(_target: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
-    const glTexParameteriv = fn(_target: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glTexImage1D = fn(_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glTexImage2D = fn(_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _height: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glDrawBuffer = fn(_buf: GLenum) callconv(.C) void;
-    const glClear = fn(_mask: GLbitfield) callconv(.C) void;
-    const glClearColor = fn(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
-    const glClearStencil = fn(_s: GLint) callconv(.C) void;
-    const glClearDepth = fn(_depth: GLdouble) callconv(.C) void;
-    const glStencilMask = fn(_mask: GLuint) callconv(.C) void;
-    const glColorMask = fn(_red: GLboolean, _green: GLboolean, _blue: GLboolean, _alpha: GLboolean) callconv(.C) void;
-    const glDepthMask = fn(_flag: GLboolean) callconv(.C) void;
-    const glDisable = fn(_cap: GLenum) callconv(.C) void;
-    const glEnable = fn(_cap: GLenum) callconv(.C) void;
-    const glFinish = fn() callconv(.C) void;
-    const glFlush = fn() callconv(.C) void;
-    const glBlendFunc = fn(_sfactor: GLenum, _dfactor: GLenum) callconv(.C) void;
-    const glLogicOp = fn(_opcode: GLenum) callconv(.C) void;
-    const glStencilFunc = fn(_func: GLenum, _ref: GLint, _mask: GLuint) callconv(.C) void;
-    const glStencilOp = fn(_fail: GLenum, _zfail: GLenum, _zpass: GLenum) callconv(.C) void;
-    const glDepthFunc = fn(_func: GLenum) callconv(.C) void;
-    const glPixelStoref = fn(_pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glPixelStorei = fn(_pname: GLenum, _param: GLint) callconv(.C) void;
-    const glReadBuffer = fn(_src: GLenum) callconv(.C) void;
-    const glReadPixels = fn(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*anyopaque) callconv(.C) void;
-    const glGetBooleanv = fn(_pname: GLenum, _data: [*c]GLboolean) callconv(.C) void;
-    const glGetDoublev = fn(_pname: GLenum, _data: [*c]GLdouble) callconv(.C) void;
-    const glGetError = fn() callconv(.C) GLenum;
-    const glGetFloatv = fn(_pname: GLenum, _data: [*c]GLfloat) callconv(.C) void;
-    const glGetIntegerv = fn(_pname: GLenum, _data: [*c]GLint) callconv(.C) void;
-    const glGetString = fn(_name: GLenum) callconv(.C) ?[*:0]const GLubyte;
-    const glGetTexImage = fn(_target: GLenum, _level: GLint, _format: GLenum, _type: GLenum, _pixels: ?*anyopaque) callconv(.C) void;
-    const glGetTexParameterfv = fn(_target: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetTexParameteriv = fn(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetTexLevelParameterfv = fn(_target: GLenum, _level: GLint, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetTexLevelParameteriv = fn(_target: GLenum, _level: GLint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glIsEnabled = fn(_cap: GLenum) callconv(.C) GLboolean;
-    const glDepthRange = fn(_n: GLdouble, _f: GLdouble) callconv(.C) void;
-    const glViewport = fn(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
-    const glNewList = fn(_list: GLuint, _mode: GLenum) callconv(.C) void;
-    const glEndList = fn() callconv(.C) void;
-    const glCallList = fn(_list: GLuint) callconv(.C) void;
-    const glCallLists = fn(_n: GLsizei, _type: GLenum, _lists: ?*const anyopaque) callconv(.C) void;
-    const glDeleteLists = fn(_list: GLuint, _range: GLsizei) callconv(.C) void;
-    const glGenLists = fn(_range: GLsizei) callconv(.C) GLuint;
-    const glListBase = fn(_base: GLuint) callconv(.C) void;
-    const glBegin = fn(_mode: GLenum) callconv(.C) void;
-    const glBitmap = fn(_width: GLsizei, _height: GLsizei, _xorig: GLfloat, _yorig: GLfloat, _xmove: GLfloat, _ymove: GLfloat, _bitmap: ?[*:0]const GLubyte) callconv(.C) void;
-    const glColor3b = fn(_red: GLbyte, _green: GLbyte, _blue: GLbyte) callconv(.C) void;
-    const glColor3bv = fn(_v: [*c]const GLbyte) callconv(.C) void;
-    const glColor3d = fn(_red: GLdouble, _green: GLdouble, _blue: GLdouble) callconv(.C) void;
-    const glColor3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glColor3f = fn(_red: GLfloat, _green: GLfloat, _blue: GLfloat) callconv(.C) void;
-    const glColor3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glColor3i = fn(_red: GLint, _green: GLint, _blue: GLint) callconv(.C) void;
-    const glColor3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glColor3s = fn(_red: GLshort, _green: GLshort, _blue: GLshort) callconv(.C) void;
-    const glColor3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glColor3ub = fn(_red: GLubyte, _green: GLubyte, _blue: GLubyte) callconv(.C) void;
-    const glColor3ubv = fn(_v: ?[*:0]const GLubyte) callconv(.C) void;
-    const glColor3ui = fn(_red: GLuint, _green: GLuint, _blue: GLuint) callconv(.C) void;
-    const glColor3uiv = fn(_v: [*c]const GLuint) callconv(.C) void;
-    const glColor3us = fn(_red: GLushort, _green: GLushort, _blue: GLushort) callconv(.C) void;
-    const glColor3usv = fn(_v: [*c]const GLushort) callconv(.C) void;
-    const glColor4b = fn(_red: GLbyte, _green: GLbyte, _blue: GLbyte, _alpha: GLbyte) callconv(.C) void;
-    const glColor4bv = fn(_v: [*c]const GLbyte) callconv(.C) void;
-    const glColor4d = fn(_red: GLdouble, _green: GLdouble, _blue: GLdouble, _alpha: GLdouble) callconv(.C) void;
-    const glColor4dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glColor4f = fn(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
-    const glColor4fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glColor4i = fn(_red: GLint, _green: GLint, _blue: GLint, _alpha: GLint) callconv(.C) void;
-    const glColor4iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glColor4s = fn(_red: GLshort, _green: GLshort, _blue: GLshort, _alpha: GLshort) callconv(.C) void;
-    const glColor4sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glColor4ub = fn(_red: GLubyte, _green: GLubyte, _blue: GLubyte, _alpha: GLubyte) callconv(.C) void;
-    const glColor4ubv = fn(_v: ?[*:0]const GLubyte) callconv(.C) void;
-    const glColor4ui = fn(_red: GLuint, _green: GLuint, _blue: GLuint, _alpha: GLuint) callconv(.C) void;
-    const glColor4uiv = fn(_v: [*c]const GLuint) callconv(.C) void;
-    const glColor4us = fn(_red: GLushort, _green: GLushort, _blue: GLushort, _alpha: GLushort) callconv(.C) void;
-    const glColor4usv = fn(_v: [*c]const GLushort) callconv(.C) void;
-    const glEdgeFlag = fn(_flag: GLboolean) callconv(.C) void;
-    const glEdgeFlagv = fn(_flag: [*c]const GLboolean) callconv(.C) void;
-    const glEnd = fn() callconv(.C) void;
-    const glIndexd = fn(_c: GLdouble) callconv(.C) void;
-    const glIndexdv = fn(_c: [*c]const GLdouble) callconv(.C) void;
-    const glIndexf = fn(_c: GLfloat) callconv(.C) void;
-    const glIndexfv = fn(_c: [*c]const GLfloat) callconv(.C) void;
-    const glIndexi = fn(_c: GLint) callconv(.C) void;
-    const glIndexiv = fn(_c: [*c]const GLint) callconv(.C) void;
-    const glIndexs = fn(_c: GLshort) callconv(.C) void;
-    const glIndexsv = fn(_c: [*c]const GLshort) callconv(.C) void;
-    const glNormal3b = fn(_nx: GLbyte, _ny: GLbyte, _nz: GLbyte) callconv(.C) void;
-    const glNormal3bv = fn(_v: [*c]const GLbyte) callconv(.C) void;
-    const glNormal3d = fn(_nx: GLdouble, _ny: GLdouble, _nz: GLdouble) callconv(.C) void;
-    const glNormal3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glNormal3f = fn(_nx: GLfloat, _ny: GLfloat, _nz: GLfloat) callconv(.C) void;
-    const glNormal3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glNormal3i = fn(_nx: GLint, _ny: GLint, _nz: GLint) callconv(.C) void;
-    const glNormal3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glNormal3s = fn(_nx: GLshort, _ny: GLshort, _nz: GLshort) callconv(.C) void;
-    const glNormal3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glRasterPos2d = fn(_x: GLdouble, _y: GLdouble) callconv(.C) void;
-    const glRasterPos2dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glRasterPos2f = fn(_x: GLfloat, _y: GLfloat) callconv(.C) void;
-    const glRasterPos2fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glRasterPos2i = fn(_x: GLint, _y: GLint) callconv(.C) void;
-    const glRasterPos2iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glRasterPos2s = fn(_x: GLshort, _y: GLshort) callconv(.C) void;
-    const glRasterPos2sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glRasterPos3d = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glRasterPos3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glRasterPos3f = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glRasterPos3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glRasterPos3i = fn(_x: GLint, _y: GLint, _z: GLint) callconv(.C) void;
-    const glRasterPos3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glRasterPos3s = fn(_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
-    const glRasterPos3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glRasterPos4d = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void;
-    const glRasterPos4dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glRasterPos4f = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void;
-    const glRasterPos4fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glRasterPos4i = fn(_x: GLint, _y: GLint, _z: GLint, _w: GLint) callconv(.C) void;
-    const glRasterPos4iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glRasterPos4s = fn(_x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void;
-    const glRasterPos4sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glRectd = fn(_x1: GLdouble, _y1: GLdouble, _x2: GLdouble, _y2: GLdouble) callconv(.C) void;
-    const glRectdv = fn(_v1: [*c]const GLdouble, _v2: [*c]const GLdouble) callconv(.C) void;
-    const glRectf = fn(_x1: GLfloat, _y1: GLfloat, _x2: GLfloat, _y2: GLfloat) callconv(.C) void;
-    const glRectfv = fn(_v1: [*c]const GLfloat, _v2: [*c]const GLfloat) callconv(.C) void;
-    const glRecti = fn(_x1: GLint, _y1: GLint, _x2: GLint, _y2: GLint) callconv(.C) void;
-    const glRectiv = fn(_v1: [*c]const GLint, _v2: [*c]const GLint) callconv(.C) void;
-    const glRects = fn(_x1: GLshort, _y1: GLshort, _x2: GLshort, _y2: GLshort) callconv(.C) void;
-    const glRectsv = fn(_v1: [*c]const GLshort, _v2: [*c]const GLshort) callconv(.C) void;
-    const glTexCoord1d = fn(_s: GLdouble) callconv(.C) void;
-    const glTexCoord1dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glTexCoord1f = fn(_s: GLfloat) callconv(.C) void;
-    const glTexCoord1fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glTexCoord1i = fn(_s: GLint) callconv(.C) void;
-    const glTexCoord1iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glTexCoord1s = fn(_s: GLshort) callconv(.C) void;
-    const glTexCoord1sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glTexCoord2d = fn(_s: GLdouble, _t: GLdouble) callconv(.C) void;
-    const glTexCoord2dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glTexCoord2f = fn(_s: GLfloat, _t: GLfloat) callconv(.C) void;
-    const glTexCoord2fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glTexCoord2i = fn(_s: GLint, _t: GLint) callconv(.C) void;
-    const glTexCoord2iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glTexCoord2s = fn(_s: GLshort, _t: GLshort) callconv(.C) void;
-    const glTexCoord2sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glTexCoord3d = fn(_s: GLdouble, _t: GLdouble, _r: GLdouble) callconv(.C) void;
-    const glTexCoord3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glTexCoord3f = fn(_s: GLfloat, _t: GLfloat, _r: GLfloat) callconv(.C) void;
-    const glTexCoord3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glTexCoord3i = fn(_s: GLint, _t: GLint, _r: GLint) callconv(.C) void;
-    const glTexCoord3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glTexCoord3s = fn(_s: GLshort, _t: GLshort, _r: GLshort) callconv(.C) void;
-    const glTexCoord3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glTexCoord4d = fn(_s: GLdouble, _t: GLdouble, _r: GLdouble, _q: GLdouble) callconv(.C) void;
-    const glTexCoord4dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glTexCoord4f = fn(_s: GLfloat, _t: GLfloat, _r: GLfloat, _q: GLfloat) callconv(.C) void;
-    const glTexCoord4fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glTexCoord4i = fn(_s: GLint, _t: GLint, _r: GLint, _q: GLint) callconv(.C) void;
-    const glTexCoord4iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glTexCoord4s = fn(_s: GLshort, _t: GLshort, _r: GLshort, _q: GLshort) callconv(.C) void;
-    const glTexCoord4sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glVertex2d = fn(_x: GLdouble, _y: GLdouble) callconv(.C) void;
-    const glVertex2dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glVertex2f = fn(_x: GLfloat, _y: GLfloat) callconv(.C) void;
-    const glVertex2fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glVertex2i = fn(_x: GLint, _y: GLint) callconv(.C) void;
-    const glVertex2iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glVertex2s = fn(_x: GLshort, _y: GLshort) callconv(.C) void;
-    const glVertex2sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glVertex3d = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glVertex3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glVertex3f = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glVertex3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glVertex3i = fn(_x: GLint, _y: GLint, _z: GLint) callconv(.C) void;
-    const glVertex3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glVertex3s = fn(_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
-    const glVertex3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glVertex4d = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void;
-    const glVertex4dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glVertex4f = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void;
-    const glVertex4fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glVertex4i = fn(_x: GLint, _y: GLint, _z: GLint, _w: GLint) callconv(.C) void;
-    const glVertex4iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glVertex4s = fn(_x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void;
-    const glVertex4sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glClipPlane = fn(_plane: GLenum, _equation: [*c]const GLdouble) callconv(.C) void;
-    const glColorMaterial = fn(_face: GLenum, _mode: GLenum) callconv(.C) void;
-    const glFogf = fn(_pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glFogfv = fn(_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glFogi = fn(_pname: GLenum, _param: GLint) callconv(.C) void;
-    const glFogiv = fn(_pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glLightf = fn(_light: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glLightfv = fn(_light: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glLighti = fn(_light: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
-    const glLightiv = fn(_light: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glLightModelf = fn(_pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glLightModelfv = fn(_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glLightModeli = fn(_pname: GLenum, _param: GLint) callconv(.C) void;
-    const glLightModeliv = fn(_pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glLineStipple = fn(_factor: GLint, _pattern: GLushort) callconv(.C) void;
-    const glMaterialf = fn(_face: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glMaterialfv = fn(_face: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glMateriali = fn(_face: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
-    const glMaterialiv = fn(_face: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glPolygonStipple = fn(_mask: ?[*:0]const GLubyte) callconv(.C) void;
-    const glShadeModel = fn(_mode: GLenum) callconv(.C) void;
-    const glTexEnvf = fn(_target: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glTexEnvfv = fn(_target: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glTexEnvi = fn(_target: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
-    const glTexEnviv = fn(_target: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glTexGend = fn(_coord: GLenum, _pname: GLenum, _param: GLdouble) callconv(.C) void;
-    const glTexGendv = fn(_coord: GLenum, _pname: GLenum, _params: [*c]const GLdouble) callconv(.C) void;
-    const glTexGenf = fn(_coord: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glTexGenfv = fn(_coord: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glTexGeni = fn(_coord: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
-    const glTexGeniv = fn(_coord: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glFeedbackBuffer = fn(_size: GLsizei, _type: GLenum, _buffer: [*c]GLfloat) callconv(.C) void;
-    const glSelectBuffer = fn(_size: GLsizei, _buffer: [*c]GLuint) callconv(.C) void;
-    const glRenderMode = fn(_mode: GLenum) callconv(.C) GLint;
-    const glInitNames = fn() callconv(.C) void;
-    const glLoadName = fn(_name: GLuint) callconv(.C) void;
-    const glPassThrough = fn(_token: GLfloat) callconv(.C) void;
-    const glPopName = fn() callconv(.C) void;
-    const glPushName = fn(_name: GLuint) callconv(.C) void;
-    const glClearAccum = fn(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
-    const glClearIndex = fn(_c: GLfloat) callconv(.C) void;
-    const glIndexMask = fn(_mask: GLuint) callconv(.C) void;
-    const glAccum = fn(_op: GLenum, _value: GLfloat) callconv(.C) void;
-    const glPopAttrib = fn() callconv(.C) void;
-    const glPushAttrib = fn(_mask: GLbitfield) callconv(.C) void;
-    const glMap1d = fn(_target: GLenum, _u1: GLdouble, _u2: GLdouble, _stride: GLint, _order: GLint, _points: [*c]const GLdouble) callconv(.C) void;
-    const glMap1f = fn(_target: GLenum, _u1: GLfloat, _u2: GLfloat, _stride: GLint, _order: GLint, _points: [*c]const GLfloat) callconv(.C) void;
-    const glMap2d = fn(_target: GLenum, _u1: GLdouble, _u2: GLdouble, _ustride: GLint, _uorder: GLint, _v1: GLdouble, _v2: GLdouble, _vstride: GLint, _vorder: GLint, _points: [*c]const GLdouble) callconv(.C) void;
-    const glMap2f = fn(_target: GLenum, _u1: GLfloat, _u2: GLfloat, _ustride: GLint, _uorder: GLint, _v1: GLfloat, _v2: GLfloat, _vstride: GLint, _vorder: GLint, _points: [*c]const GLfloat) callconv(.C) void;
-    const glMapGrid1d = fn(_un: GLint, _u1: GLdouble, _u2: GLdouble) callconv(.C) void;
-    const glMapGrid1f = fn(_un: GLint, _u1: GLfloat, _u2: GLfloat) callconv(.C) void;
-    const glMapGrid2d = fn(_un: GLint, _u1: GLdouble, _u2: GLdouble, _vn: GLint, _v1: GLdouble, _v2: GLdouble) callconv(.C) void;
-    const glMapGrid2f = fn(_un: GLint, _u1: GLfloat, _u2: GLfloat, _vn: GLint, _v1: GLfloat, _v2: GLfloat) callconv(.C) void;
-    const glEvalCoord1d = fn(_u: GLdouble) callconv(.C) void;
-    const glEvalCoord1dv = fn(_u: [*c]const GLdouble) callconv(.C) void;
-    const glEvalCoord1f = fn(_u: GLfloat) callconv(.C) void;
-    const glEvalCoord1fv = fn(_u: [*c]const GLfloat) callconv(.C) void;
-    const glEvalCoord2d = fn(_u: GLdouble, _v: GLdouble) callconv(.C) void;
-    const glEvalCoord2dv = fn(_u: [*c]const GLdouble) callconv(.C) void;
-    const glEvalCoord2f = fn(_u: GLfloat, _v: GLfloat) callconv(.C) void;
-    const glEvalCoord2fv = fn(_u: [*c]const GLfloat) callconv(.C) void;
-    const glEvalMesh1 = fn(_mode: GLenum, _i1: GLint, _i2: GLint) callconv(.C) void;
-    const glEvalPoint1 = fn(_i: GLint) callconv(.C) void;
-    const glEvalMesh2 = fn(_mode: GLenum, _i1: GLint, _i2: GLint, _j1: GLint, _j2: GLint) callconv(.C) void;
-    const glEvalPoint2 = fn(_i: GLint, _j: GLint) callconv(.C) void;
-    const glAlphaFunc = fn(_func: GLenum, _ref: GLfloat) callconv(.C) void;
-    const glPixelZoom = fn(_xfactor: GLfloat, _yfactor: GLfloat) callconv(.C) void;
-    const glPixelTransferf = fn(_pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glPixelTransferi = fn(_pname: GLenum, _param: GLint) callconv(.C) void;
-    const glPixelMapfv = fn(_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLfloat) callconv(.C) void;
-    const glPixelMapuiv = fn(_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLuint) callconv(.C) void;
-    const glPixelMapusv = fn(_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLushort) callconv(.C) void;
-    const glCopyPixels = fn(_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _type: GLenum) callconv(.C) void;
-    const glDrawPixels = fn(_width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glGetClipPlane = fn(_plane: GLenum, _equation: [*c]GLdouble) callconv(.C) void;
-    const glGetLightfv = fn(_light: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetLightiv = fn(_light: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetMapdv = fn(_target: GLenum, _query: GLenum, _v: [*c]GLdouble) callconv(.C) void;
-    const glGetMapfv = fn(_target: GLenum, _query: GLenum, _v: [*c]GLfloat) callconv(.C) void;
-    const glGetMapiv = fn(_target: GLenum, _query: GLenum, _v: [*c]GLint) callconv(.C) void;
-    const glGetMaterialfv = fn(_face: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetMaterialiv = fn(_face: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetPixelMapfv = fn(_map: GLenum, _values: [*c]GLfloat) callconv(.C) void;
-    const glGetPixelMapuiv = fn(_map: GLenum, _values: [*c]GLuint) callconv(.C) void;
-    const glGetPixelMapusv = fn(_map: GLenum, _values: [*c]GLushort) callconv(.C) void;
-    const glGetPolygonStipple = fn(_mask: [*c]GLubyte) callconv(.C) void;
-    const glGetTexEnvfv = fn(_target: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetTexEnviv = fn(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetTexGendv = fn(_coord: GLenum, _pname: GLenum, _params: [*c]GLdouble) callconv(.C) void;
-    const glGetTexGenfv = fn(_coord: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetTexGeniv = fn(_coord: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glIsList = fn(_list: GLuint) callconv(.C) GLboolean;
-    const glFrustum = fn(_left: GLdouble, _right: GLdouble, _bottom: GLdouble, _top: GLdouble, _zNear: GLdouble, _zFar: GLdouble) callconv(.C) void;
-    const glLoadIdentity = fn() callconv(.C) void;
-    const glLoadMatrixf = fn(_m: [*c]const GLfloat) callconv(.C) void;
-    const glLoadMatrixd = fn(_m: [*c]const GLdouble) callconv(.C) void;
-    const glMatrixMode = fn(_mode: GLenum) callconv(.C) void;
-    const glMultMatrixf = fn(_m: [*c]const GLfloat) callconv(.C) void;
-    const glMultMatrixd = fn(_m: [*c]const GLdouble) callconv(.C) void;
-    const glOrtho = fn(_left: GLdouble, _right: GLdouble, _bottom: GLdouble, _top: GLdouble, _zNear: GLdouble, _zFar: GLdouble) callconv(.C) void;
-    const glPopMatrix = fn() callconv(.C) void;
-    const glPushMatrix = fn() callconv(.C) void;
-    const glRotated = fn(_angle: GLdouble, _x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glRotatef = fn(_angle: GLfloat, _x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glScaled = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glScalef = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glTranslated = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glTranslatef = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glDrawArrays = fn(_mode: GLenum, _first: GLint, _count: GLsizei) callconv(.C) void;
-    const glDrawElements = fn(_mode: GLenum, _count: GLsizei, _type: GLenum, _indices: ?*const anyopaque) callconv(.C) void;
-    const glGetPointerv = fn(_pname: GLenum, _params: ?*?*anyopaque) callconv(.C) void;
-    const glPolygonOffset = fn(_factor: GLfloat, _units: GLfloat) callconv(.C) void;
-    const glCopyTexImage1D = fn(_target: GLenum, _level: GLint, _internalformat: GLenum, _x: GLint, _y: GLint, _width: GLsizei, _border: GLint) callconv(.C) void;
-    const glCopyTexImage2D = fn(_target: GLenum, _level: GLint, _internalformat: GLenum, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _border: GLint) callconv(.C) void;
-    const glCopyTexSubImage1D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei) callconv(.C) void;
-    const glCopyTexSubImage2D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
-    const glTexSubImage1D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _width: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glTexSubImage2D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glBindTexture = fn(_target: GLenum, _texture: GLuint) callconv(.C) void;
-    const glDeleteTextures = fn(_n: GLsizei, _textures: [*c]const GLuint) callconv(.C) void;
-    const glGenTextures = fn(_n: GLsizei, _textures: [*c]GLuint) callconv(.C) void;
-    const glIsTexture = fn(_texture: GLuint) callconv(.C) GLboolean;
-    const glArrayElement = fn(_i: GLint) callconv(.C) void;
-    const glColorPointer = fn(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glDisableClientState = fn(_array: GLenum) callconv(.C) void;
-    const glEdgeFlagPointer = fn(_stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glEnableClientState = fn(_array: GLenum) callconv(.C) void;
-    const glIndexPointer = fn(_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glInterleavedArrays = fn(_format: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glNormalPointer = fn(_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glTexCoordPointer = fn(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glVertexPointer = fn(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glAreTexturesResident = fn(_n: GLsizei, _textures: [*c]const GLuint, _residences: [*c]GLboolean) callconv(.C) GLboolean;
-    const glPrioritizeTextures = fn(_n: GLsizei, _textures: [*c]const GLuint, _priorities: [*c]const GLfloat) callconv(.C) void;
-    const glIndexub = fn(_c: GLubyte) callconv(.C) void;
-    const glIndexubv = fn(_c: ?[*:0]const GLubyte) callconv(.C) void;
-    const glPopClientAttrib = fn() callconv(.C) void;
-    const glPushClientAttrib = fn(_mask: GLbitfield) callconv(.C) void;
-    const glDrawRangeElements = fn(_mode: GLenum, _start: GLuint, _end: GLuint, _count: GLsizei, _type: GLenum, _indices: ?*const anyopaque) callconv(.C) void;
-    const glTexImage3D = fn(_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glTexSubImage3D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
-    const glCopyTexSubImage3D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
-    const glActiveTexture = fn(_texture: GLenum) callconv(.C) void;
-    const glSampleCoverage = fn(_value: GLfloat, _invert: GLboolean) callconv(.C) void;
-    const glCompressedTexImage3D = fn(_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
-    const glCompressedTexImage2D = fn(_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _height: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
-    const glCompressedTexImage1D = fn(_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
-    const glCompressedTexSubImage3D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
-    const glCompressedTexSubImage2D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
-    const glCompressedTexSubImage1D = fn(_target: GLenum, _level: GLint, _xoffset: GLint, _width: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
-    const glGetCompressedTexImage = fn(_target: GLenum, _level: GLint, _img: ?*anyopaque) callconv(.C) void;
-    const glClientActiveTexture = fn(_texture: GLenum) callconv(.C) void;
-    const glMultiTexCoord1d = fn(_target: GLenum, _s: GLdouble) callconv(.C) void;
-    const glMultiTexCoord1dv = fn(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
-    const glMultiTexCoord1f = fn(_target: GLenum, _s: GLfloat) callconv(.C) void;
-    const glMultiTexCoord1fv = fn(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
-    const glMultiTexCoord1i = fn(_target: GLenum, _s: GLint) callconv(.C) void;
-    const glMultiTexCoord1iv = fn(_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
-    const glMultiTexCoord1s = fn(_target: GLenum, _s: GLshort) callconv(.C) void;
-    const glMultiTexCoord1sv = fn(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
-    const glMultiTexCoord2d = fn(_target: GLenum, _s: GLdouble, _t: GLdouble) callconv(.C) void;
-    const glMultiTexCoord2dv = fn(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
-    const glMultiTexCoord2f = fn(_target: GLenum, _s: GLfloat, _t: GLfloat) callconv(.C) void;
-    const glMultiTexCoord2fv = fn(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
-    const glMultiTexCoord2i = fn(_target: GLenum, _s: GLint, _t: GLint) callconv(.C) void;
-    const glMultiTexCoord2iv = fn(_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
-    const glMultiTexCoord2s = fn(_target: GLenum, _s: GLshort, _t: GLshort) callconv(.C) void;
-    const glMultiTexCoord2sv = fn(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
-    const glMultiTexCoord3d = fn(_target: GLenum, _s: GLdouble, _t: GLdouble, _r: GLdouble) callconv(.C) void;
-    const glMultiTexCoord3dv = fn(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
-    const glMultiTexCoord3f = fn(_target: GLenum, _s: GLfloat, _t: GLfloat, _r: GLfloat) callconv(.C) void;
-    const glMultiTexCoord3fv = fn(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
-    const glMultiTexCoord3i = fn(_target: GLenum, _s: GLint, _t: GLint, _r: GLint) callconv(.C) void;
-    const glMultiTexCoord3iv = fn(_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
-    const glMultiTexCoord3s = fn(_target: GLenum, _s: GLshort, _t: GLshort, _r: GLshort) callconv(.C) void;
-    const glMultiTexCoord3sv = fn(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
-    const glMultiTexCoord4d = fn(_target: GLenum, _s: GLdouble, _t: GLdouble, _r: GLdouble, _q: GLdouble) callconv(.C) void;
-    const glMultiTexCoord4dv = fn(_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
-    const glMultiTexCoord4f = fn(_target: GLenum, _s: GLfloat, _t: GLfloat, _r: GLfloat, _q: GLfloat) callconv(.C) void;
-    const glMultiTexCoord4fv = fn(_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
-    const glMultiTexCoord4i = fn(_target: GLenum, _s: GLint, _t: GLint, _r: GLint, _q: GLint) callconv(.C) void;
-    const glMultiTexCoord4iv = fn(_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
-    const glMultiTexCoord4s = fn(_target: GLenum, _s: GLshort, _t: GLshort, _r: GLshort, _q: GLshort) callconv(.C) void;
-    const glMultiTexCoord4sv = fn(_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
-    const glLoadTransposeMatrixf = fn(_m: [*c]const GLfloat) callconv(.C) void;
-    const glLoadTransposeMatrixd = fn(_m: [*c]const GLdouble) callconv(.C) void;
-    const glMultTransposeMatrixf = fn(_m: [*c]const GLfloat) callconv(.C) void;
-    const glMultTransposeMatrixd = fn(_m: [*c]const GLdouble) callconv(.C) void;
-    const glBlendFuncSeparate = fn(_sfactorRGB: GLenum, _dfactorRGB: GLenum, _sfactorAlpha: GLenum, _dfactorAlpha: GLenum) callconv(.C) void;
-    const glMultiDrawArrays = fn(_mode: GLenum, _first: [*c]const GLint, _count: [*c]const GLsizei, _drawcount: GLsizei) callconv(.C) void;
-    const glMultiDrawElements = fn(_mode: GLenum, _count: [*c]const GLsizei, _type: GLenum, _indices: [*c]const ?*const anyopaque, _drawcount: GLsizei) callconv(.C) void;
-    const glPointParameterf = fn(_pname: GLenum, _param: GLfloat) callconv(.C) void;
-    const glPointParameterfv = fn(_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
-    const glPointParameteri = fn(_pname: GLenum, _param: GLint) callconv(.C) void;
-    const glPointParameteriv = fn(_pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
-    const glFogCoordf = fn(_coord: GLfloat) callconv(.C) void;
-    const glFogCoordfv = fn(_coord: [*c]const GLfloat) callconv(.C) void;
-    const glFogCoordd = fn(_coord: GLdouble) callconv(.C) void;
-    const glFogCoorddv = fn(_coord: [*c]const GLdouble) callconv(.C) void;
-    const glFogCoordPointer = fn(_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glSecondaryColor3b = fn(_red: GLbyte, _green: GLbyte, _blue: GLbyte) callconv(.C) void;
-    const glSecondaryColor3bv = fn(_v: [*c]const GLbyte) callconv(.C) void;
-    const glSecondaryColor3d = fn(_red: GLdouble, _green: GLdouble, _blue: GLdouble) callconv(.C) void;
-    const glSecondaryColor3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glSecondaryColor3f = fn(_red: GLfloat, _green: GLfloat, _blue: GLfloat) callconv(.C) void;
-    const glSecondaryColor3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glSecondaryColor3i = fn(_red: GLint, _green: GLint, _blue: GLint) callconv(.C) void;
-    const glSecondaryColor3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glSecondaryColor3s = fn(_red: GLshort, _green: GLshort, _blue: GLshort) callconv(.C) void;
-    const glSecondaryColor3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glSecondaryColor3ub = fn(_red: GLubyte, _green: GLubyte, _blue: GLubyte) callconv(.C) void;
-    const glSecondaryColor3ubv = fn(_v: ?[*:0]const GLubyte) callconv(.C) void;
-    const glSecondaryColor3ui = fn(_red: GLuint, _green: GLuint, _blue: GLuint) callconv(.C) void;
-    const glSecondaryColor3uiv = fn(_v: [*c]const GLuint) callconv(.C) void;
-    const glSecondaryColor3us = fn(_red: GLushort, _green: GLushort, _blue: GLushort) callconv(.C) void;
-    const glSecondaryColor3usv = fn(_v: [*c]const GLushort) callconv(.C) void;
-    const glSecondaryColorPointer = fn(_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glWindowPos2d = fn(_x: GLdouble, _y: GLdouble) callconv(.C) void;
-    const glWindowPos2dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glWindowPos2f = fn(_x: GLfloat, _y: GLfloat) callconv(.C) void;
-    const glWindowPos2fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glWindowPos2i = fn(_x: GLint, _y: GLint) callconv(.C) void;
-    const glWindowPos2iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glWindowPos2s = fn(_x: GLshort, _y: GLshort) callconv(.C) void;
-    const glWindowPos2sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glWindowPos3d = fn(_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glWindowPos3dv = fn(_v: [*c]const GLdouble) callconv(.C) void;
-    const glWindowPos3f = fn(_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glWindowPos3fv = fn(_v: [*c]const GLfloat) callconv(.C) void;
-    const glWindowPos3i = fn(_x: GLint, _y: GLint, _z: GLint) callconv(.C) void;
-    const glWindowPos3iv = fn(_v: [*c]const GLint) callconv(.C) void;
-    const glWindowPos3s = fn(_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
-    const glWindowPos3sv = fn(_v: [*c]const GLshort) callconv(.C) void;
-    const glBlendColor = fn(_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
-    const glBlendEquation = fn(_mode: GLenum) callconv(.C) void;
-    const glGenQueries = fn(_n: GLsizei, _ids: [*c]GLuint) callconv(.C) void;
-    const glDeleteQueries = fn(_n: GLsizei, _ids: [*c]const GLuint) callconv(.C) void;
-    const glIsQuery = fn(_id: GLuint) callconv(.C) GLboolean;
-    const glBeginQuery = fn(_target: GLenum, _id: GLuint) callconv(.C) void;
-    const glEndQuery = fn(_target: GLenum) callconv(.C) void;
-    const glGetQueryiv = fn(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetQueryObjectiv = fn(_id: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetQueryObjectuiv = fn(_id: GLuint, _pname: GLenum, _params: [*c]GLuint) callconv(.C) void;
-    const glBindBuffer = fn(_target: GLenum, _buffer: GLuint) callconv(.C) void;
-    const glDeleteBuffers = fn(_n: GLsizei, _buffers: [*c]const GLuint) callconv(.C) void;
-    const glGenBuffers = fn(_n: GLsizei, _buffers: [*c]GLuint) callconv(.C) void;
-    const glIsBuffer = fn(_buffer: GLuint) callconv(.C) GLboolean;
-    const glBufferData = fn(_target: GLenum, _size: GLsizeiptr, _data: ?*const anyopaque, _usage: GLenum) callconv(.C) void;
-    const glBufferSubData = fn(_target: GLenum, _offset: GLintptr, _size: GLsizeiptr, _data: ?*const anyopaque) callconv(.C) void;
-    const glGetBufferSubData = fn(_target: GLenum, _offset: GLintptr, _size: GLsizeiptr, _data: ?*anyopaque) callconv(.C) void;
-    const glMapBuffer = fn(_target: GLenum, _access: GLenum) callconv(.C) ?*anyopaque;
-    const glUnmapBuffer = fn(_target: GLenum) callconv(.C) GLboolean;
-    const glGetBufferParameteriv = fn(_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetBufferPointerv = fn(_target: GLenum, _pname: GLenum, _params: ?*?*anyopaque) callconv(.C) void;
-    const glBlendEquationSeparate = fn(_modeRGB: GLenum, _modeAlpha: GLenum) callconv(.C) void;
-    const glDrawBuffers = fn(_n: GLsizei, _bufs: [*c]const GLenum) callconv(.C) void;
-    const glStencilOpSeparate = fn(_face: GLenum, _sfail: GLenum, _dpfail: GLenum, _dppass: GLenum) callconv(.C) void;
-    const glStencilFuncSeparate = fn(_face: GLenum, _func: GLenum, _ref: GLint, _mask: GLuint) callconv(.C) void;
-    const glStencilMaskSeparate = fn(_face: GLenum, _mask: GLuint) callconv(.C) void;
-    const glAttachShader = fn(_program: GLuint, _shader: GLuint) callconv(.C) void;
-    const glBindAttribLocation = fn(_program: GLuint, _index: GLuint, _name: [*c]const GLchar) callconv(.C) void;
-    const glCompileShader = fn(_shader: GLuint) callconv(.C) void;
-    const glCreateProgram = fn() callconv(.C) GLuint;
-    const glCreateShader = fn(_type: GLenum) callconv(.C) GLuint;
-    const glDeleteProgram = fn(_program: GLuint) callconv(.C) void;
-    const glDeleteShader = fn(_shader: GLuint) callconv(.C) void;
-    const glDetachShader = fn(_program: GLuint, _shader: GLuint) callconv(.C) void;
-    const glDisableVertexAttribArray = fn(_index: GLuint) callconv(.C) void;
-    const glEnableVertexAttribArray = fn(_index: GLuint) callconv(.C) void;
-    const glGetActiveAttrib = fn(_program: GLuint, _index: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _size: [*c]GLint, _type: [*c]GLenum, _name: [*c]GLchar) callconv(.C) void;
-    const glGetActiveUniform = fn(_program: GLuint, _index: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _size: [*c]GLint, _type: [*c]GLenum, _name: [*c]GLchar) callconv(.C) void;
-    const glGetAttachedShaders = fn(_program: GLuint, _maxCount: GLsizei, _count: [*c]GLsizei, _shaders: [*c]GLuint) callconv(.C) void;
-    const glGetAttribLocation = fn(_program: GLuint, _name: [*c]const GLchar) callconv(.C) GLint;
-    const glGetProgramiv = fn(_program: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetProgramInfoLog = fn(_program: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _infoLog: [*c]GLchar) callconv(.C) void;
-    const glGetShaderiv = fn(_shader: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetShaderInfoLog = fn(_shader: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _infoLog: [*c]GLchar) callconv(.C) void;
-    const glGetShaderSource = fn(_shader: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _source: [*c]GLchar) callconv(.C) void;
-    const glGetUniformLocation = fn(_program: GLuint, _name: [*c]const GLchar) callconv(.C) GLint;
-    const glGetUniformfv = fn(_program: GLuint, _location: GLint, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetUniformiv = fn(_program: GLuint, _location: GLint, _params: [*c]GLint) callconv(.C) void;
-    const glGetVertexAttribdv = fn(_index: GLuint, _pname: GLenum, _params: [*c]GLdouble) callconv(.C) void;
-    const glGetVertexAttribfv = fn(_index: GLuint, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
-    const glGetVertexAttribiv = fn(_index: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
-    const glGetVertexAttribPointerv = fn(_index: GLuint, _pname: GLenum, _pointer: ?*?*anyopaque) callconv(.C) void;
-    const glIsProgram = fn(_program: GLuint) callconv(.C) GLboolean;
-    const glIsShader = fn(_shader: GLuint) callconv(.C) GLboolean;
-    const glLinkProgram = fn(_program: GLuint) callconv(.C) void;
-    const glShaderSource = fn(_shader: GLuint, _count: GLsizei, _string: [*c]const [*c]const GLchar, _length: [*c]const GLint) callconv(.C) void;
-    const glUseProgram = fn(_program: GLuint) callconv(.C) void;
-    const glUniform1f = fn(_location: GLint, _v0: GLfloat) callconv(.C) void;
-    const glUniform2f = fn(_location: GLint, _v0: GLfloat, _v1: GLfloat) callconv(.C) void;
-    const glUniform3f = fn(_location: GLint, _v0: GLfloat, _v1: GLfloat, _v2: GLfloat) callconv(.C) void;
-    const glUniform4f = fn(_location: GLint, _v0: GLfloat, _v1: GLfloat, _v2: GLfloat, _v3: GLfloat) callconv(.C) void;
-    const glUniform1i = fn(_location: GLint, _v0: GLint) callconv(.C) void;
-    const glUniform2i = fn(_location: GLint, _v0: GLint, _v1: GLint) callconv(.C) void;
-    const glUniform3i = fn(_location: GLint, _v0: GLint, _v1: GLint, _v2: GLint) callconv(.C) void;
-    const glUniform4i = fn(_location: GLint, _v0: GLint, _v1: GLint, _v2: GLint, _v3: GLint) callconv(.C) void;
-    const glUniform1fv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniform2fv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniform3fv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniform4fv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniform1iv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
-    const glUniform2iv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
-    const glUniform3iv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
-    const glUniform4iv = fn(_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
-    const glUniformMatrix2fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix3fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix4fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glValidateProgram = fn(_program: GLuint) callconv(.C) void;
-    const glVertexAttrib1d = fn(_index: GLuint, _x: GLdouble) callconv(.C) void;
-    const glVertexAttrib1dv = fn(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
-    const glVertexAttrib1f = fn(_index: GLuint, _x: GLfloat) callconv(.C) void;
-    const glVertexAttrib1fv = fn(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
-    const glVertexAttrib1s = fn(_index: GLuint, _x: GLshort) callconv(.C) void;
-    const glVertexAttrib1sv = fn(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
-    const glVertexAttrib2d = fn(_index: GLuint, _x: GLdouble, _y: GLdouble) callconv(.C) void;
-    const glVertexAttrib2dv = fn(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
-    const glVertexAttrib2f = fn(_index: GLuint, _x: GLfloat, _y: GLfloat) callconv(.C) void;
-    const glVertexAttrib2fv = fn(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
-    const glVertexAttrib2s = fn(_index: GLuint, _x: GLshort, _y: GLshort) callconv(.C) void;
-    const glVertexAttrib2sv = fn(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
-    const glVertexAttrib3d = fn(_index: GLuint, _x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
-    const glVertexAttrib3dv = fn(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
-    const glVertexAttrib3f = fn(_index: GLuint, _x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
-    const glVertexAttrib3fv = fn(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
-    const glVertexAttrib3s = fn(_index: GLuint, _x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
-    const glVertexAttrib3sv = fn(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
-    const glVertexAttrib4Nbv = fn(_index: GLuint, _v: [*c]const GLbyte) callconv(.C) void;
-    const glVertexAttrib4Niv = fn(_index: GLuint, _v: [*c]const GLint) callconv(.C) void;
-    const glVertexAttrib4Nsv = fn(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
-    const glVertexAttrib4Nub = fn(_index: GLuint, _x: GLubyte, _y: GLubyte, _z: GLubyte, _w: GLubyte) callconv(.C) void;
-    const glVertexAttrib4Nubv = fn(_index: GLuint, _v: ?[*:0]const GLubyte) callconv(.C) void;
-    const glVertexAttrib4Nuiv = fn(_index: GLuint, _v: [*c]const GLuint) callconv(.C) void;
-    const glVertexAttrib4Nusv = fn(_index: GLuint, _v: [*c]const GLushort) callconv(.C) void;
-    const glVertexAttrib4bv = fn(_index: GLuint, _v: [*c]const GLbyte) callconv(.C) void;
-    const glVertexAttrib4d = fn(_index: GLuint, _x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void;
-    const glVertexAttrib4dv = fn(_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
-    const glVertexAttrib4f = fn(_index: GLuint, _x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void;
-    const glVertexAttrib4fv = fn(_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
-    const glVertexAttrib4iv = fn(_index: GLuint, _v: [*c]const GLint) callconv(.C) void;
-    const glVertexAttrib4s = fn(_index: GLuint, _x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void;
-    const glVertexAttrib4sv = fn(_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
-    const glVertexAttrib4ubv = fn(_index: GLuint, _v: ?[*:0]const GLubyte) callconv(.C) void;
-    const glVertexAttrib4uiv = fn(_index: GLuint, _v: [*c]const GLuint) callconv(.C) void;
-    const glVertexAttrib4usv = fn(_index: GLuint, _v: [*c]const GLushort) callconv(.C) void;
-    const glVertexAttribPointer = fn(_index: GLuint, _size: GLint, _type: GLenum, _normalized: GLboolean, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
-    const glUniformMatrix2x3fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix3x2fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix2x4fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix4x2fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix3x4fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
-    const glUniformMatrix4x3fv = fn(_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glCullFace = fn (_mode: GLenum) callconv(.C) void;
+    const glFrontFace = fn (_mode: GLenum) callconv(.C) void;
+    const glHint = fn (_target: GLenum, _mode: GLenum) callconv(.C) void;
+    const glLineWidth = fn (_width: GLfloat) callconv(.C) void;
+    const glPointSize = fn (_size: GLfloat) callconv(.C) void;
+    const glPolygonMode = fn (_face: GLenum, _mode: GLenum) callconv(.C) void;
+    const glScissor = fn (_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
+    const glTexParameterf = fn (_target: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glTexParameterfv = fn (_target: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glTexParameteri = fn (_target: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
+    const glTexParameteriv = fn (_target: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glTexImage1D = fn (_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glTexImage2D = fn (_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _height: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glDrawBuffer = fn (_buf: GLenum) callconv(.C) void;
+    const glClear = fn (_mask: GLbitfield) callconv(.C) void;
+    const glClearColor = fn (_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
+    const glClearStencil = fn (_s: GLint) callconv(.C) void;
+    const glClearDepth = fn (_depth: GLdouble) callconv(.C) void;
+    const glStencilMask = fn (_mask: GLuint) callconv(.C) void;
+    const glColorMask = fn (_red: GLboolean, _green: GLboolean, _blue: GLboolean, _alpha: GLboolean) callconv(.C) void;
+    const glDepthMask = fn (_flag: GLboolean) callconv(.C) void;
+    const glDisable = fn (_cap: GLenum) callconv(.C) void;
+    const glEnable = fn (_cap: GLenum) callconv(.C) void;
+    const glFinish = fn () callconv(.C) void;
+    const glFlush = fn () callconv(.C) void;
+    const glBlendFunc = fn (_sfactor: GLenum, _dfactor: GLenum) callconv(.C) void;
+    const glLogicOp = fn (_opcode: GLenum) callconv(.C) void;
+    const glStencilFunc = fn (_func: GLenum, _ref: GLint, _mask: GLuint) callconv(.C) void;
+    const glStencilOp = fn (_fail: GLenum, _zfail: GLenum, _zpass: GLenum) callconv(.C) void;
+    const glDepthFunc = fn (_func: GLenum) callconv(.C) void;
+    const glPixelStoref = fn (_pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glPixelStorei = fn (_pname: GLenum, _param: GLint) callconv(.C) void;
+    const glReadBuffer = fn (_src: GLenum) callconv(.C) void;
+    const glReadPixels = fn (_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*anyopaque) callconv(.C) void;
+    const glGetBooleanv = fn (_pname: GLenum, _data: [*c]GLboolean) callconv(.C) void;
+    const glGetDoublev = fn (_pname: GLenum, _data: [*c]GLdouble) callconv(.C) void;
+    const glGetError = fn () callconv(.C) GLenum;
+    const glGetFloatv = fn (_pname: GLenum, _data: [*c]GLfloat) callconv(.C) void;
+    const glGetIntegerv = fn (_pname: GLenum, _data: [*c]GLint) callconv(.C) void;
+    const glGetString = fn (_name: GLenum) callconv(.C) ?[*:0]const GLubyte;
+    const glGetTexImage = fn (_target: GLenum, _level: GLint, _format: GLenum, _type: GLenum, _pixels: ?*anyopaque) callconv(.C) void;
+    const glGetTexParameterfv = fn (_target: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetTexParameteriv = fn (_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetTexLevelParameterfv = fn (_target: GLenum, _level: GLint, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetTexLevelParameteriv = fn (_target: GLenum, _level: GLint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glIsEnabled = fn (_cap: GLenum) callconv(.C) GLboolean;
+    const glDepthRange = fn (_n: GLdouble, _f: GLdouble) callconv(.C) void;
+    const glViewport = fn (_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
+    const glNewList = fn (_list: GLuint, _mode: GLenum) callconv(.C) void;
+    const glEndList = fn () callconv(.C) void;
+    const glCallList = fn (_list: GLuint) callconv(.C) void;
+    const glCallLists = fn (_n: GLsizei, _type: GLenum, _lists: ?*const anyopaque) callconv(.C) void;
+    const glDeleteLists = fn (_list: GLuint, _range: GLsizei) callconv(.C) void;
+    const glGenLists = fn (_range: GLsizei) callconv(.C) GLuint;
+    const glListBase = fn (_base: GLuint) callconv(.C) void;
+    const glBegin = fn (_mode: GLenum) callconv(.C) void;
+    const glBitmap = fn (_width: GLsizei, _height: GLsizei, _xorig: GLfloat, _yorig: GLfloat, _xmove: GLfloat, _ymove: GLfloat, _bitmap: ?[*:0]const GLubyte) callconv(.C) void;
+    const glColor3b = fn (_red: GLbyte, _green: GLbyte, _blue: GLbyte) callconv(.C) void;
+    const glColor3bv = fn (_v: [*c]const GLbyte) callconv(.C) void;
+    const glColor3d = fn (_red: GLdouble, _green: GLdouble, _blue: GLdouble) callconv(.C) void;
+    const glColor3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glColor3f = fn (_red: GLfloat, _green: GLfloat, _blue: GLfloat) callconv(.C) void;
+    const glColor3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glColor3i = fn (_red: GLint, _green: GLint, _blue: GLint) callconv(.C) void;
+    const glColor3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glColor3s = fn (_red: GLshort, _green: GLshort, _blue: GLshort) callconv(.C) void;
+    const glColor3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glColor3ub = fn (_red: GLubyte, _green: GLubyte, _blue: GLubyte) callconv(.C) void;
+    const glColor3ubv = fn (_v: ?[*:0]const GLubyte) callconv(.C) void;
+    const glColor3ui = fn (_red: GLuint, _green: GLuint, _blue: GLuint) callconv(.C) void;
+    const glColor3uiv = fn (_v: [*c]const GLuint) callconv(.C) void;
+    const glColor3us = fn (_red: GLushort, _green: GLushort, _blue: GLushort) callconv(.C) void;
+    const glColor3usv = fn (_v: [*c]const GLushort) callconv(.C) void;
+    const glColor4b = fn (_red: GLbyte, _green: GLbyte, _blue: GLbyte, _alpha: GLbyte) callconv(.C) void;
+    const glColor4bv = fn (_v: [*c]const GLbyte) callconv(.C) void;
+    const glColor4d = fn (_red: GLdouble, _green: GLdouble, _blue: GLdouble, _alpha: GLdouble) callconv(.C) void;
+    const glColor4dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glColor4f = fn (_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
+    const glColor4fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glColor4i = fn (_red: GLint, _green: GLint, _blue: GLint, _alpha: GLint) callconv(.C) void;
+    const glColor4iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glColor4s = fn (_red: GLshort, _green: GLshort, _blue: GLshort, _alpha: GLshort) callconv(.C) void;
+    const glColor4sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glColor4ub = fn (_red: GLubyte, _green: GLubyte, _blue: GLubyte, _alpha: GLubyte) callconv(.C) void;
+    const glColor4ubv = fn (_v: ?[*:0]const GLubyte) callconv(.C) void;
+    const glColor4ui = fn (_red: GLuint, _green: GLuint, _blue: GLuint, _alpha: GLuint) callconv(.C) void;
+    const glColor4uiv = fn (_v: [*c]const GLuint) callconv(.C) void;
+    const glColor4us = fn (_red: GLushort, _green: GLushort, _blue: GLushort, _alpha: GLushort) callconv(.C) void;
+    const glColor4usv = fn (_v: [*c]const GLushort) callconv(.C) void;
+    const glEdgeFlag = fn (_flag: GLboolean) callconv(.C) void;
+    const glEdgeFlagv = fn (_flag: [*c]const GLboolean) callconv(.C) void;
+    const glEnd = fn () callconv(.C) void;
+    const glIndexd = fn (_c: GLdouble) callconv(.C) void;
+    const glIndexdv = fn (_c: [*c]const GLdouble) callconv(.C) void;
+    const glIndexf = fn (_c: GLfloat) callconv(.C) void;
+    const glIndexfv = fn (_c: [*c]const GLfloat) callconv(.C) void;
+    const glIndexi = fn (_c: GLint) callconv(.C) void;
+    const glIndexiv = fn (_c: [*c]const GLint) callconv(.C) void;
+    const glIndexs = fn (_c: GLshort) callconv(.C) void;
+    const glIndexsv = fn (_c: [*c]const GLshort) callconv(.C) void;
+    const glNormal3b = fn (_nx: GLbyte, _ny: GLbyte, _nz: GLbyte) callconv(.C) void;
+    const glNormal3bv = fn (_v: [*c]const GLbyte) callconv(.C) void;
+    const glNormal3d = fn (_nx: GLdouble, _ny: GLdouble, _nz: GLdouble) callconv(.C) void;
+    const glNormal3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glNormal3f = fn (_nx: GLfloat, _ny: GLfloat, _nz: GLfloat) callconv(.C) void;
+    const glNormal3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glNormal3i = fn (_nx: GLint, _ny: GLint, _nz: GLint) callconv(.C) void;
+    const glNormal3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glNormal3s = fn (_nx: GLshort, _ny: GLshort, _nz: GLshort) callconv(.C) void;
+    const glNormal3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glRasterPos2d = fn (_x: GLdouble, _y: GLdouble) callconv(.C) void;
+    const glRasterPos2dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glRasterPos2f = fn (_x: GLfloat, _y: GLfloat) callconv(.C) void;
+    const glRasterPos2fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glRasterPos2i = fn (_x: GLint, _y: GLint) callconv(.C) void;
+    const glRasterPos2iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glRasterPos2s = fn (_x: GLshort, _y: GLshort) callconv(.C) void;
+    const glRasterPos2sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glRasterPos3d = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glRasterPos3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glRasterPos3f = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glRasterPos3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glRasterPos3i = fn (_x: GLint, _y: GLint, _z: GLint) callconv(.C) void;
+    const glRasterPos3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glRasterPos3s = fn (_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
+    const glRasterPos3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glRasterPos4d = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void;
+    const glRasterPos4dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glRasterPos4f = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void;
+    const glRasterPos4fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glRasterPos4i = fn (_x: GLint, _y: GLint, _z: GLint, _w: GLint) callconv(.C) void;
+    const glRasterPos4iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glRasterPos4s = fn (_x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void;
+    const glRasterPos4sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glRectd = fn (_x1: GLdouble, _y1: GLdouble, _x2: GLdouble, _y2: GLdouble) callconv(.C) void;
+    const glRectdv = fn (_v1: [*c]const GLdouble, _v2: [*c]const GLdouble) callconv(.C) void;
+    const glRectf = fn (_x1: GLfloat, _y1: GLfloat, _x2: GLfloat, _y2: GLfloat) callconv(.C) void;
+    const glRectfv = fn (_v1: [*c]const GLfloat, _v2: [*c]const GLfloat) callconv(.C) void;
+    const glRecti = fn (_x1: GLint, _y1: GLint, _x2: GLint, _y2: GLint) callconv(.C) void;
+    const glRectiv = fn (_v1: [*c]const GLint, _v2: [*c]const GLint) callconv(.C) void;
+    const glRects = fn (_x1: GLshort, _y1: GLshort, _x2: GLshort, _y2: GLshort) callconv(.C) void;
+    const glRectsv = fn (_v1: [*c]const GLshort, _v2: [*c]const GLshort) callconv(.C) void;
+    const glTexCoord1d = fn (_s: GLdouble) callconv(.C) void;
+    const glTexCoord1dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glTexCoord1f = fn (_s: GLfloat) callconv(.C) void;
+    const glTexCoord1fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glTexCoord1i = fn (_s: GLint) callconv(.C) void;
+    const glTexCoord1iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glTexCoord1s = fn (_s: GLshort) callconv(.C) void;
+    const glTexCoord1sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glTexCoord2d = fn (_s: GLdouble, _t: GLdouble) callconv(.C) void;
+    const glTexCoord2dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glTexCoord2f = fn (_s: GLfloat, _t: GLfloat) callconv(.C) void;
+    const glTexCoord2fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glTexCoord2i = fn (_s: GLint, _t: GLint) callconv(.C) void;
+    const glTexCoord2iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glTexCoord2s = fn (_s: GLshort, _t: GLshort) callconv(.C) void;
+    const glTexCoord2sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glTexCoord3d = fn (_s: GLdouble, _t: GLdouble, _r: GLdouble) callconv(.C) void;
+    const glTexCoord3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glTexCoord3f = fn (_s: GLfloat, _t: GLfloat, _r: GLfloat) callconv(.C) void;
+    const glTexCoord3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glTexCoord3i = fn (_s: GLint, _t: GLint, _r: GLint) callconv(.C) void;
+    const glTexCoord3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glTexCoord3s = fn (_s: GLshort, _t: GLshort, _r: GLshort) callconv(.C) void;
+    const glTexCoord3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glTexCoord4d = fn (_s: GLdouble, _t: GLdouble, _r: GLdouble, _q: GLdouble) callconv(.C) void;
+    const glTexCoord4dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glTexCoord4f = fn (_s: GLfloat, _t: GLfloat, _r: GLfloat, _q: GLfloat) callconv(.C) void;
+    const glTexCoord4fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glTexCoord4i = fn (_s: GLint, _t: GLint, _r: GLint, _q: GLint) callconv(.C) void;
+    const glTexCoord4iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glTexCoord4s = fn (_s: GLshort, _t: GLshort, _r: GLshort, _q: GLshort) callconv(.C) void;
+    const glTexCoord4sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glVertex2d = fn (_x: GLdouble, _y: GLdouble) callconv(.C) void;
+    const glVertex2dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glVertex2f = fn (_x: GLfloat, _y: GLfloat) callconv(.C) void;
+    const glVertex2fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glVertex2i = fn (_x: GLint, _y: GLint) callconv(.C) void;
+    const glVertex2iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glVertex2s = fn (_x: GLshort, _y: GLshort) callconv(.C) void;
+    const glVertex2sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glVertex3d = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glVertex3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glVertex3f = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glVertex3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glVertex3i = fn (_x: GLint, _y: GLint, _z: GLint) callconv(.C) void;
+    const glVertex3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glVertex3s = fn (_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
+    const glVertex3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glVertex4d = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void;
+    const glVertex4dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glVertex4f = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void;
+    const glVertex4fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glVertex4i = fn (_x: GLint, _y: GLint, _z: GLint, _w: GLint) callconv(.C) void;
+    const glVertex4iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glVertex4s = fn (_x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void;
+    const glVertex4sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glClipPlane = fn (_plane: GLenum, _equation: [*c]const GLdouble) callconv(.C) void;
+    const glColorMaterial = fn (_face: GLenum, _mode: GLenum) callconv(.C) void;
+    const glFogf = fn (_pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glFogfv = fn (_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glFogi = fn (_pname: GLenum, _param: GLint) callconv(.C) void;
+    const glFogiv = fn (_pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glLightf = fn (_light: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glLightfv = fn (_light: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glLighti = fn (_light: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
+    const glLightiv = fn (_light: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glLightModelf = fn (_pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glLightModelfv = fn (_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glLightModeli = fn (_pname: GLenum, _param: GLint) callconv(.C) void;
+    const glLightModeliv = fn (_pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glLineStipple = fn (_factor: GLint, _pattern: GLushort) callconv(.C) void;
+    const glMaterialf = fn (_face: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glMaterialfv = fn (_face: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glMateriali = fn (_face: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
+    const glMaterialiv = fn (_face: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glPolygonStipple = fn (_mask: ?[*:0]const GLubyte) callconv(.C) void;
+    const glShadeModel = fn (_mode: GLenum) callconv(.C) void;
+    const glTexEnvf = fn (_target: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glTexEnvfv = fn (_target: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glTexEnvi = fn (_target: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
+    const glTexEnviv = fn (_target: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glTexGend = fn (_coord: GLenum, _pname: GLenum, _param: GLdouble) callconv(.C) void;
+    const glTexGendv = fn (_coord: GLenum, _pname: GLenum, _params: [*c]const GLdouble) callconv(.C) void;
+    const glTexGenf = fn (_coord: GLenum, _pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glTexGenfv = fn (_coord: GLenum, _pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glTexGeni = fn (_coord: GLenum, _pname: GLenum, _param: GLint) callconv(.C) void;
+    const glTexGeniv = fn (_coord: GLenum, _pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glFeedbackBuffer = fn (_size: GLsizei, _type: GLenum, _buffer: [*c]GLfloat) callconv(.C) void;
+    const glSelectBuffer = fn (_size: GLsizei, _buffer: [*c]GLuint) callconv(.C) void;
+    const glRenderMode = fn (_mode: GLenum) callconv(.C) GLint;
+    const glInitNames = fn () callconv(.C) void;
+    const glLoadName = fn (_name: GLuint) callconv(.C) void;
+    const glPassThrough = fn (_token: GLfloat) callconv(.C) void;
+    const glPopName = fn () callconv(.C) void;
+    const glPushName = fn (_name: GLuint) callconv(.C) void;
+    const glClearAccum = fn (_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
+    const glClearIndex = fn (_c: GLfloat) callconv(.C) void;
+    const glIndexMask = fn (_mask: GLuint) callconv(.C) void;
+    const glAccum = fn (_op: GLenum, _value: GLfloat) callconv(.C) void;
+    const glPopAttrib = fn () callconv(.C) void;
+    const glPushAttrib = fn (_mask: GLbitfield) callconv(.C) void;
+    const glMap1d = fn (_target: GLenum, _u1: GLdouble, _u2: GLdouble, _stride: GLint, _order: GLint, _points: [*c]const GLdouble) callconv(.C) void;
+    const glMap1f = fn (_target: GLenum, _u1: GLfloat, _u2: GLfloat, _stride: GLint, _order: GLint, _points: [*c]const GLfloat) callconv(.C) void;
+    const glMap2d = fn (_target: GLenum, _u1: GLdouble, _u2: GLdouble, _ustride: GLint, _uorder: GLint, _v1: GLdouble, _v2: GLdouble, _vstride: GLint, _vorder: GLint, _points: [*c]const GLdouble) callconv(.C) void;
+    const glMap2f = fn (_target: GLenum, _u1: GLfloat, _u2: GLfloat, _ustride: GLint, _uorder: GLint, _v1: GLfloat, _v2: GLfloat, _vstride: GLint, _vorder: GLint, _points: [*c]const GLfloat) callconv(.C) void;
+    const glMapGrid1d = fn (_un: GLint, _u1: GLdouble, _u2: GLdouble) callconv(.C) void;
+    const glMapGrid1f = fn (_un: GLint, _u1: GLfloat, _u2: GLfloat) callconv(.C) void;
+    const glMapGrid2d = fn (_un: GLint, _u1: GLdouble, _u2: GLdouble, _vn: GLint, _v1: GLdouble, _v2: GLdouble) callconv(.C) void;
+    const glMapGrid2f = fn (_un: GLint, _u1: GLfloat, _u2: GLfloat, _vn: GLint, _v1: GLfloat, _v2: GLfloat) callconv(.C) void;
+    const glEvalCoord1d = fn (_u: GLdouble) callconv(.C) void;
+    const glEvalCoord1dv = fn (_u: [*c]const GLdouble) callconv(.C) void;
+    const glEvalCoord1f = fn (_u: GLfloat) callconv(.C) void;
+    const glEvalCoord1fv = fn (_u: [*c]const GLfloat) callconv(.C) void;
+    const glEvalCoord2d = fn (_u: GLdouble, _v: GLdouble) callconv(.C) void;
+    const glEvalCoord2dv = fn (_u: [*c]const GLdouble) callconv(.C) void;
+    const glEvalCoord2f = fn (_u: GLfloat, _v: GLfloat) callconv(.C) void;
+    const glEvalCoord2fv = fn (_u: [*c]const GLfloat) callconv(.C) void;
+    const glEvalMesh1 = fn (_mode: GLenum, _i1: GLint, _i2: GLint) callconv(.C) void;
+    const glEvalPoint1 = fn (_i: GLint) callconv(.C) void;
+    const glEvalMesh2 = fn (_mode: GLenum, _i1: GLint, _i2: GLint, _j1: GLint, _j2: GLint) callconv(.C) void;
+    const glEvalPoint2 = fn (_i: GLint, _j: GLint) callconv(.C) void;
+    const glAlphaFunc = fn (_func: GLenum, _ref: GLfloat) callconv(.C) void;
+    const glPixelZoom = fn (_xfactor: GLfloat, _yfactor: GLfloat) callconv(.C) void;
+    const glPixelTransferf = fn (_pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glPixelTransferi = fn (_pname: GLenum, _param: GLint) callconv(.C) void;
+    const glPixelMapfv = fn (_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLfloat) callconv(.C) void;
+    const glPixelMapuiv = fn (_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLuint) callconv(.C) void;
+    const glPixelMapusv = fn (_map: GLenum, _mapsize: GLsizei, _values: [*c]const GLushort) callconv(.C) void;
+    const glCopyPixels = fn (_x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _type: GLenum) callconv(.C) void;
+    const glDrawPixels = fn (_width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glGetClipPlane = fn (_plane: GLenum, _equation: [*c]GLdouble) callconv(.C) void;
+    const glGetLightfv = fn (_light: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetLightiv = fn (_light: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetMapdv = fn (_target: GLenum, _query: GLenum, _v: [*c]GLdouble) callconv(.C) void;
+    const glGetMapfv = fn (_target: GLenum, _query: GLenum, _v: [*c]GLfloat) callconv(.C) void;
+    const glGetMapiv = fn (_target: GLenum, _query: GLenum, _v: [*c]GLint) callconv(.C) void;
+    const glGetMaterialfv = fn (_face: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetMaterialiv = fn (_face: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetPixelMapfv = fn (_map: GLenum, _values: [*c]GLfloat) callconv(.C) void;
+    const glGetPixelMapuiv = fn (_map: GLenum, _values: [*c]GLuint) callconv(.C) void;
+    const glGetPixelMapusv = fn (_map: GLenum, _values: [*c]GLushort) callconv(.C) void;
+    const glGetPolygonStipple = fn (_mask: [*c]GLubyte) callconv(.C) void;
+    const glGetTexEnvfv = fn (_target: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetTexEnviv = fn (_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetTexGendv = fn (_coord: GLenum, _pname: GLenum, _params: [*c]GLdouble) callconv(.C) void;
+    const glGetTexGenfv = fn (_coord: GLenum, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetTexGeniv = fn (_coord: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glIsList = fn (_list: GLuint) callconv(.C) GLboolean;
+    const glFrustum = fn (_left: GLdouble, _right: GLdouble, _bottom: GLdouble, _top: GLdouble, _zNear: GLdouble, _zFar: GLdouble) callconv(.C) void;
+    const glLoadIdentity = fn () callconv(.C) void;
+    const glLoadMatrixf = fn (_m: [*c]const GLfloat) callconv(.C) void;
+    const glLoadMatrixd = fn (_m: [*c]const GLdouble) callconv(.C) void;
+    const glMatrixMode = fn (_mode: GLenum) callconv(.C) void;
+    const glMultMatrixf = fn (_m: [*c]const GLfloat) callconv(.C) void;
+    const glMultMatrixd = fn (_m: [*c]const GLdouble) callconv(.C) void;
+    const glOrtho = fn (_left: GLdouble, _right: GLdouble, _bottom: GLdouble, _top: GLdouble, _zNear: GLdouble, _zFar: GLdouble) callconv(.C) void;
+    const glPopMatrix = fn () callconv(.C) void;
+    const glPushMatrix = fn () callconv(.C) void;
+    const glRotated = fn (_angle: GLdouble, _x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glRotatef = fn (_angle: GLfloat, _x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glScaled = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glScalef = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glTranslated = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glTranslatef = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glDrawArrays = fn (_mode: GLenum, _first: GLint, _count: GLsizei) callconv(.C) void;
+    const glDrawElements = fn (_mode: GLenum, _count: GLsizei, _type: GLenum, _indices: ?*const anyopaque) callconv(.C) void;
+    const glGetPointerv = fn (_pname: GLenum, _params: ?*?*anyopaque) callconv(.C) void;
+    const glPolygonOffset = fn (_factor: GLfloat, _units: GLfloat) callconv(.C) void;
+    const glCopyTexImage1D = fn (_target: GLenum, _level: GLint, _internalformat: GLenum, _x: GLint, _y: GLint, _width: GLsizei, _border: GLint) callconv(.C) void;
+    const glCopyTexImage2D = fn (_target: GLenum, _level: GLint, _internalformat: GLenum, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei, _border: GLint) callconv(.C) void;
+    const glCopyTexSubImage1D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei) callconv(.C) void;
+    const glCopyTexSubImage2D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
+    const glTexSubImage1D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _width: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glTexSubImage2D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glBindTexture = fn (_target: GLenum, _texture: GLuint) callconv(.C) void;
+    const glDeleteTextures = fn (_n: GLsizei, _textures: [*c]const GLuint) callconv(.C) void;
+    const glGenTextures = fn (_n: GLsizei, _textures: [*c]GLuint) callconv(.C) void;
+    const glIsTexture = fn (_texture: GLuint) callconv(.C) GLboolean;
+    const glArrayElement = fn (_i: GLint) callconv(.C) void;
+    const glColorPointer = fn (_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glDisableClientState = fn (_array: GLenum) callconv(.C) void;
+    const glEdgeFlagPointer = fn (_stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glEnableClientState = fn (_array: GLenum) callconv(.C) void;
+    const glIndexPointer = fn (_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glInterleavedArrays = fn (_format: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glNormalPointer = fn (_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glTexCoordPointer = fn (_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glVertexPointer = fn (_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glAreTexturesResident = fn (_n: GLsizei, _textures: [*c]const GLuint, _residences: [*c]GLboolean) callconv(.C) GLboolean;
+    const glPrioritizeTextures = fn (_n: GLsizei, _textures: [*c]const GLuint, _priorities: [*c]const GLfloat) callconv(.C) void;
+    const glIndexub = fn (_c: GLubyte) callconv(.C) void;
+    const glIndexubv = fn (_c: ?[*:0]const GLubyte) callconv(.C) void;
+    const glPopClientAttrib = fn () callconv(.C) void;
+    const glPushClientAttrib = fn (_mask: GLbitfield) callconv(.C) void;
+    const glDrawRangeElements = fn (_mode: GLenum, _start: GLuint, _end: GLuint, _count: GLsizei, _type: GLenum, _indices: ?*const anyopaque) callconv(.C) void;
+    const glTexImage3D = fn (_target: GLenum, _level: GLint, _internalformat: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _border: GLint, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glTexSubImage3D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _format: GLenum, _type: GLenum, _pixels: ?*const anyopaque) callconv(.C) void;
+    const glCopyTexSubImage3D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _x: GLint, _y: GLint, _width: GLsizei, _height: GLsizei) callconv(.C) void;
+    const glActiveTexture = fn (_texture: GLenum) callconv(.C) void;
+    const glSampleCoverage = fn (_value: GLfloat, _invert: GLboolean) callconv(.C) void;
+    const glCompressedTexImage3D = fn (_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
+    const glCompressedTexImage2D = fn (_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _height: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
+    const glCompressedTexImage1D = fn (_target: GLenum, _level: GLint, _internalformat: GLenum, _width: GLsizei, _border: GLint, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
+    const glCompressedTexSubImage3D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _zoffset: GLint, _width: GLsizei, _height: GLsizei, _depth: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
+    const glCompressedTexSubImage2D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _yoffset: GLint, _width: GLsizei, _height: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
+    const glCompressedTexSubImage1D = fn (_target: GLenum, _level: GLint, _xoffset: GLint, _width: GLsizei, _format: GLenum, _imageSize: GLsizei, _data: ?*const anyopaque) callconv(.C) void;
+    const glGetCompressedTexImage = fn (_target: GLenum, _level: GLint, _img: ?*anyopaque) callconv(.C) void;
+    const glClientActiveTexture = fn (_texture: GLenum) callconv(.C) void;
+    const glMultiTexCoord1d = fn (_target: GLenum, _s: GLdouble) callconv(.C) void;
+    const glMultiTexCoord1dv = fn (_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
+    const glMultiTexCoord1f = fn (_target: GLenum, _s: GLfloat) callconv(.C) void;
+    const glMultiTexCoord1fv = fn (_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
+    const glMultiTexCoord1i = fn (_target: GLenum, _s: GLint) callconv(.C) void;
+    const glMultiTexCoord1iv = fn (_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
+    const glMultiTexCoord1s = fn (_target: GLenum, _s: GLshort) callconv(.C) void;
+    const glMultiTexCoord1sv = fn (_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
+    const glMultiTexCoord2d = fn (_target: GLenum, _s: GLdouble, _t: GLdouble) callconv(.C) void;
+    const glMultiTexCoord2dv = fn (_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
+    const glMultiTexCoord2f = fn (_target: GLenum, _s: GLfloat, _t: GLfloat) callconv(.C) void;
+    const glMultiTexCoord2fv = fn (_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
+    const glMultiTexCoord2i = fn (_target: GLenum, _s: GLint, _t: GLint) callconv(.C) void;
+    const glMultiTexCoord2iv = fn (_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
+    const glMultiTexCoord2s = fn (_target: GLenum, _s: GLshort, _t: GLshort) callconv(.C) void;
+    const glMultiTexCoord2sv = fn (_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
+    const glMultiTexCoord3d = fn (_target: GLenum, _s: GLdouble, _t: GLdouble, _r: GLdouble) callconv(.C) void;
+    const glMultiTexCoord3dv = fn (_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
+    const glMultiTexCoord3f = fn (_target: GLenum, _s: GLfloat, _t: GLfloat, _r: GLfloat) callconv(.C) void;
+    const glMultiTexCoord3fv = fn (_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
+    const glMultiTexCoord3i = fn (_target: GLenum, _s: GLint, _t: GLint, _r: GLint) callconv(.C) void;
+    const glMultiTexCoord3iv = fn (_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
+    const glMultiTexCoord3s = fn (_target: GLenum, _s: GLshort, _t: GLshort, _r: GLshort) callconv(.C) void;
+    const glMultiTexCoord3sv = fn (_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
+    const glMultiTexCoord4d = fn (_target: GLenum, _s: GLdouble, _t: GLdouble, _r: GLdouble, _q: GLdouble) callconv(.C) void;
+    const glMultiTexCoord4dv = fn (_target: GLenum, _v: [*c]const GLdouble) callconv(.C) void;
+    const glMultiTexCoord4f = fn (_target: GLenum, _s: GLfloat, _t: GLfloat, _r: GLfloat, _q: GLfloat) callconv(.C) void;
+    const glMultiTexCoord4fv = fn (_target: GLenum, _v: [*c]const GLfloat) callconv(.C) void;
+    const glMultiTexCoord4i = fn (_target: GLenum, _s: GLint, _t: GLint, _r: GLint, _q: GLint) callconv(.C) void;
+    const glMultiTexCoord4iv = fn (_target: GLenum, _v: [*c]const GLint) callconv(.C) void;
+    const glMultiTexCoord4s = fn (_target: GLenum, _s: GLshort, _t: GLshort, _r: GLshort, _q: GLshort) callconv(.C) void;
+    const glMultiTexCoord4sv = fn (_target: GLenum, _v: [*c]const GLshort) callconv(.C) void;
+    const glLoadTransposeMatrixf = fn (_m: [*c]const GLfloat) callconv(.C) void;
+    const glLoadTransposeMatrixd = fn (_m: [*c]const GLdouble) callconv(.C) void;
+    const glMultTransposeMatrixf = fn (_m: [*c]const GLfloat) callconv(.C) void;
+    const glMultTransposeMatrixd = fn (_m: [*c]const GLdouble) callconv(.C) void;
+    const glBlendFuncSeparate = fn (_sfactorRGB: GLenum, _dfactorRGB: GLenum, _sfactorAlpha: GLenum, _dfactorAlpha: GLenum) callconv(.C) void;
+    const glMultiDrawArrays = fn (_mode: GLenum, _first: [*c]const GLint, _count: [*c]const GLsizei, _drawcount: GLsizei) callconv(.C) void;
+    const glMultiDrawElements = fn (_mode: GLenum, _count: [*c]const GLsizei, _type: GLenum, _indices: [*c]const ?*const anyopaque, _drawcount: GLsizei) callconv(.C) void;
+    const glPointParameterf = fn (_pname: GLenum, _param: GLfloat) callconv(.C) void;
+    const glPointParameterfv = fn (_pname: GLenum, _params: [*c]const GLfloat) callconv(.C) void;
+    const glPointParameteri = fn (_pname: GLenum, _param: GLint) callconv(.C) void;
+    const glPointParameteriv = fn (_pname: GLenum, _params: [*c]const GLint) callconv(.C) void;
+    const glFogCoordf = fn (_coord: GLfloat) callconv(.C) void;
+    const glFogCoordfv = fn (_coord: [*c]const GLfloat) callconv(.C) void;
+    const glFogCoordd = fn (_coord: GLdouble) callconv(.C) void;
+    const glFogCoorddv = fn (_coord: [*c]const GLdouble) callconv(.C) void;
+    const glFogCoordPointer = fn (_type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glSecondaryColor3b = fn (_red: GLbyte, _green: GLbyte, _blue: GLbyte) callconv(.C) void;
+    const glSecondaryColor3bv = fn (_v: [*c]const GLbyte) callconv(.C) void;
+    const glSecondaryColor3d = fn (_red: GLdouble, _green: GLdouble, _blue: GLdouble) callconv(.C) void;
+    const glSecondaryColor3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glSecondaryColor3f = fn (_red: GLfloat, _green: GLfloat, _blue: GLfloat) callconv(.C) void;
+    const glSecondaryColor3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glSecondaryColor3i = fn (_red: GLint, _green: GLint, _blue: GLint) callconv(.C) void;
+    const glSecondaryColor3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glSecondaryColor3s = fn (_red: GLshort, _green: GLshort, _blue: GLshort) callconv(.C) void;
+    const glSecondaryColor3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glSecondaryColor3ub = fn (_red: GLubyte, _green: GLubyte, _blue: GLubyte) callconv(.C) void;
+    const glSecondaryColor3ubv = fn (_v: ?[*:0]const GLubyte) callconv(.C) void;
+    const glSecondaryColor3ui = fn (_red: GLuint, _green: GLuint, _blue: GLuint) callconv(.C) void;
+    const glSecondaryColor3uiv = fn (_v: [*c]const GLuint) callconv(.C) void;
+    const glSecondaryColor3us = fn (_red: GLushort, _green: GLushort, _blue: GLushort) callconv(.C) void;
+    const glSecondaryColor3usv = fn (_v: [*c]const GLushort) callconv(.C) void;
+    const glSecondaryColorPointer = fn (_size: GLint, _type: GLenum, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glWindowPos2d = fn (_x: GLdouble, _y: GLdouble) callconv(.C) void;
+    const glWindowPos2dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glWindowPos2f = fn (_x: GLfloat, _y: GLfloat) callconv(.C) void;
+    const glWindowPos2fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glWindowPos2i = fn (_x: GLint, _y: GLint) callconv(.C) void;
+    const glWindowPos2iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glWindowPos2s = fn (_x: GLshort, _y: GLshort) callconv(.C) void;
+    const glWindowPos2sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glWindowPos3d = fn (_x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glWindowPos3dv = fn (_v: [*c]const GLdouble) callconv(.C) void;
+    const glWindowPos3f = fn (_x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glWindowPos3fv = fn (_v: [*c]const GLfloat) callconv(.C) void;
+    const glWindowPos3i = fn (_x: GLint, _y: GLint, _z: GLint) callconv(.C) void;
+    const glWindowPos3iv = fn (_v: [*c]const GLint) callconv(.C) void;
+    const glWindowPos3s = fn (_x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
+    const glWindowPos3sv = fn (_v: [*c]const GLshort) callconv(.C) void;
+    const glBlendColor = fn (_red: GLfloat, _green: GLfloat, _blue: GLfloat, _alpha: GLfloat) callconv(.C) void;
+    const glBlendEquation = fn (_mode: GLenum) callconv(.C) void;
+    const glGenQueries = fn (_n: GLsizei, _ids: [*c]GLuint) callconv(.C) void;
+    const glDeleteQueries = fn (_n: GLsizei, _ids: [*c]const GLuint) callconv(.C) void;
+    const glIsQuery = fn (_id: GLuint) callconv(.C) GLboolean;
+    const glBeginQuery = fn (_target: GLenum, _id: GLuint) callconv(.C) void;
+    const glEndQuery = fn (_target: GLenum) callconv(.C) void;
+    const glGetQueryiv = fn (_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetQueryObjectiv = fn (_id: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetQueryObjectuiv = fn (_id: GLuint, _pname: GLenum, _params: [*c]GLuint) callconv(.C) void;
+    const glBindBuffer = fn (_target: GLenum, _buffer: GLuint) callconv(.C) void;
+    const glDeleteBuffers = fn (_n: GLsizei, _buffers: [*c]const GLuint) callconv(.C) void;
+    const glGenBuffers = fn (_n: GLsizei, _buffers: [*c]GLuint) callconv(.C) void;
+    const glIsBuffer = fn (_buffer: GLuint) callconv(.C) GLboolean;
+    const glBufferData = fn (_target: GLenum, _size: GLsizeiptr, _data: ?*const anyopaque, _usage: GLenum) callconv(.C) void;
+    const glBufferSubData = fn (_target: GLenum, _offset: GLintptr, _size: GLsizeiptr, _data: ?*const anyopaque) callconv(.C) void;
+    const glGetBufferSubData = fn (_target: GLenum, _offset: GLintptr, _size: GLsizeiptr, _data: ?*anyopaque) callconv(.C) void;
+    const glMapBuffer = fn (_target: GLenum, _access: GLenum) callconv(.C) ?*anyopaque;
+    const glUnmapBuffer = fn (_target: GLenum) callconv(.C) GLboolean;
+    const glGetBufferParameteriv = fn (_target: GLenum, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetBufferPointerv = fn (_target: GLenum, _pname: GLenum, _params: ?*?*anyopaque) callconv(.C) void;
+    const glBlendEquationSeparate = fn (_modeRGB: GLenum, _modeAlpha: GLenum) callconv(.C) void;
+    const glDrawBuffers = fn (_n: GLsizei, _bufs: [*c]const GLenum) callconv(.C) void;
+    const glStencilOpSeparate = fn (_face: GLenum, _sfail: GLenum, _dpfail: GLenum, _dppass: GLenum) callconv(.C) void;
+    const glStencilFuncSeparate = fn (_face: GLenum, _func: GLenum, _ref: GLint, _mask: GLuint) callconv(.C) void;
+    const glStencilMaskSeparate = fn (_face: GLenum, _mask: GLuint) callconv(.C) void;
+    const glAttachShader = fn (_program: GLuint, _shader: GLuint) callconv(.C) void;
+    const glBindAttribLocation = fn (_program: GLuint, _index: GLuint, _name: [*c]const GLchar) callconv(.C) void;
+    const glCompileShader = fn (_shader: GLuint) callconv(.C) void;
+    const glCreateProgram = fn () callconv(.C) GLuint;
+    const glCreateShader = fn (_type: GLenum) callconv(.C) GLuint;
+    const glDeleteProgram = fn (_program: GLuint) callconv(.C) void;
+    const glDeleteShader = fn (_shader: GLuint) callconv(.C) void;
+    const glDetachShader = fn (_program: GLuint, _shader: GLuint) callconv(.C) void;
+    const glDisableVertexAttribArray = fn (_index: GLuint) callconv(.C) void;
+    const glEnableVertexAttribArray = fn (_index: GLuint) callconv(.C) void;
+    const glGetActiveAttrib = fn (_program: GLuint, _index: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _size: [*c]GLint, _type: [*c]GLenum, _name: [*c]GLchar) callconv(.C) void;
+    const glGetActiveUniform = fn (_program: GLuint, _index: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _size: [*c]GLint, _type: [*c]GLenum, _name: [*c]GLchar) callconv(.C) void;
+    const glGetAttachedShaders = fn (_program: GLuint, _maxCount: GLsizei, _count: [*c]GLsizei, _shaders: [*c]GLuint) callconv(.C) void;
+    const glGetAttribLocation = fn (_program: GLuint, _name: [*c]const GLchar) callconv(.C) GLint;
+    const glGetProgramiv = fn (_program: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetProgramInfoLog = fn (_program: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _infoLog: [*c]GLchar) callconv(.C) void;
+    const glGetShaderiv = fn (_shader: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetShaderInfoLog = fn (_shader: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _infoLog: [*c]GLchar) callconv(.C) void;
+    const glGetShaderSource = fn (_shader: GLuint, _bufSize: GLsizei, _length: [*c]GLsizei, _source: [*c]GLchar) callconv(.C) void;
+    const glGetUniformLocation = fn (_program: GLuint, _name: [*c]const GLchar) callconv(.C) GLint;
+    const glGetUniformfv = fn (_program: GLuint, _location: GLint, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetUniformiv = fn (_program: GLuint, _location: GLint, _params: [*c]GLint) callconv(.C) void;
+    const glGetVertexAttribdv = fn (_index: GLuint, _pname: GLenum, _params: [*c]GLdouble) callconv(.C) void;
+    const glGetVertexAttribfv = fn (_index: GLuint, _pname: GLenum, _params: [*c]GLfloat) callconv(.C) void;
+    const glGetVertexAttribiv = fn (_index: GLuint, _pname: GLenum, _params: [*c]GLint) callconv(.C) void;
+    const glGetVertexAttribPointerv = fn (_index: GLuint, _pname: GLenum, _pointer: ?*?*anyopaque) callconv(.C) void;
+    const glIsProgram = fn (_program: GLuint) callconv(.C) GLboolean;
+    const glIsShader = fn (_shader: GLuint) callconv(.C) GLboolean;
+    const glLinkProgram = fn (_program: GLuint) callconv(.C) void;
+    const glShaderSource = fn (_shader: GLuint, _count: GLsizei, _string: [*c]const [*c]const GLchar, _length: [*c]const GLint) callconv(.C) void;
+    const glUseProgram = fn (_program: GLuint) callconv(.C) void;
+    const glUniform1f = fn (_location: GLint, _v0: GLfloat) callconv(.C) void;
+    const glUniform2f = fn (_location: GLint, _v0: GLfloat, _v1: GLfloat) callconv(.C) void;
+    const glUniform3f = fn (_location: GLint, _v0: GLfloat, _v1: GLfloat, _v2: GLfloat) callconv(.C) void;
+    const glUniform4f = fn (_location: GLint, _v0: GLfloat, _v1: GLfloat, _v2: GLfloat, _v3: GLfloat) callconv(.C) void;
+    const glUniform1i = fn (_location: GLint, _v0: GLint) callconv(.C) void;
+    const glUniform2i = fn (_location: GLint, _v0: GLint, _v1: GLint) callconv(.C) void;
+    const glUniform3i = fn (_location: GLint, _v0: GLint, _v1: GLint, _v2: GLint) callconv(.C) void;
+    const glUniform4i = fn (_location: GLint, _v0: GLint, _v1: GLint, _v2: GLint, _v3: GLint) callconv(.C) void;
+    const glUniform1fv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniform2fv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniform3fv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniform4fv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniform1iv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
+    const glUniform2iv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
+    const glUniform3iv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
+    const glUniform4iv = fn (_location: GLint, _count: GLsizei, _value: [*c]const GLint) callconv(.C) void;
+    const glUniformMatrix2fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix3fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix4fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glValidateProgram = fn (_program: GLuint) callconv(.C) void;
+    const glVertexAttrib1d = fn (_index: GLuint, _x: GLdouble) callconv(.C) void;
+    const glVertexAttrib1dv = fn (_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
+    const glVertexAttrib1f = fn (_index: GLuint, _x: GLfloat) callconv(.C) void;
+    const glVertexAttrib1fv = fn (_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
+    const glVertexAttrib1s = fn (_index: GLuint, _x: GLshort) callconv(.C) void;
+    const glVertexAttrib1sv = fn (_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
+    const glVertexAttrib2d = fn (_index: GLuint, _x: GLdouble, _y: GLdouble) callconv(.C) void;
+    const glVertexAttrib2dv = fn (_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
+    const glVertexAttrib2f = fn (_index: GLuint, _x: GLfloat, _y: GLfloat) callconv(.C) void;
+    const glVertexAttrib2fv = fn (_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
+    const glVertexAttrib2s = fn (_index: GLuint, _x: GLshort, _y: GLshort) callconv(.C) void;
+    const glVertexAttrib2sv = fn (_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
+    const glVertexAttrib3d = fn (_index: GLuint, _x: GLdouble, _y: GLdouble, _z: GLdouble) callconv(.C) void;
+    const glVertexAttrib3dv = fn (_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
+    const glVertexAttrib3f = fn (_index: GLuint, _x: GLfloat, _y: GLfloat, _z: GLfloat) callconv(.C) void;
+    const glVertexAttrib3fv = fn (_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
+    const glVertexAttrib3s = fn (_index: GLuint, _x: GLshort, _y: GLshort, _z: GLshort) callconv(.C) void;
+    const glVertexAttrib3sv = fn (_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
+    const glVertexAttrib4Nbv = fn (_index: GLuint, _v: [*c]const GLbyte) callconv(.C) void;
+    const glVertexAttrib4Niv = fn (_index: GLuint, _v: [*c]const GLint) callconv(.C) void;
+    const glVertexAttrib4Nsv = fn (_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
+    const glVertexAttrib4Nub = fn (_index: GLuint, _x: GLubyte, _y: GLubyte, _z: GLubyte, _w: GLubyte) callconv(.C) void;
+    const glVertexAttrib4Nubv = fn (_index: GLuint, _v: ?[*:0]const GLubyte) callconv(.C) void;
+    const glVertexAttrib4Nuiv = fn (_index: GLuint, _v: [*c]const GLuint) callconv(.C) void;
+    const glVertexAttrib4Nusv = fn (_index: GLuint, _v: [*c]const GLushort) callconv(.C) void;
+    const glVertexAttrib4bv = fn (_index: GLuint, _v: [*c]const GLbyte) callconv(.C) void;
+    const glVertexAttrib4d = fn (_index: GLuint, _x: GLdouble, _y: GLdouble, _z: GLdouble, _w: GLdouble) callconv(.C) void;
+    const glVertexAttrib4dv = fn (_index: GLuint, _v: [*c]const GLdouble) callconv(.C) void;
+    const glVertexAttrib4f = fn (_index: GLuint, _x: GLfloat, _y: GLfloat, _z: GLfloat, _w: GLfloat) callconv(.C) void;
+    const glVertexAttrib4fv = fn (_index: GLuint, _v: [*c]const GLfloat) callconv(.C) void;
+    const glVertexAttrib4iv = fn (_index: GLuint, _v: [*c]const GLint) callconv(.C) void;
+    const glVertexAttrib4s = fn (_index: GLuint, _x: GLshort, _y: GLshort, _z: GLshort, _w: GLshort) callconv(.C) void;
+    const glVertexAttrib4sv = fn (_index: GLuint, _v: [*c]const GLshort) callconv(.C) void;
+    const glVertexAttrib4ubv = fn (_index: GLuint, _v: ?[*:0]const GLubyte) callconv(.C) void;
+    const glVertexAttrib4uiv = fn (_index: GLuint, _v: [*c]const GLuint) callconv(.C) void;
+    const glVertexAttrib4usv = fn (_index: GLuint, _v: [*c]const GLushort) callconv(.C) void;
+    const glVertexAttribPointer = fn (_index: GLuint, _size: GLint, _type: GLenum, _normalized: GLboolean, _stride: GLsizei, _pointer: ?*const anyopaque) callconv(.C) void;
+    const glUniformMatrix2x3fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix3x2fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix2x4fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix4x2fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix3x4fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
+    const glUniformMatrix4x3fv = fn (_location: GLint, _count: GLsizei, _transpose: GLboolean, _value: [*c]const GLfloat) callconv(.C) void;
 };
 
 const function_pointers = struct {

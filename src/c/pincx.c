@@ -1,298 +1,605 @@
+// This C file contains ALL of the code that directly interacts with X and glX.
+// GLFW's equivalent to this file is ~8000 lines of code, so it's not bad at all.
+
+// Refactoring functionality out of this file would require modifying the loader headers
+// to support separating the file that holds the function pointers and files that access them.
+
+// Includes of C standard library (Linux stuff)
 #include <stddef.h>
 #include <stdbool.h>
-// This will only ever be used on posix, so it is safe to do this
 #include <dlfcn.h>
 #include <stdio.h>
+#include <locale.h>
 #include <string.h>
 #include <math.h>
 #include <time.h>
-// This will only ever be used on posix, so it is safe to do this
 #include <unistd.h>
+// Includes of X and X extensions
 #include <X11/Xlib.h>
-// We use a file to load Xlib at runtime
 #include "load/XlibLoad.h"
-#include <GL/glx.h>
-// same as Xlib, we load glX at runtime.
-#include "load/glXLoad.h"
 
-// xkb for better keyboard stuff
+// Apparently X util functions are in a different header
+#include <X11/Xutil.h>
+#include "load/XutilLoad.h"
+
+#include <X11/keysym.h>
+#include <X11/Xatom.h>
+#include <X11/Xresource.h>
+
+#include <X11/Xcursor/Xcursor.h>
+#include "load/XCursorLoad.h"
+
 #include <X11/XKBlib.h>
-// XKB functions need to be loaded from Xlib
 #include "load/xkbLoad.h"
 
-// This file does not interact with OpenGL itself - only Xlib and the GLX extension.
-// This is also the ONLY file that calls any Xlib or glX functions, because of the loader headers.
-#define PINCX_PRIVATE
+#include <X11/extensions/XInput2.h>
+#include "load/XInput2Load.h"
+
+#include <GL/glx.h>
+#include "load/glXLoad.h"
+
+#define PINC_X_INCLUDED
 #include "pincx.h"
 
+// General TODOs for X11 go here
+// TODO: implement error handling
+// TODO: system content scale (example at GLFW x11_init.c line 1530)
+// TODO: add the XRender extension for seeing if a Visual supports transparency
+// TODO: atoms and window manager stuff
+
 // Resources used: public HTML version of libX11 documentation: https://x.org/releases/current/doc/libX11/libX11/libX11.html
-// Kinc's source code, here is their website: https://kinc.tech/
+// Kinc source code, here is their website: https://kinc.tech/
 // - Kinc is full of confusing macros and other insanity so that may have been a waste of time
-// GLFW's source code
-// - GLFW is an absolutely massive library so finding everything was a bit of a pain
+// GLFW source code
+// - This is what "inspired" 90% of the code in pincx.c
 
 // static variables
+// -> Library handles
+
 void* libX11;
+void* libXi;
+void* libXcursor;
 void* libGL;
 
+// -> Xlib static vars
+
 Display* xDisplay;
+// The previous X error handler to be restored later
+XErrorHandler previousXErrorHandler;
+// Most recent error code from the X error handler
+int xErrorCode;
+char* primarySelectionString;
+char* clipboardString;
+
+// -> glX static vars
 
 GLXContext glxContext;
 
-XVisualInfo* xVisual;
+GLXFBConfig glxFbConfig;
 
-// Lookup table from X11 keycode to pinc keycode
-int16_t x11_xkey_to_pinc[256];
+int glxErrorBase;
 
-// reverse version of the above
-int16_t x11_pinc_to_xkey[pinc_key_code_count + 1];
+int glxEventBase;
 
-bool xkbAvailable;
+// -> Xkb static vars
 
-// Things that are public
+// Lookup table from X11 keycode to pinc keycode.
+// This is in the XKB vars but is still properly initialized when XKB is not available.
+int16_t xkbToPinc[256];
+int16_t pincToXkb[pinc_key_code_count + 1];
+// Whether the XKB extension is available
+bool xkbAvailable = false;
+// Whether XKB key repeat events can be detected
+bool xkbDetectable;
+// the first XKB event code
+int xkbEventBase;
+unsigned char xkbGroup;
+// -> XInput static vars
+
+// Whether Xi / XInput is available
+bool xiAvailable = false;
+// TODO: what is this
+int xiEventBase;
+// TODO: what is this
+int xiErrorBase;
+// Xi major opcode, whatever the heck that is
+int xiMajorOpcode;
+// XIM input method
+XIM xim;
+
+// declarations of private functions that are implemented later
+
+bool x11_load_libraries(void);
+
+void* x11_load_Xlib_symbol(const char* name);
+
+void* x11_load_library(const char* name);
+
+bool x11_init_extensions(void);
+
+void x11_create_key_tables(void);
+
+pinc_key_code_enum x11_translate_keysyms(const KeySym* keysyms, int width);
+
+void x11_input_instantiate_callback(Display* display, XPointer clientData, XPointer callData);
+
+bool x11_framebuffer_is_better(int colorBits, int depthBits, int stencilBits, int newColorBits, int newDepthBits, int newStencilBits);
+
+uint32_t x11_sym_to_unicode(KeySym sym);
+
+// Super simple private functions are just implemented here rather than declared here and implemented later
+
+// Translates and X11 key code to a pinc key code.
+pinc_key_code_enum x11_translate_keycode(int keycode) {
+    if(keycode < 0 || keycode > 255) return pinc_key_code_unknown;
+    return xkbToPinc[keycode];
+}
+
+// translates X11 modifiers into Pinc modifiers
+pinc_key_modifiers_t x11_translate_modifiers(int mods) {
+    pinc_key_modifiers_t m;
+    if(mods & ShiftMask) m |= pinc_modifier_shift_bit;
+    if(mods & LockMask) m |= pinc_modifier_caps_lock_bit;
+    if(mods & ControlMask) m |= pinc_modifier_control_bit;
+    if(mods & Mod1Mask) m |= pinc_modifier_alt_bit;
+    if(mods & Mod2Mask) m |= pinc_modifier_num_lock_bit;
+    if(mods & Mod4Mask) m |= pinc_modifier_super_bit;
+    return m;
+}
+
+// Decode a Unicode code point from a UTF-8 stream
+// Based on cutef8 by Jeff Bezanson (Public Domain)
+//
+static uint32_t decodeUTF8(const char** s)
+{
+    uint32_t codepoint = 0, count = 0;
+    static const uint32_t offsets[] =
+    {
+        0x00000000u, 0x00003080u, 0x000e2080u,
+        0x03c82080u, 0xfa082080u, 0x82082080u
+    };
+
+    do
+    {
+        codepoint = (codepoint << 6) + (unsigned char) **s;
+        (*s)++;
+        count++;
+    } while ((**s & 0xc0) == 0x80);
+
+    // assert(count <= 6);
+    return codepoint - offsets[count - 1];
+}
+
+// implementations of functions in pincx.h
+
 bool x11_init(void) {
-    x11_load_libraries();
-    // if XLib wasn't loaded, it's not going to work
-    if(XOpenDisplay == NULL) {
-        pinci_make_error(pinc_error_init, "Failed to load libX11.so");
-        return false;
-    }
+    // HACK: (stolen from GLFW) If the application has left the locale as "C" then both wide
+    //       character text input and explicit UTF-8 input via XIM will break
+    //       This sets the CTYPE part of the current locale from the environment
+    //       in the hope that it is set to something more sane than "C"
+    if (strcmp(setlocale(LC_CTYPE, NULL), "C") == 0) setlocale(LC_CTYPE, "");
+
+    bool result = x11_load_libraries();
+    // Errors are always set at the "leaf node" - the deepest point where the error occurs
+    if(!result) return false;
     xDisplay = XOpenDisplay(NULL);
-    if(xDisplay == NULL){
-        pinci_make_error(pinc_error_init, "Failed to connect to X11 server");
+    if(xDisplay == NULL) {
+        pinci_make_error(pinc_error_init, "Failed to connect to X server");
         return false;
     }
-    xkbAvailable = false;
-    if(XkbQueryExtension != NULL){
-        int majorOpcode;
-        int eventBase;
-        int errorBase;
-        int major = 1;
-        int minor = 0;
-        xkbAvailable = XkbQueryExtension(xDisplay,
-            &majorOpcode,
-            &eventBase,
-            &errorBase,
-            &major,
-            &minor);
-    }
+    result = x11_init_extensions();
+    if(!result) return false;
 
-    x11_create_key_tables();
-
-    // Check if our GL library supports glXGetProcAddress - it is a requirement for OpenGL to work.
-    // Remember, we use a loader header - this is not the extern function,
-    // it's actually a macro to a pointer that should have been loaded by x11_load_libraries.
-    if(glXGetProcAddressARB == NULL) {
-        pinci_make_error(pinc_error_init, "libGL.so doesn't expose glXGetProcAddressARB");
-        return false;
-    }
-    // We want one GLX context for all windows, so it's initialized here.
-    // Unlike WGL, GLX has zero need to create a fake window to make a GL context.
-    // The attributes we want our GLX context to have
-    GLint glxAttributes[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
-    xVisual = glXChooseVisual(xDisplay, 0, glxAttributes);
-    if(xVisual == NULL) {
-        pinci_make_error(pinc_error_init, "Failed to choose X visual");
-        return false;
-    }
-    // create a context. NOTE: This is for the old OpenGL 1.0 - 2.1 context.
-    glxContext = glXCreateContext(xDisplay, xVisual, NULL, GL_TRUE);
-    if(glxContext == NULL) {
-        pinci_make_error(pinc_error_init, "Failed to create glX context");
-        return false;
+    if(Xutf8LookupString && Xutf8SetWMProperties) {
+        if(XSupportsLocale()) {
+            XSetLocaleModifiers("");
+            // TODO: what the heck is an input method?
+            // XRegisterIMInstantiateCallback(xDisplay, NULL, NULL, NULL, &x11_input_instantiate_callback, NULL);
+        }
     }
     return true;
 }
 
 void x11_deinit(void) {
-    dlclose(libX11);
+    if(clipboardString) pinci_free_string(clipboardString);
+    if(primarySelectionString) pinci_free_string(primarySelectionString);
+
+    glXDestroyContext(xDisplay, glxContext);
+
+    if(xim) {
+        XCloseIM(xim);
+        xim = NULL;
+    }
+    if(xDisplay) {
+        XCloseDisplay(xDisplay);
+        xDisplay = NULL;
+    }
+
+    if(libGL) {
+        dlclose(libGL);
+        libGL = NULL;
+    }
+
+    if(libXi) {
+        dlclose(libXi);
+        libXi = NULL;
+    }
+
+    if(libXcursor) {
+        dlclose(libXcursor);
+        libXcursor = NULL;
+    }
+
+    if(libX11) {
+        dlclose(libX11);
+        libX11 = NULL;
+    }
 }
 
 x11_window x11_window_incomplete_create(const char* title) {
-    // TODO: redirect window close
-    Window rootWindow = DefaultRootWindow(xDisplay);
-    Colormap cmap = XCreateColormap(xDisplay, rootWindow, xVisual->visual, AllocNone);
-
-    XSetWindowAttributes windowAttributes;
-    windowAttributes.colormap = cmap;
-    windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask
-    | ButtonReleaseMask | EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask
-    | ExposureMask | VisibilityChangeMask | StructureNotifyMask | ResizeRedirectMask
-    | FocusChangeMask | PropertyChangeMask;
-
-    x11_window window;
-    window.xWindow = XCreateWindow(xDisplay, rootWindow, 0, 0, 800, 600, 0, xVisual->depth,
-        InputOutput, xVisual->visual, CWColormap | CWEventMask, &windowAttributes);
-    XStoreName(xDisplay, window.xWindow, title);
-    // TODO: Atoms and WM stuff
-    return window;
+    x11_window w = {};
+    w.title = pinci_dupe_string(title);
+    w.xWindow = 0;
+    return w;
 }
 
 bool x11_window_complete(x11_window* window) {
+    // TODO: redirect window close
+    XVisualInfo* xVisual = glXGetVisualFromFBConfig(xDisplay, glxFbConfig);
+    Window rootWindow = DefaultRootWindow(xDisplay);
+    Colormap cmap = XCreateColormap(xDisplay, rootWindow, xVisual->visual, AllocNone);
+
+    XSetWindowAttributes windowAttributes = {};
+    windowAttributes.colormap = cmap;
+    windowAttributes.event_mask = StructureNotifyMask | KeyPressMask | KeyReleaseMask
+        | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask
+        | FocusChangeMask | VisibilityChangeMask | EnterWindowMask | LeaveWindowMask | PropertyChangeMask;
+
+    window->xWindow = XCreateWindow(xDisplay, rootWindow, 0, 0, 800, 600, 0, xVisual->depth,
+        InputOutput, xVisual->visual, CWBorderPixel | CWColormap | CWEventMask, &windowAttributes);
+    if(window->xWindow == None) {
+        pinci_make_error(pinc_error_init, "Failed to create X window");
+        return false;
+    }
+    XFree(xVisual);
+    XStoreName(xDisplay, window->xWindow, window->title);
+    // TODO: Atoms and WM stuff
     XMapWindow(xDisplay, window->xWindow);
     // This is so the window shows up immediately upon completing it.
+    XFlush(xDisplay);
+    // Flush it a second time to expose any errors
     XFlush(xDisplay);
     return true;
 }
 
-// Pops the next event off of the queue
-// Important notes:
-// - the cursor move event does not have deltas or the screen coordinates set - only pixel coords
-pinc_event_union_t x11_pop_event() {
-    pinc_event_union_t event;
-    event.type = pinc_event_none;
-    if(XPending(xDisplay) == 0){
-        return event;
-    }
-    XEvent xev;
-    XNextEvent(xDisplay, &xev);
-    // TODO: Apparently Xlib will send events for destroyed windows. Verify that Pinc handles that gracefully
-    switch(xev.type) {
-        case KeyPress:
-            // TODO: apparently with the XI extension (not used in Pinc but it might be later), duplicate key events may be sent. (pain)
-            event.type = pinc_event_window_key_down;
-            event.data.window_key_down.window = x11_get_window_handle(xev.xkey.window);
-            event.data.window_key_down.token = xev.xkey.keycode;
-            event.data.window_key_down.key = x11_translate_key(xev.xkey.keycode);
-            event.data.window_key_down.modifiers = x11_translate_modifiers(xev.xkey.state);
-            break;
-        case KeyRelease:
-            event.type = pinc_event_window_key_up;
-            event.data.window_key_up.window = x11_get_window_handle(xev.xkey.window);
-            event.data.window_key_up.token = xev.xkey.keycode;
-            event.data.window_key_up.key = x11_translate_key(xev.xkey.keycode);
-            event.data.window_key_up.modifiers = x11_translate_modifiers(xev.xkey.state);
-            break;
-        case ButtonPress:
-            event.type = pinc_event_window_cursor_button_down;
-            event.data.window_cursor_button_down.window = x11_get_window_handle(xev.xbutton.window);
-            event.data.window_cursor_button_down.button = xev.xbutton.button;
-            break;
-        case ButtonRelease:
-            event.type = pinc_event_window_cursor_button_up;
-            event.data.window_cursor_button_up.window = x11_get_window_handle(xev.xbutton.window);
-            event.data.window_cursor_button_up.button = xev.xbutton.button;
-            break;
-        case MotionNotify:
-            event.type = pinc_event_window_cursor_move;
-            event.data.window_cursor_move.window = x11_get_window_handle(xev.xbutton.window);
-            // Conveniently, X uses the same coordinate system as Pinc
-            event.data.window_cursor_move.x_pixels = xev.xmotion.x;
-            event.data.window_cursor_move.y_pixels = xev.xmotion.y;
-            break;
-        // Note: X calls enter and leave events on windows where the cursor does not directly enter or leave the window,
-        // However that only happens when dealing with hirarchical windows which pinc does not allow to exist.
-        case EnterNotify:
-            if(xev.xcrossing.mode == NotifyNormal) {
-                event.type = pinc_event_window_cursor_enter;
-                event.data.window_cursor_enter.window = x11_get_window_handle(xev.xcrossing.window);
+void x11_poll_events(void) {
+    // It is common to have nested stuff which makes breaking back to this loop non-trivial. This is what goto is meant for.
+    CONTINUE_LOOP:
+    while(XPending(xDisplay)) {
+        XEvent event;
+        XNextEvent(xDisplay, &event);
+
+        int keycode = 0;
+        Bool filtered = false;
+
+        // HACK: Save scancode as some IMs clear the field in XFilterEvent
+        if (event.type == KeyPress || event.type == KeyRelease)
+            keycode = event.xkey.keycode;
+
+        filtered = XFilterEvent(&event, None);
+
+        if(xkbAvailable) {
+            if(event.type == xkbEventBase + XkbEventCode) {
+                XkbEvent* xkbEvent = (XkbEvent*) &event;
+                if(xkbEvent->any.xkb_type == XkbStateNotify && xkbEvent->state.changed & XkbGroupStateMask) {
+                    xkbGroup = xkbEvent->state.group;
+                }
+                goto CONTINUE_LOOP;
             }
-            break;
-        case LeaveNotify:
-            if(xev.xcrossing.mode == NotifyNormal) {
-                event.type = pinc_event_window_cursor_exit;
-                event.data.window_cursor_exit.window = x11_get_window_handle(xev.xcrossing.window);
+        }
+        if(event.type == GenericEvent) {
+            if(xiAvailable) {
+                // TODO: apparently mouse motion? GLFW's strange design and lack of comments is making figuring this out hard
+                // glfw line 1186 or so
             }
-            break;
-        case FocusIn:
-            // TODO: figure out how to deal with non-normal focus events
-            event.type = pinc_event_window_focus;
-            event.data.window_focus.window = x11_get_window_handle(xev.xfocus.window);
-            break;
-        case FocusOut:
-            // TODO: figure out how to deal with non-normal focus events
-            event.type = pinc_event_window_unfocus;
-            event.data.window_unfocus.window = x11_get_window_handle(xev.xfocus.window);
-            break;
-        case KeymapNotify:
-            // TODO: is this an event worth caring about?
-            break;
-        case Expose:
-            // TODO: is it worth reporting the region that was exposed?
-            event.type = pinc_event_window_damaged;
-            event.data.window_damaged.window = x11_get_window_handle(xev.xexpose.window);
-            break;
-        case GraphicsExpose:
-            // This only applies for if we are using the X11 draw commands
-            break;
-        case NoExpose:
-            // This only applies for if we are using the X11 draw commands
-            break;
-        case VisibilityNotify:
-            // TODO - create a window damaged event? Or does the X server always do that?
-            // Should a window that's not visible also be considered not focused? Should an unfocus event be sent in that case?
-            // Maybe pinc should just have visibility notification events like this.
-            break;
-        case CreateNotify:
-            // Not useful for pinc
-            break;
-        case DestroyNotify:
-            // Not useful for pinc (I think)
-            break;
-        case UnmapNotify:
-            // Not useful for pinc
-            break;
-        case MapNotify:
-            // Not useful for pinc
-            break;
-        case MapRequest:
-            // TODO
-            break;
-        case ReparentNotify:
-            // Pinc does not care about this
-            break;
-        case ConfigureNotify:
-            // This event is not important
-            // TODO: does the X server send the other events when asking for window config changes?
-            break;
-        case ConfigureRequest:
-            // TODO: does the X server send other events when configuration changes are made by other clients?
-            break;
-        case GravityNotify:
-            // Not useful for pinc, pinc doesn't report window position (yet)
-            break;
-        case ResizeRequest:
-            // TODO: does the X server also send a normal resize event?
-            break;
-        case CirculateNotify:
-            // TODO
-            break;
-        case CirculateRequest:
-            // Not useful for pinc
-            break;
-        case PropertyNotify:
-            // TODO: I think this will only matter once Atoms are implemented into Pinc
-            break;
-        case SelectionClear:
-            // TODO: what is a selection (in the context of X)?
-            break;
-        case SelectionRequest:
-            // TODO: what is a selection (in the context of X)?
-            break;
-        case SelectionNotify:
-            // TODO: what is a selection (in the context of X)?
-            break;
-        case ColormapNotify:
-            // Pinc does not care about colormaps. This event does not apply to Visuals or color spaces
-            // (Does X11 even have the concept of a color space, or is everything assumed to be sRGB?)
-            break;
-        case ClientMessage:
-            // This is a form of inter-client communication. Pinc could not care less.
-            break;
-        case MappingNotify:
-            // Pinc does not care about this
-            break;
-        case GenericEvent:
-            // TODO
-            break;
-        default:
-            pinci_make_error(pinc_error_some, "Got invalid X event type");
-            break;
+            goto CONTINUE_LOOP;
+        }
+        if(event.type == SelectionRequest) {
+            // TODO: after Atoms are implemented. glfw line 1222 or so
+            goto CONTINUE_LOOP;
+        }
+        // get the pinc ID of the window and a pointer to the X11 specific data of the window
+        pinc_window_handle_t window = x11_get_window_handle(event.xany.window);
+        x11_window* windowData = x11_get_x_window(window);
+        switch(event.type) {
+            case ReparentNotify: {
+                // TODO: should Pinc care what the parent window is?
+                goto CONTINUE_LOOP;
+            }
+
+            case KeyPress: {
+                const pinc_key_code_enum key = x11_translate_keycode(keycode);
+                const pinc_key_modifiers_t modifiers = x11_translate_modifiers(event.xkey.state);
+
+                if(windowData->inputContext) {
+                    // XIM tends to duplicate key presses (pain) but thankfully the repeats have the same timestamp so they can be filtered out.
+                    Time diff = event.xkey.time - windowData->keyPressTime[keycode];
+                    // This comparison is weird to handle wrap around
+                    if( diff == event.xkey.time || (diff > 0 && diff < ((Time)(1 << 31)))) {
+                        windowData->keyPressTime[keycode] = event.xkey.time;
+                        // TODO: detect if this is a repeat event
+                        pinc_event_union_t kpevt = {};
+                        kpevt.type = pinc_event_window_key_down;
+                        kpevt.data.window_key_down.key = key; 
+                        kpevt.data.window_key_down.modifiers = modifiers;
+                        kpevt.data.window_key_down.token = keycode;
+                        kpevt.data.window_key_down.window = window;
+                        pinci_send_event(kpevt);
+                    }
+
+                    if(!filtered) {
+                        int count;
+                        Status status;
+                        char buffer[128];
+                        char* chars = buffer;
+
+                        count = Xutf8LookupString(windowData->inputContext, &event.xkey, chars, sizeof(buffer)-1, NULL, &status);
+                        if(status == XBufferOverflow) {
+                            chars = pinci_alloc_string(count);
+                            // memset(chars, 1, count+1);
+                            count = Xutf8LookupString(windowData->inputContext, &event.xkey, chars, count, NULL, &status);
+                        }
+                        if(status == XLookupChars || status == XLookupChars) {
+                            const char* c = chars;
+                            chars[count] = 0;
+                            while(c - chars < count) {
+                                pinc_event_union_t ktevt = {};
+                                ktevt.type = pinc_event_window_text;
+                                ktevt.data.window_text.window = window;
+                                ktevt.data.window_text.codepoint = decodeUTF8(&c);
+                                pinci_send_event(ktevt);
+                            }
+                        }
+                        if(chars != buffer) pinci_free_string(chars);
+                    }
+                } else {
+                    // the input method is not set, so we use the 'regular' way
+                    KeySym sym;
+                    XLookupString(&event.xkey, NULL, 0, &sym, NULL);
+                    
+                    pinc_event_union_t kpevt = {};
+                    kpevt.type = pinc_event_window_key_down;
+                    kpevt.data.window_key_down.key = key; 
+                    kpevt.data.window_key_down.modifiers = modifiers;
+                    kpevt.data.window_key_down.token = keycode;
+                    kpevt.data.window_key_down.window = window;
+                    pinci_send_event(kpevt);
+
+                    const uint32_t codepoint = x11_sym_to_unicode(sym);
+                    pinc_event_union_t ktevt = {};
+                    ktevt.type = pinc_event_window_text;
+                    ktevt.data.window_text.window = window;
+                    ktevt.data.window_text.codepoint = codepoint;
+                    pinci_send_event(ktevt);
+                }
+                goto CONTINUE_LOOP;
+            }
+            case KeyRelease: {
+                const int key = x11_translate_keycode(keycode);
+                const int modifiers = x11_translate_modifiers(event.xkey.state);
+
+                if(!xkbDetectable) {
+                    // X is a wild beast that sends *undetectable repeat release events* for some asinine reason
+                    // Thankfully, these events happen very close together, so they can be filtered.
+                    // TODO: what does XEventsQueued actually do?
+                    if(XEventsQueued(xDisplay, QueuedAfterReading)) {
+                        XEvent next;
+                        XPeekEvent(xDisplay, &next);
+                        if(next.type == KeyPress && next.xkey.window == event.xkey.window && next.xkey.keycode == keycode) {
+                            // Place a margin on the time since it won't match exactl.
+                            // I will be darn impressed if someone can break this limit and accidentally trigger this deduplication
+                            // more impressed if they notice, and absolutely mindblown if they figure out it's Pinc that was causing it
+                            // Also consider this code only runs if xkb repeat detection is not available, which is itself already quite rare
+                            if((next.xkey.time - event.xkey.time) < 20 /*milliseconds*/) {
+                                goto CONTINUE_LOOP;
+                            }
+                        }
+                    }
+                }
+
+                pinc_event_union_t krevt = {};
+                krevt.type = pinc_event_window_key_up;
+                krevt.data.window_key_up.window = window;
+                krevt.data.window_key_up.token = keycode;
+                krevt.data.window_key_up.key = key;
+                krevt.data.window_key_up.modifiers = modifiers;
+                goto CONTINUE_LOOP;
+            }
+            case ButtonPress: {
+                if(event.xbutton.button < 0) goto CONTINUE_LOOP;
+                if(event.xbutton.button <= 3) {
+                    pinc_event_union_t mbevt = {};
+                    mbevt.type = pinc_event_window_cursor_button_down;
+                    mbevt.data.window_cursor_button_down.window = window;
+                    switch(event.xbutton.button) {
+                        case 1:
+                            mbevt.data.window_cursor_button_down.button = 1; break;
+                        case 2:
+                            mbevt.data.window_cursor_button_down.button = 2; break;
+                        case 3:
+                            mbevt.data.window_cursor_button_down.button = 3; break;
+                    }
+                    pinci_send_event(mbevt);
+                    goto CONTINUE_LOOP;
+                }
+                // Apparently the scroll wheel is made of 4 buttons.
+                if(event.xbutton.button <= 7) {
+                    pinc_event_union_t srevt = {};
+                    srevt.type = pinc_event_window_scroll;
+                    srevt.data.window_scroll.window = window;
+                    switch (event.xbutton.button)
+                    {
+                        case 4:
+                            srevt.data.window_scroll.delta_x = 0;
+                            srevt.data.window_scroll.delta_y = 1;
+                            break;
+                        case 5:
+                            srevt.data.window_scroll.delta_x = 0;
+                            srevt.data.window_scroll.delta_y = -1;
+                            break;
+                        case 6:
+                            srevt.data.window_scroll.delta_x = 1;
+                            srevt.data.window_scroll.delta_y = 0;
+                            break;
+                        case 7:
+                            srevt.data.window_scroll.delta_x = 1;
+                            srevt.data.window_scroll.delta_y = 0;
+                            break;
+                    }
+                    pinci_send_event(srevt);
+                    goto CONTINUE_LOOP;
+                } else {
+                    pinc_event_union_t mbevt = {};
+                    mbevt.type = pinc_event_window_cursor_button_down;
+                    mbevt.data.window_cursor_button_down.window = window;
+                    // subtract for to make up for the goned events from scroll
+                    mbevt.data.window_cursor_button_down.button = event.xbutton.button - 4;
+                    pinci_send_event(mbevt);
+                    goto CONTINUE_LOOP;
+                }
+            }
+            case ButtonRelease: {
+                if(event.xbutton.button < 0) goto CONTINUE_LOOP;
+                if(event.xbutton.button <= 3) {
+                    pinc_event_union_t mbevt = {};
+                    mbevt.type = pinc_event_window_cursor_button_up;
+                    mbevt.data.window_cursor_button_up.window = window;
+                    switch(event.xbutton.button) {
+                        case 1:
+                            mbevt.data.window_cursor_button_up.button = 1; break;
+                        case 2:
+                            mbevt.data.window_cursor_button_up.button = 2; break;
+                        case 3:
+                            mbevt.data.window_cursor_button_up.button = 3; break;
+                    }
+                    pinci_send_event(mbevt);
+                    goto CONTINUE_LOOP;
+                }
+                // Apparently the scroll wheel is made of 4 buttons.
+                // I don't know how the 'release' of the scroll makes any sense so it's ignored
+                if(event.xbutton.button <= 7) {
+                    goto CONTINUE_LOOP;
+                } else {
+                    pinc_event_union_t mbevt = {};
+                    mbevt.type = pinc_event_window_cursor_button_up;
+                    mbevt.data.window_cursor_button_up.window = window;
+                    // subtract for to make up for the goned events from scroll
+                    mbevt.data.window_cursor_button_up.button = event.xbutton.button - 4;
+                    pinci_send_event(mbevt);
+                    goto CONTINUE_LOOP;
+                }
+            }
+            case EnterNotify: {
+                // TODO: Apparently it's the WM's responsibility to manage cursor image transitions between windows,
+                // So once cursor images / states are added, that needs to be handled.
+                // (GLFW's source code x11_window.c line ~1430 ish is a good starting point)
+                pinc_event_union_t etevt = {};
+                etevt.type = pinc_event_window_cursor_enter;
+                etevt.data.window_cursor_enter.window = window;
+                pinci_send_event(etevt);
+                goto CONTINUE_LOOP;
+            }
+            case LeaveNotify: {
+                pinc_event_union_t lvevt = {};
+                lvevt.type = pinc_event_window_cursor_exit;
+                lvevt.data.window_cursor_exit.window = window;
+                pinci_send_event(lvevt);
+                goto CONTINUE_LOOP;
+            }
+            case MotionNotify: {
+                // The Zig portion of Pinc will take care of screen coordinates and deltas.
+                pinc_event_union_t cmevt = {};
+                cmevt.type = pinc_event_window_cursor_move;
+                cmevt.data.window_cursor_move.window = window;
+                // conveniently X uses coordinates starting on the top left just like Pinc
+                cmevt.data.window_cursor_move.x_pixels = event.xmotion.x;
+                cmevt.data.window_cursor_move.y_pixels = event.xmotion.y;
+                pinci_send_event(cmevt);
+                goto CONTINUE_LOOP;
+            }
+            case ConfigureNotify: {
+                if(event.xconfigure.width != windowData->width || event.xconfigure.height != windowData->height) {
+                    pinc_event_union_t szevt = {};
+                    szevt.type = pinc_event_window_resize;
+                    szevt.data.window_resize.window = window;
+                    szevt.data.window_resize.width = event.xconfigure.width;
+                    szevt.data.window_resize.height = event.xconfigure.height;
+                    pinci_send_event(szevt);
+                }
+                // Pinc has no care for the Window's position (yet)
+                goto CONTINUE_LOOP;
+            }
+            case ClientMessage: {
+                // We got mail! Probably from the window manager.
+                if(filtered) goto CONTINUE_LOOP;
+                if(event.xclient.message_type == None) goto CONTINUE_LOOP;
+                // TODO: WM protocol stuff (GLFW x11_window.c line 1547 is a good reference)
+                // TODO: drag/drop operations, which are apparently quite complex actually
+                goto CONTINUE_LOOP;
+            }
+            case SelectionNotify: {
+                // TODO: more drag&drop is suppossed to happen here
+                goto CONTINUE_LOOP;
+            }
+            case FocusIn: {
+                // We don't care about these
+                if(event.xfocus.mode == NotifyGrab || event.xfocus.mode == NotifyUngrab) {
+                    goto CONTINUE_LOOP;
+                }
+                // TODO: cursor capture stuff needs to happen
+                if(windowData->inputContext) {
+                    XSetICFocus(windowData->inputContext);
+                }
+                pinc_event_union_t fcevt = {};
+                fcevt.type = pinc_event_window_focus;
+                fcevt.data.window_focus.window = window;
+                pinci_send_event(fcevt);
+                goto CONTINUE_LOOP;
+            }
+            case FocusOut: {
+                // We don't care about these
+                if(event.xfocus.mode == NotifyGrab || event.xfocus.mode == NotifyUngrab) {
+                    goto CONTINUE_LOOP;
+                }
+                // TODO: cursor capture stuff needs to happen
+                if(windowData->inputContext) {
+                    XUnsetICFocus(windowData->inputContext);
+                }
+                pinc_event_union_t fcevt = {};
+                fcevt.type = pinc_event_window_unfocus;
+                fcevt.data.window_unfocus.window = window;
+                pinci_send_event(fcevt);
+                goto CONTINUE_LOOP;
+            }
+            case Expose: {
+                pinc_event_union_t dmgevt = {};
+                dmgevt.type = pinc_event_window_damaged;
+                dmgevt.data.window_damaged.window = window;
+                pinci_send_event(dmgevt);
+                goto CONTINUE_LOOP;
+            }
+            case PropertyNotify: {
+                // TODO: this event apparently requires atoms to work correctly.
+                // That is because it's for minimized/maximized/fullscreen stuff that is handled by the WM, and in order to do WM stuff atoms are required
+                goto CONTINUE_LOOP;
+            }
+            case DestroyNotify: {
+                goto CONTINUE_LOOP;
+            }
+        }
     }
-    return event;
 }
 
-// Waits until there are events in the queue to be popped
 void x11_wait_events(float timeout) {
     // The queue is not empty, return immediately
     if(XPending(xDisplay) != 0) return;
@@ -318,122 +625,233 @@ void x11_wait_events(float timeout) {
     }
 }
 
+void* x11_load_glX_symbol(void* context, const char* name) {
+    // The only function that libGL is required to expose is glXGetProcAddressARB
+    // Every other function needs to be retrieved using said function
+    return glXGetProcAddressARB((const GLubyte*)name);
+}
 void x11_make_context_current(pinc_window_handle_t window) {
-    x11_window* xWindow = x11_get_x_window(window);
-    if(xWindow == NULL) {
-        // This should never happen assuming the zig side checks arguments correctly.
-        printf("Internal pinc error: xWindow is null!\n");
-        return;
-    }
-    bool result = glXMakeCurrent(xDisplay, xWindow->xWindow, glxContext);
-    if(!result) {
-        // This shouldn't happen, if this does happen then that is an error in Pinc, not the user's application
-        pinci_make_error(pinc_error_some, "Failed to make glX context current");
-    }
+    x11_window* w = x11_get_x_window(window);
+    glXMakeCurrent(xDisplay, w->xWindow, glxContext);
 }
 
 void x11_present_framebuffer(pinc_window_handle_t window, bool vsync) {
-    x11_window* xWindow = x11_get_x_window(window);
-    if(xWindow == NULL) {
-        // This should never happen assuming the zig side checks arguments correctly.
-        printf("Internal pinc error: xWindow is null!\n");
-        return;
-    }
-    // TODO: swap interval. It's a MESA extension, so some steps will be required
-    glXSwapBuffers(xDisplay, xWindow->xWindow);
+    // TODO: vsync
+    x11_window* w = x11_get_x_window(window);
+    glXSwapBuffers(xDisplay, w->xWindow);
 }
 
-// Things that are private to this file
+// implementation of private functions
 
 bool x11_load_libraries(void) {
     libX11 = x11_load_library("X11");
-    if(libX11 == NULL) return false;
-    loadXlib(&x11_load_Xlib_symbol);
-    loadXkb(&x11_load_Xlib_symbol);
+    if(libX11 == NULL) {
+        pinci_make_error(pinc_error_init, "Failed to load libx11.so");
+        return false;
+    }
+    loadXlib(libX11, &dlsym);
+    loadXutil(libX11, &dlsym);
+    if(XOpenDisplay == NULL) {
+        pinci_make_error(pinc_error_init, "Loaded libX11.so but it's missing functions");
+        return false;
+    }
+    // Xkb is not strictly required - it will be detected later
+    loadXkb(libX11, &dlsym);
+    libXi = x11_load_library("Xi");
+    // Xi is not strictly required - it will be detected later
+    loadXInput2(libXi, &dlsym);
+    libXcursor = x11_load_library("Xcursor");
+    if(libXcursor == NULL) {
+        pinci_make_error(pinc_error_init, "Failed to load libXcursor.so");
+        return false;
+    }
+    loadXcursor(libXcursor, &dlsym);
+    if(XcursorAnimateCreate == NULL) {
+        pinci_make_error(pinc_error_init, "Loaded libXcursor.so but it's missing functions");
+        return false;
+    }
+
     // libGL is where we are going to get glX from.
-    // glX implemented within libGL
+    // glX implemented within libGL for some reason
     libGL = x11_load_library("GL");
-    if(libGL == NULL) return false;
+    if(libGL == NULL) {
+        pinci_make_error(pinc_error_init, "Failed to load libGL.so");
+        return false;
+    }
     // load glXGetProcAddressARB first as it is the function used to load all of the other functions.
     // Technically all of the core GLX functions *should* be exposed,
-    // however for the sake of confirming with the original ABI from 2000, do it the safe way.
+    // however for the sake of conforming with the original ABI from 2000, do it the safe way.
     // (https://registry.khronos.org/OpenGL/ABI/)
     // this ABI is outdated by a long while, however due to backwards compabilility,
     // any OpenGL system *WILL* support it faithfully.
     glXGetProcAddressARB = dlsym(libGL, "glXGetProcAddressARB");
-    loadGlX(&x11_load_glX_symbol);
+    if(glXGetProcAddressARB == NULL) {
+        pinci_make_error(pinc_error_init, "glXGetProcAddressARB is missing from libGL.so");
+        return false;
+    }
+    loadGlX(NULL, &x11_load_glX_symbol);
+    if(glXChooseVisual == NULL) {
+        pinci_make_error(pinc_error_init, "glX functions are missing");
+        return false;
+    }
     return true;
 }
 
-void* x11_load_Xlib_symbol(const char* name) {
-    return dlsym(libX11, name);
-}
-
-void* x11_load_glX_symbol(const char* name) {
-    // The only function that libGL exposes is glXGetProcAddressARB
-    // Every other function needs to be retrieved using said function
-    return glXGetProcAddressARB((const GLubyte*)name);
-}
-
-// This is copied from Kinc
-void* x11_load_library(const char* name) {
-    char libname[32];
-    sprintf(libname, "lib%s.so", name);
-    void* lib = dlopen(libname, RTLD_LAZY);
-    // Some Linux distros don't have the .so directly, but instead put a version tag on it.
-    // TODO: actually test this on one of said distros
-    for(int i=0; i < 10 && lib == NULL; ++i) {
-        sprintf(libname, "lib%s.so.%i", name, i);
-        lib = dlopen(libname,  RTLD_LAZY);
+// Initializes X extensions. Assumes the functions are already loaded,
+// does not rely on functions being available (except for required extensions)
+bool x11_init_extensions(void) {
+    if(libXi != NULL && XIQueryVersion != NULL && XQueryExtension(xDisplay, "XInputExtension",
+                                                                &xiMajorOpcode, &xiEventBase, &xiErrorBase)) {
+        int major = 2;
+        int minor = 0;
+        xiAvailable = (XIQueryVersion(xDisplay, &major, &minor) == Success);
     }
-    return lib;
+    // Xcursor does not need initialization, if GLFW's source code is correct.
+    if(XkbQueryExtension != NULL) {
+        int majorOpcode;
+        int errorBase;
+        int major;
+        int minor;
+        xkbAvailable = XkbQueryExtension(xDisplay, &majorOpcode, &xkbEventBase, &errorBase, &major, &minor);
+    }
+    if(xkbAvailable) {
+        Bool detectable;
+        if(XkbSetDetectableAutoRepeat(xDisplay, True, &detectable)) {
+            if(detectable) {
+                xkbDetectable = true;
+            }
+        }
+        XkbStateRec stateRec;
+        if(XkbGetState(xDisplay, XkbUseCoreKbd, &stateRec) == Success) {
+            xkbGroup = stateRec.group;
+        }
+        XkbSelectEventDetails(xDisplay, XkbUseCoreKbd, XkbStateNotify, XkbGroupStateMask, XkbGroupStateMask);
+        
+        x11_create_key_tables();
+    }
+    if(libGL) {
+        if(!glXQueryExtension(xDisplay, &glxErrorBase, &glxEventBase)) {
+            pinci_make_error(pinc_error_init, "Failed to initialise glX");
+            return false;
+        }
+        // Make sure at least glX version 1.3 is available
+        int major;
+        int minor;
+        if(!glXQueryVersion(xDisplay, &major, &minor)) {
+            pinci_make_error(pinc_error_init, "Failed to initialize glX");
+            return false;
+        }
+
+        if(major < 1 || (major == 1 && minor < 3)) {
+            pinci_make_error(pinc_error_init, "Pinc requires glX 1.3 or later");
+            return false;
+        }
+
+        // TODO: swap control extensions (there are THREE of them!?!? Golly Goodness is X11 a bit of a mess)
+
+        // create a glX context (one for the entire application)
+
+        // The fact that glX lets the program make a windowless context is a bit of a cheat - it still has to know the framebuffer format ahead of time.
+        // Pincs API is not designed with this limitation in mind, however it still is flexible enough to force every window to have the same format.
+        // So, when choosing a framebuffer config, choose the "best" one with the most bit depth, and one with transparency if available.
+        int numFbConfigs;
+        GLXFBConfig* fbConfigs = glXGetFBConfigs(xDisplay, DefaultScreen(xDisplay), &numFbConfigs);
+        if(fbConfigs == NULL || numFbConfigs == 0) {
+            pinci_make_error(pinc_error_init, "No framebuffer configs available");
+            return false;
+        }
+        int bestFbIndex = -1;
+        // TODO: bool bestFbSupportsTransparency = false;
+        // Total number of color bits (red + green + blue + alpha)
+        int bestFbBitDepth = 0;
+        int bestFbDepthBits = 0;
+        int bestFbStencilBits = 0;
+        // We don't care about the accumulation buffer - It's only useful in niche circumstances that are entirely useless for the functionality pinc provides.
+        for(int i=0; i<numFbConfigs; ++i) {
+            int value;
+            GLXFBConfig fb = fbConfigs[i];
+            // only RGBA framebuffers are allowed here
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_RENDER_TYPE, &value);
+            if((value & GLX_RGBA_BIT) == 0) continue;
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_DRAWABLE_TYPE, &value);
+            if((value & GLX_WINDOW_BIT) == 0) continue;
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_DOUBLEBUFFER, &value);
+            if(value == 0) continue;
+            // Get the properties of this config
+            int fbBitDepth;
+            int fbDepthBits;
+            int fbStencilBits;
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_RED_SIZE, &value);
+            fbBitDepth += value;
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_GREEN_SIZE, &value);
+            fbBitDepth += value;
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_BLUE_SIZE, &value);
+            fbBitDepth += value;
+            //TODO: only include alpha bits if the framebuffer actually supports transparency
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_ALPHA_SIZE, &value);
+            fbBitDepth += value;
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_DEPTH_SIZE, &fbDepthBits);
+            glXGetFBConfigAttrib(xDisplay, fb, GLX_STENCIL_SIZE, &fbStencilBits);
+
+            if(x11_framebuffer_is_better(bestFbBitDepth, bestFbDepthBits, bestFbStencilBits, fbBitDepth, fbDepthBits, fbStencilBits)) {
+                bestFbBitDepth = fbBitDepth;
+                bestFbDepthBits = fbDepthBits;
+                bestFbStencilBits = fbStencilBits;
+                bestFbIndex = i;
+            }
+        }
+
+        if(bestFbIndex == -1) {
+            pinci_make_error(pinc_error_init, "No usable glX framebuffer found");
+            return false;
+        }
+        // Keep hold of the fbconfig we chose
+        glxFbConfig = fbConfigs[bestFbIndex];
+        XFree(fbConfigs);
+
+        // At the moment, Pinc only supports OpenGL 2.1
+        // So, use the legacy context creation mechanism
+        glxContext = glXCreateNewContext(xDisplay, glxFbConfig, GLX_RGBA_TYPE, NULL, True);
+
+        if(glxContext == NULL) {
+            pinci_make_error(pinc_error_init, "failed to create glX context");
+            return false;
+        }
+
+    }
+    return true;
 }
 
-pinc_key_code_t x11_translate_key(int code) {
-    if(code < 0 || code > 255) return pinc_key_code_unknown;
-    return x11_xkey_to_pinc[code];
+bool x11_framebuffer_is_better(int colorBits, int depthBits, int stencilBits, int newColorBits, int newDepthBits, int newStencilBits) {
+    int totalBits = colorBits + depthBits + stencilBits;
+    int newTotalBits = newColorBits + newDepthBits + newStencilBits;
+    // TODO: Pinc probably needs a way for the program to describe what kind of framebuffer it needs out of its windows
+    // It might be worth adding some kind of info struct to the Pinc init method, so platform-specific options can be set before the platform instance is created.
+    if(newTotalBits < totalBits) return false;
+    if(newTotalBits > totalBits) return true;
+    // If the number of bits is the same, then go through each value as a tiebreaker
+    if(newColorBits > colorBits) return true;
+    if(newDepthBits > depthBits) return true;
+    if(newStencilBits > stencilBits) return true;
+
+    return false;
 }
 
-pinc_key_modifiers_t x11_translate_modifiers(unsigned int xState) {
-    pinc_key_modifiers_t modifiers = 0;
-    if(xState & ShiftMask) {
-        modifiers |= pinc_shift_bit;
-    }
-    if(xState & LockMask) {
-        modifiers |= pinc_caps_lock_bit;
-    }
-    if(xState & ControlMask) {
-        modifiers |= pinc_control_bit;
-    }
-    // TODO: is scroll lock event aquirable from here?
-    return xState;
-}
-
-// This is copied and ported from GLFW
-void x11_create_key_tables(void)
-{
-    int scancodeMin, scancodeMax;
-
-    memset(x11_xkey_to_pinc, -1, sizeof(x11_xkey_to_pinc));
-    memset(x11_pinc_to_xkey, -1, sizeof(x11_pinc_to_xkey));
-
-    if (xkbAvailable)
-    {
-        // Use XKB to determine physical key locations independently of the
-        // current keyboard layout
+void x11_create_key_tables(void) {
+    int scancodeMin;
+    int scancodeMax;
+    memset(xkbToPinc, -1, sizeof(xkbToPinc));
+    memset(pincToXkb, -1, sizeof(pincToXkb));
+    if(xkbAvailable) {
+        // use XKB to determine physical key locations
 
         XkbDescPtr desc = XkbGetMap(xDisplay, 0, XkbUseCoreKbd);
         XkbGetNames(xDisplay, XkbKeyNamesMask | XkbKeyAliasesMask, desc);
-
         scancodeMin = desc->min_key_code;
         scancodeMax = desc->max_key_code;
 
-        const struct
-        {
-            int key;
-            char* name;
-        } keymap[] =
-        {
+        // maps from Pinc codes to XKB code strings
+        const struct {int key; char* name;} keymap [] = {
             { pinc_key_code_backtick, "TLDE" },
             { pinc_key_code_1, "AE01" },
             { pinc_key_code_2, "AE02" },
@@ -451,7 +869,7 @@ void x11_create_key_tables(void)
             { pinc_key_code_w, "AD02" },
             { pinc_key_code_e, "AD03" },
             { pinc_key_code_r, "AD04" },
-            { pinc_key_code_T, "AD05" },
+            { pinc_key_code_t, "AD05" },
             { pinc_key_code_y, "AD06" },
             { pinc_key_code_u, "AD07" },
             { pinc_key_code_i, "AD08" },
@@ -471,7 +889,7 @@ void x11_create_key_tables(void)
             { pinc_key_code_semicolon, "AC10" },
             { pinc_key_code_apostrophe, "AC11" },
             { pinc_key_code_z, "AB01" },
-            { pinc_key_code_z, "AB02" },
+            { pinc_key_code_x, "AB02" },
             { pinc_key_code_c, "AB03" },
             { pinc_key_code_v, "AB04" },
             { pinc_key_code_b, "AB05" },
@@ -481,9 +899,8 @@ void x11_create_key_tables(void)
             { pinc_key_code_dot, "AB09" },
             { pinc_key_code_slash, "AB10" },
             { pinc_key_code_backslash, "BKSL" },
-            // TODO: I still don't know what the flip a "world" button is
-            // Apparently it's mapped to the xkb LSGT code
-            { pinc_key_code_unknown, "LSGT" },
+            // { pinc_key_code_WORLD_1, "LSGT" }, Still don't know what the heck this is
+            // Based on minimal research, it seems to be an additional modifier key (like shift, crtl, and alt)
             { pinc_key_code_space, "SPCE" },
             { pinc_key_code_escape, "ESC" },
             { pinc_key_code_enter, "RTRN" },
@@ -529,7 +946,7 @@ void x11_create_key_tables(void)
             { pinc_key_code_f23, "FK23" },
             { pinc_key_code_f24, "FK24" },
             { pinc_key_code_f25, "FK25" },
-            // TODO: Do xkb codes go all the way to F30?
+            // TODO: see if XKB keys go to F30 like Pinc does
             { pinc_key_code_numpad_0, "KP0" },
             { pinc_key_code_numpad_1, "KP1" },
             { pinc_key_code_numpad_2, "KP2" },
@@ -560,94 +977,58 @@ void x11_create_key_tables(void)
             { pinc_key_code_menu, "MENU" }
         };
 
-        // Find the X11 key code -> Pinc key code mapping
-        for (int scancode = scancodeMin;  scancode <= scancodeMax;  scancode++)
-        {
+        // Get key code mappings
+        for(int scancode = scancodeMin; scancode <= scancodeMax; ++scancode) {
             int key = pinc_key_code_unknown;
 
-            // Map the key name to a Pinc key code. Note: We use the US
-            // keyboard layout. Because function keys aren't mapped correctly
-            // when using traditional KeySym translations, they are mapped
-            // here instead.
-            for (int i = 0;  i < sizeof(keymap) / sizeof(keymap[0]);  i++)
-            {
-                if (strncmp(desc->names->keys[scancode].name,
-                            keymap[i].name,
-                            XkbKeyNameLength) == 0)
-                {
+            for(int i = 0; i < sizeof(keymap) / sizeof(keymap[0]); ++i) {
+                if(strncmp(desc->names->keys[scancode].name, keymap[i].name, 4) == 0) {
                     key = keymap[i].key;
                     break;
                 }
             }
-
-            // Fall back to key aliases in case the key name did not match
-            for (int i = 0;  i < desc->names->num_key_aliases;  i++)
-            {
-                if (key != pinc_key_code_unknown)
-                    break;
-
-                if (strncmp(desc->names->key_aliases[i].real,
-                            desc->names->keys[scancode].name,
-                            XkbKeyNameLength) != 0)
-                {
+            // fallback to key aliases if no name matched
+            for(int i = 0; key == pinc_key_code_unknown && i < desc->names->num_key_aliases; ++i) {
+                if(strncmp(desc->names->key_aliases[i].real, desc->names->keys[scancode].name, 4) != 0) {
                     continue;
                 }
-
-                for (int j = 0;  j < sizeof(keymap) / sizeof(keymap[0]);  j++)
-                {
-                    if (strncmp(desc->names->key_aliases[i].alias,
-                                keymap[j].name,
-                                XkbKeyNameLength) == 0)
-                    {
+                for(int j = 0; j < sizeof(keymap) / sizeof(keymap[0]); ++j) {
+                    if(strncmp(desc->names->key_aliases[i].alias, keymap[j].name, 4) == 0) {
                         key = keymap[j].key;
                         break;
                     }
                 }
             }
 
-            x11_xkey_to_pinc[scancode] = key;
+            xkbToPinc[scancode] = key;
         }
 
         XkbFreeNames(desc, XkbKeyNamesMask, True);
         XkbFreeKeyboard(desc, 0, True);
-    }
-    else
+    } else {
+        // Xkb is not available, so use the "old" (as if xkb isn't also old) way of doing things
         XDisplayKeycodes(xDisplay, &scancodeMin, &scancodeMax);
 
-    int width;
-    KeySym* keysyms = XGetKeyboardMapping(xDisplay,
-                                          scancodeMin,
-                                          scancodeMax - scancodeMin + 1,
-                                          &width);
+        int width;
+        KeySym* keysyms = XGetKeyboardMapping(xDisplay, scancodeMin, scancodeMax - scancodeMin + 1, &width);
 
-    for (int scancode = scancodeMin;  scancode <= scancodeMax;  scancode++)
-    {
-        // Translate the un-translated key codes using traditional X11 KeySym
-        // lookups
-        if (x11_xkey_to_pinc[scancode] < 0)
-        {
-            const size_t base = (scancode - scancodeMin) * width;
-            x11_xkey_to_pinc[scancode] = x11_get_key_code(&keysyms[base], width);
+        for(int scancode = scancodeMin; scancode <= scancodeMax; ++scancode) {
+            if(xkbToPinc[scancode] < 0) {
+                const size_t base = (scancode - scancodeMin) * width;
+                xkbToPinc[scancode] = x11_translate_keysyms(&keysyms[base], width);
+            }
+
+            if(xkbToPinc[scancode] > 0) {
+                pincToXkb[xkbToPinc[scancode]] = scancode;
+            }
         }
-
-        // Store the reverse translation for faster key name lookup
-        if (x11_xkey_to_pinc[scancode] > 0)
-            x11_pinc_to_xkey[x11_xkey_to_pinc[scancode]] = scancode;
+        XFree(keysyms);
     }
-
-    XFree(keysyms);
 }
 
-// Translate the X11 KeySyms for a key to a Pinc key code
-// NOTE: This is only used as a fallback, in case the XKB method fails
-//       It is layout-dependent and will fail partially on most non-US layouts
-// This is copied from GLFW
-pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width)
-{
-    if (width > 1)
-    {
-        switch (keysyms[1])
-        {
+pinc_key_code_enum x11_translate_keysyms(const KeySym* keysyms, int width) {
+    if(width > 1) {
+        switch(keysyms[1]) {
             case XK_KP_0:           return pinc_key_code_numpad_0;
             case XK_KP_1:           return pinc_key_code_numpad_1;
             case XK_KP_2:           return pinc_key_code_numpad_2;
@@ -666,8 +1047,7 @@ pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width)
         }
     }
 
-    switch (keysyms[0])
-    {
+    switch (keysyms[0]) {
         case XK_Escape:         return pinc_key_code_escape;
         case XK_Tab:            return pinc_key_code_tab;
         case XK_Shift_L:        return pinc_key_code_left_shift;
@@ -730,6 +1110,7 @@ pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width)
         case XK_F28:            return pinc_key_code_f28;
         case XK_F29:            return pinc_key_code_f29;
         case XK_F30:            return pinc_key_code_f30;
+
         // Numeric keypad
         case XK_KP_Divide:      return pinc_key_code_numpad_slash;
         case XK_KP_Multiply:    return pinc_key_code_numpad_asterisk;
@@ -773,7 +1154,7 @@ pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width)
         case XK_q:              return pinc_key_code_q;
         case XK_r:              return pinc_key_code_r;
         case XK_s:              return pinc_key_code_s;
-        case XK_t:              return pinc_key_code_T;
+        case XK_t:              return pinc_key_code_t;
         case XK_u:              return pinc_key_code_u;
         case XK_v:              return pinc_key_code_v;
         case XK_w:              return pinc_key_code_w;
@@ -802,9 +1183,893 @@ pinc_key_code_t x11_get_key_code(const KeySym* keysyms, int width)
         case XK_comma:          return pinc_key_code_comma;
         case XK_period:         return pinc_key_code_dot;
         case XK_slash:          return pinc_key_code_slash;
+        // TODO: add international modifier keys to pinc
+        //case XK_less:           return pinc_key_code_WORLD_1; // At least in some layouts...
         default:                break;
     }
 
     // No matching translation was found
     return pinc_key_code_unknown;
 }
+
+// This is copied from Kinc
+void* x11_load_library(const char* name) {
+    char libname[32];
+    sprintf(libname, "lib%s.so", name);
+    void* lib = dlopen(libname, RTLD_LAZY);
+    // Some Linux distros don't have the .so directly, but instead put a version tag on it.
+    // TODO: actually test this on one of said distros
+    for(int i=0; i < 10 && lib == NULL; ++i) {
+        sprintf(libname, "lib%s.so.%i", name, i);
+        lib = dlopen(libname,  RTLD_LAZY);
+    }
+    return lib;
+}
+
+// Stole this giant array & associated function from GLFW. See xkb_unicode.c in GLFW's source code for more detail.
+static const struct codepair {
+  unsigned short keysym;
+  unsigned short ucs;
+} keysymtab[] = {
+  { 0x01a1, 0x0104 },
+  { 0x01a2, 0x02d8 },
+  { 0x01a3, 0x0141 },
+  { 0x01a5, 0x013d },
+  { 0x01a6, 0x015a },
+  { 0x01a9, 0x0160 },
+  { 0x01aa, 0x015e },
+  { 0x01ab, 0x0164 },
+  { 0x01ac, 0x0179 },
+  { 0x01ae, 0x017d },
+  { 0x01af, 0x017b },
+  { 0x01b1, 0x0105 },
+  { 0x01b2, 0x02db },
+  { 0x01b3, 0x0142 },
+  { 0x01b5, 0x013e },
+  { 0x01b6, 0x015b },
+  { 0x01b7, 0x02c7 },
+  { 0x01b9, 0x0161 },
+  { 0x01ba, 0x015f },
+  { 0x01bb, 0x0165 },
+  { 0x01bc, 0x017a },
+  { 0x01bd, 0x02dd },
+  { 0x01be, 0x017e },
+  { 0x01bf, 0x017c },
+  { 0x01c0, 0x0154 },
+  { 0x01c3, 0x0102 },
+  { 0x01c5, 0x0139 },
+  { 0x01c6, 0x0106 },
+  { 0x01c8, 0x010c },
+  { 0x01ca, 0x0118 },
+  { 0x01cc, 0x011a },
+  { 0x01cf, 0x010e },
+  { 0x01d0, 0x0110 },
+  { 0x01d1, 0x0143 },
+  { 0x01d2, 0x0147 },
+  { 0x01d5, 0x0150 },
+  { 0x01d8, 0x0158 },
+  { 0x01d9, 0x016e },
+  { 0x01db, 0x0170 },
+  { 0x01de, 0x0162 },
+  { 0x01e0, 0x0155 },
+  { 0x01e3, 0x0103 },
+  { 0x01e5, 0x013a },
+  { 0x01e6, 0x0107 },
+  { 0x01e8, 0x010d },
+  { 0x01ea, 0x0119 },
+  { 0x01ec, 0x011b },
+  { 0x01ef, 0x010f },
+  { 0x01f0, 0x0111 },
+  { 0x01f1, 0x0144 },
+  { 0x01f2, 0x0148 },
+  { 0x01f5, 0x0151 },
+  { 0x01f8, 0x0159 },
+  { 0x01f9, 0x016f },
+  { 0x01fb, 0x0171 },
+  { 0x01fe, 0x0163 },
+  { 0x01ff, 0x02d9 },
+  { 0x02a1, 0x0126 },
+  { 0x02a6, 0x0124 },
+  { 0x02a9, 0x0130 },
+  { 0x02ab, 0x011e },
+  { 0x02ac, 0x0134 },
+  { 0x02b1, 0x0127 },
+  { 0x02b6, 0x0125 },
+  { 0x02b9, 0x0131 },
+  { 0x02bb, 0x011f },
+  { 0x02bc, 0x0135 },
+  { 0x02c5, 0x010a },
+  { 0x02c6, 0x0108 },
+  { 0x02d5, 0x0120 },
+  { 0x02d8, 0x011c },
+  { 0x02dd, 0x016c },
+  { 0x02de, 0x015c },
+  { 0x02e5, 0x010b },
+  { 0x02e6, 0x0109 },
+  { 0x02f5, 0x0121 },
+  { 0x02f8, 0x011d },
+  { 0x02fd, 0x016d },
+  { 0x02fe, 0x015d },
+  { 0x03a2, 0x0138 },
+  { 0x03a3, 0x0156 },
+  { 0x03a5, 0x0128 },
+  { 0x03a6, 0x013b },
+  { 0x03aa, 0x0112 },
+  { 0x03ab, 0x0122 },
+  { 0x03ac, 0x0166 },
+  { 0x03b3, 0x0157 },
+  { 0x03b5, 0x0129 },
+  { 0x03b6, 0x013c },
+  { 0x03ba, 0x0113 },
+  { 0x03bb, 0x0123 },
+  { 0x03bc, 0x0167 },
+  { 0x03bd, 0x014a },
+  { 0x03bf, 0x014b },
+  { 0x03c0, 0x0100 },
+  { 0x03c7, 0x012e },
+  { 0x03cc, 0x0116 },
+  { 0x03cf, 0x012a },
+  { 0x03d1, 0x0145 },
+  { 0x03d2, 0x014c },
+  { 0x03d3, 0x0136 },
+  { 0x03d9, 0x0172 },
+  { 0x03dd, 0x0168 },
+  { 0x03de, 0x016a },
+  { 0x03e0, 0x0101 },
+  { 0x03e7, 0x012f },
+  { 0x03ec, 0x0117 },
+  { 0x03ef, 0x012b },
+  { 0x03f1, 0x0146 },
+  { 0x03f2, 0x014d },
+  { 0x03f3, 0x0137 },
+  { 0x03f9, 0x0173 },
+  { 0x03fd, 0x0169 },
+  { 0x03fe, 0x016b },
+  { 0x047e, 0x203e },
+  { 0x04a1, 0x3002 },
+  { 0x04a2, 0x300c },
+  { 0x04a3, 0x300d },
+  { 0x04a4, 0x3001 },
+  { 0x04a5, 0x30fb },
+  { 0x04a6, 0x30f2 },
+  { 0x04a7, 0x30a1 },
+  { 0x04a8, 0x30a3 },
+  { 0x04a9, 0x30a5 },
+  { 0x04aa, 0x30a7 },
+  { 0x04ab, 0x30a9 },
+  { 0x04ac, 0x30e3 },
+  { 0x04ad, 0x30e5 },
+  { 0x04ae, 0x30e7 },
+  { 0x04af, 0x30c3 },
+  { 0x04b0, 0x30fc },
+  { 0x04b1, 0x30a2 },
+  { 0x04b2, 0x30a4 },
+  { 0x04b3, 0x30a6 },
+  { 0x04b4, 0x30a8 },
+  { 0x04b5, 0x30aa },
+  { 0x04b6, 0x30ab },
+  { 0x04b7, 0x30ad },
+  { 0x04b8, 0x30af },
+  { 0x04b9, 0x30b1 },
+  { 0x04ba, 0x30b3 },
+  { 0x04bb, 0x30b5 },
+  { 0x04bc, 0x30b7 },
+  { 0x04bd, 0x30b9 },
+  { 0x04be, 0x30bb },
+  { 0x04bf, 0x30bd },
+  { 0x04c0, 0x30bf },
+  { 0x04c1, 0x30c1 },
+  { 0x04c2, 0x30c4 },
+  { 0x04c3, 0x30c6 },
+  { 0x04c4, 0x30c8 },
+  { 0x04c5, 0x30ca },
+  { 0x04c6, 0x30cb },
+  { 0x04c7, 0x30cc },
+  { 0x04c8, 0x30cd },
+  { 0x04c9, 0x30ce },
+  { 0x04ca, 0x30cf },
+  { 0x04cb, 0x30d2 },
+  { 0x04cc, 0x30d5 },
+  { 0x04cd, 0x30d8 },
+  { 0x04ce, 0x30db },
+  { 0x04cf, 0x30de },
+  { 0x04d0, 0x30df },
+  { 0x04d1, 0x30e0 },
+  { 0x04d2, 0x30e1 },
+  { 0x04d3, 0x30e2 },
+  { 0x04d4, 0x30e4 },
+  { 0x04d5, 0x30e6 },
+  { 0x04d6, 0x30e8 },
+  { 0x04d7, 0x30e9 },
+  { 0x04d8, 0x30ea },
+  { 0x04d9, 0x30eb },
+  { 0x04da, 0x30ec },
+  { 0x04db, 0x30ed },
+  { 0x04dc, 0x30ef },
+  { 0x04dd, 0x30f3 },
+  { 0x04de, 0x309b },
+  { 0x04df, 0x309c },
+  { 0x05ac, 0x060c },
+  { 0x05bb, 0x061b },
+  { 0x05bf, 0x061f },
+  { 0x05c1, 0x0621 },
+  { 0x05c2, 0x0622 },
+  { 0x05c3, 0x0623 },
+  { 0x05c4, 0x0624 },
+  { 0x05c5, 0x0625 },
+  { 0x05c6, 0x0626 },
+  { 0x05c7, 0x0627 },
+  { 0x05c8, 0x0628 },
+  { 0x05c9, 0x0629 },
+  { 0x05ca, 0x062a },
+  { 0x05cb, 0x062b },
+  { 0x05cc, 0x062c },
+  { 0x05cd, 0x062d },
+  { 0x05ce, 0x062e },
+  { 0x05cf, 0x062f },
+  { 0x05d0, 0x0630 },
+  { 0x05d1, 0x0631 },
+  { 0x05d2, 0x0632 },
+  { 0x05d3, 0x0633 },
+  { 0x05d4, 0x0634 },
+  { 0x05d5, 0x0635 },
+  { 0x05d6, 0x0636 },
+  { 0x05d7, 0x0637 },
+  { 0x05d8, 0x0638 },
+  { 0x05d9, 0x0639 },
+  { 0x05da, 0x063a },
+  { 0x05e0, 0x0640 },
+  { 0x05e1, 0x0641 },
+  { 0x05e2, 0x0642 },
+  { 0x05e3, 0x0643 },
+  { 0x05e4, 0x0644 },
+  { 0x05e5, 0x0645 },
+  { 0x05e6, 0x0646 },
+  { 0x05e7, 0x0647 },
+  { 0x05e8, 0x0648 },
+  { 0x05e9, 0x0649 },
+  { 0x05ea, 0x064a },
+  { 0x05eb, 0x064b },
+  { 0x05ec, 0x064c },
+  { 0x05ed, 0x064d },
+  { 0x05ee, 0x064e },
+  { 0x05ef, 0x064f },
+  { 0x05f0, 0x0650 },
+  { 0x05f1, 0x0651 },
+  { 0x05f2, 0x0652 },
+  { 0x06a1, 0x0452 },
+  { 0x06a2, 0x0453 },
+  { 0x06a3, 0x0451 },
+  { 0x06a4, 0x0454 },
+  { 0x06a5, 0x0455 },
+  { 0x06a6, 0x0456 },
+  { 0x06a7, 0x0457 },
+  { 0x06a8, 0x0458 },
+  { 0x06a9, 0x0459 },
+  { 0x06aa, 0x045a },
+  { 0x06ab, 0x045b },
+  { 0x06ac, 0x045c },
+  { 0x06ae, 0x045e },
+  { 0x06af, 0x045f },
+  { 0x06b0, 0x2116 },
+  { 0x06b1, 0x0402 },
+  { 0x06b2, 0x0403 },
+  { 0x06b3, 0x0401 },
+  { 0x06b4, 0x0404 },
+  { 0x06b5, 0x0405 },
+  { 0x06b6, 0x0406 },
+  { 0x06b7, 0x0407 },
+  { 0x06b8, 0x0408 },
+  { 0x06b9, 0x0409 },
+  { 0x06ba, 0x040a },
+  { 0x06bb, 0x040b },
+  { 0x06bc, 0x040c },
+  { 0x06be, 0x040e },
+  { 0x06bf, 0x040f },
+  { 0x06c0, 0x044e },
+  { 0x06c1, 0x0430 },
+  { 0x06c2, 0x0431 },
+  { 0x06c3, 0x0446 },
+  { 0x06c4, 0x0434 },
+  { 0x06c5, 0x0435 },
+  { 0x06c6, 0x0444 },
+  { 0x06c7, 0x0433 },
+  { 0x06c8, 0x0445 },
+  { 0x06c9, 0x0438 },
+  { 0x06ca, 0x0439 },
+  { 0x06cb, 0x043a },
+  { 0x06cc, 0x043b },
+  { 0x06cd, 0x043c },
+  { 0x06ce, 0x043d },
+  { 0x06cf, 0x043e },
+  { 0x06d0, 0x043f },
+  { 0x06d1, 0x044f },
+  { 0x06d2, 0x0440 },
+  { 0x06d3, 0x0441 },
+  { 0x06d4, 0x0442 },
+  { 0x06d5, 0x0443 },
+  { 0x06d6, 0x0436 },
+  { 0x06d7, 0x0432 },
+  { 0x06d8, 0x044c },
+  { 0x06d9, 0x044b },
+  { 0x06da, 0x0437 },
+  { 0x06db, 0x0448 },
+  { 0x06dc, 0x044d },
+  { 0x06dd, 0x0449 },
+  { 0x06de, 0x0447 },
+  { 0x06df, 0x044a },
+  { 0x06e0, 0x042e },
+  { 0x06e1, 0x0410 },
+  { 0x06e2, 0x0411 },
+  { 0x06e3, 0x0426 },
+  { 0x06e4, 0x0414 },
+  { 0x06e5, 0x0415 },
+  { 0x06e6, 0x0424 },
+  { 0x06e7, 0x0413 },
+  { 0x06e8, 0x0425 },
+  { 0x06e9, 0x0418 },
+  { 0x06ea, 0x0419 },
+  { 0x06eb, 0x041a },
+  { 0x06ec, 0x041b },
+  { 0x06ed, 0x041c },
+  { 0x06ee, 0x041d },
+  { 0x06ef, 0x041e },
+  { 0x06f0, 0x041f },
+  { 0x06f1, 0x042f },
+  { 0x06f2, 0x0420 },
+  { 0x06f3, 0x0421 },
+  { 0x06f4, 0x0422 },
+  { 0x06f5, 0x0423 },
+  { 0x06f6, 0x0416 },
+  { 0x06f7, 0x0412 },
+  { 0x06f8, 0x042c },
+  { 0x06f9, 0x042b },
+  { 0x06fa, 0x0417 },
+  { 0x06fb, 0x0428 },
+  { 0x06fc, 0x042d },
+  { 0x06fd, 0x0429 },
+  { 0x06fe, 0x0427 },
+  { 0x06ff, 0x042a },
+  { 0x07a1, 0x0386 },
+  { 0x07a2, 0x0388 },
+  { 0x07a3, 0x0389 },
+  { 0x07a4, 0x038a },
+  { 0x07a5, 0x03aa },
+  { 0x07a7, 0x038c },
+  { 0x07a8, 0x038e },
+  { 0x07a9, 0x03ab },
+  { 0x07ab, 0x038f },
+  { 0x07ae, 0x0385 },
+  { 0x07af, 0x2015 },
+  { 0x07b1, 0x03ac },
+  { 0x07b2, 0x03ad },
+  { 0x07b3, 0x03ae },
+  { 0x07b4, 0x03af },
+  { 0x07b5, 0x03ca },
+  { 0x07b6, 0x0390 },
+  { 0x07b7, 0x03cc },
+  { 0x07b8, 0x03cd },
+  { 0x07b9, 0x03cb },
+  { 0x07ba, 0x03b0 },
+  { 0x07bb, 0x03ce },
+  { 0x07c1, 0x0391 },
+  { 0x07c2, 0x0392 },
+  { 0x07c3, 0x0393 },
+  { 0x07c4, 0x0394 },
+  { 0x07c5, 0x0395 },
+  { 0x07c6, 0x0396 },
+  { 0x07c7, 0x0397 },
+  { 0x07c8, 0x0398 },
+  { 0x07c9, 0x0399 },
+  { 0x07ca, 0x039a },
+  { 0x07cb, 0x039b },
+  { 0x07cc, 0x039c },
+  { 0x07cd, 0x039d },
+  { 0x07ce, 0x039e },
+  { 0x07cf, 0x039f },
+  { 0x07d0, 0x03a0 },
+  { 0x07d1, 0x03a1 },
+  { 0x07d2, 0x03a3 },
+  { 0x07d4, 0x03a4 },
+  { 0x07d5, 0x03a5 },
+  { 0x07d6, 0x03a6 },
+  { 0x07d7, 0x03a7 },
+  { 0x07d8, 0x03a8 },
+  { 0x07d9, 0x03a9 },
+  { 0x07e1, 0x03b1 },
+  { 0x07e2, 0x03b2 },
+  { 0x07e3, 0x03b3 },
+  { 0x07e4, 0x03b4 },
+  { 0x07e5, 0x03b5 },
+  { 0x07e6, 0x03b6 },
+  { 0x07e7, 0x03b7 },
+  { 0x07e8, 0x03b8 },
+  { 0x07e9, 0x03b9 },
+  { 0x07ea, 0x03ba },
+  { 0x07eb, 0x03bb },
+  { 0x07ec, 0x03bc },
+  { 0x07ed, 0x03bd },
+  { 0x07ee, 0x03be },
+  { 0x07ef, 0x03bf },
+  { 0x07f0, 0x03c0 },
+  { 0x07f1, 0x03c1 },
+  { 0x07f2, 0x03c3 },
+  { 0x07f3, 0x03c2 },
+  { 0x07f4, 0x03c4 },
+  { 0x07f5, 0x03c5 },
+  { 0x07f6, 0x03c6 },
+  { 0x07f7, 0x03c7 },
+  { 0x07f8, 0x03c8 },
+  { 0x07f9, 0x03c9 },
+  { 0x08a1, 0x23b7 },
+  { 0x08a2, 0x250c },
+  { 0x08a3, 0x2500 },
+  { 0x08a4, 0x2320 },
+  { 0x08a5, 0x2321 },
+  { 0x08a6, 0x2502 },
+  { 0x08a7, 0x23a1 },
+  { 0x08a8, 0x23a3 },
+  { 0x08a9, 0x23a4 },
+  { 0x08aa, 0x23a6 },
+  { 0x08ab, 0x239b },
+  { 0x08ac, 0x239d },
+  { 0x08ad, 0x239e },
+  { 0x08ae, 0x23a0 },
+  { 0x08af, 0x23a8 },
+  { 0x08b0, 0x23ac },
+  { 0x08bc, 0x2264 },
+  { 0x08bd, 0x2260 },
+  { 0x08be, 0x2265 },
+  { 0x08bf, 0x222b },
+  { 0x08c0, 0x2234 },
+  { 0x08c1, 0x221d },
+  { 0x08c2, 0x221e },
+  { 0x08c5, 0x2207 },
+  { 0x08c8, 0x223c },
+  { 0x08c9, 0x2243 },
+  { 0x08cd, 0x21d4 },
+  { 0x08ce, 0x21d2 },
+  { 0x08cf, 0x2261 },
+  { 0x08d6, 0x221a },
+  { 0x08da, 0x2282 },
+  { 0x08db, 0x2283 },
+  { 0x08dc, 0x2229 },
+  { 0x08dd, 0x222a },
+  { 0x08de, 0x2227 },
+  { 0x08df, 0x2228 },
+  { 0x08ef, 0x2202 },
+  { 0x08f6, 0x0192 },
+  { 0x08fb, 0x2190 },
+  { 0x08fc, 0x2191 },
+  { 0x08fd, 0x2192 },
+  { 0x08fe, 0x2193 },
+  { 0x09e0, 0x25c6 },
+  { 0x09e1, 0x2592 },
+  { 0x09e2, 0x2409 },
+  { 0x09e3, 0x240c },
+  { 0x09e4, 0x240d },
+  { 0x09e5, 0x240a },
+  { 0x09e8, 0x2424 },
+  { 0x09e9, 0x240b },
+  { 0x09ea, 0x2518 },
+  { 0x09eb, 0x2510 },
+  { 0x09ec, 0x250c },
+  { 0x09ed, 0x2514 },
+  { 0x09ee, 0x253c },
+  { 0x09ef, 0x23ba },
+  { 0x09f0, 0x23bb },
+  { 0x09f1, 0x2500 },
+  { 0x09f2, 0x23bc },
+  { 0x09f3, 0x23bd },
+  { 0x09f4, 0x251c },
+  { 0x09f5, 0x2524 },
+  { 0x09f6, 0x2534 },
+  { 0x09f7, 0x252c },
+  { 0x09f8, 0x2502 },
+  { 0x0aa1, 0x2003 },
+  { 0x0aa2, 0x2002 },
+  { 0x0aa3, 0x2004 },
+  { 0x0aa4, 0x2005 },
+  { 0x0aa5, 0x2007 },
+  { 0x0aa6, 0x2008 },
+  { 0x0aa7, 0x2009 },
+  { 0x0aa8, 0x200a },
+  { 0x0aa9, 0x2014 },
+  { 0x0aaa, 0x2013 },
+  { 0x0aae, 0x2026 },
+  { 0x0aaf, 0x2025 },
+  { 0x0ab0, 0x2153 },
+  { 0x0ab1, 0x2154 },
+  { 0x0ab2, 0x2155 },
+  { 0x0ab3, 0x2156 },
+  { 0x0ab4, 0x2157 },
+  { 0x0ab5, 0x2158 },
+  { 0x0ab6, 0x2159 },
+  { 0x0ab7, 0x215a },
+  { 0x0ab8, 0x2105 },
+  { 0x0abb, 0x2012 },
+  { 0x0abc, 0x2329 },
+  { 0x0abe, 0x232a },
+  { 0x0ac3, 0x215b },
+  { 0x0ac4, 0x215c },
+  { 0x0ac5, 0x215d },
+  { 0x0ac6, 0x215e },
+  { 0x0ac9, 0x2122 },
+  { 0x0aca, 0x2613 },
+  { 0x0acc, 0x25c1 },
+  { 0x0acd, 0x25b7 },
+  { 0x0ace, 0x25cb },
+  { 0x0acf, 0x25af },
+  { 0x0ad0, 0x2018 },
+  { 0x0ad1, 0x2019 },
+  { 0x0ad2, 0x201c },
+  { 0x0ad3, 0x201d },
+  { 0x0ad4, 0x211e },
+  { 0x0ad6, 0x2032 },
+  { 0x0ad7, 0x2033 },
+  { 0x0ad9, 0x271d },
+  { 0x0adb, 0x25ac },
+  { 0x0adc, 0x25c0 },
+  { 0x0add, 0x25b6 },
+  { 0x0ade, 0x25cf },
+  { 0x0adf, 0x25ae },
+  { 0x0ae0, 0x25e6 },
+  { 0x0ae1, 0x25ab },
+  { 0x0ae2, 0x25ad },
+  { 0x0ae3, 0x25b3 },
+  { 0x0ae4, 0x25bd },
+  { 0x0ae5, 0x2606 },
+  { 0x0ae6, 0x2022 },
+  { 0x0ae7, 0x25aa },
+  { 0x0ae8, 0x25b2 },
+  { 0x0ae9, 0x25bc },
+  { 0x0aea, 0x261c },
+  { 0x0aeb, 0x261e },
+  { 0x0aec, 0x2663 },
+  { 0x0aed, 0x2666 },
+  { 0x0aee, 0x2665 },
+  { 0x0af0, 0x2720 },
+  { 0x0af1, 0x2020 },
+  { 0x0af2, 0x2021 },
+  { 0x0af3, 0x2713 },
+  { 0x0af4, 0x2717 },
+  { 0x0af5, 0x266f },
+  { 0x0af6, 0x266d },
+  { 0x0af7, 0x2642 },
+  { 0x0af8, 0x2640 },
+  { 0x0af9, 0x260e },
+  { 0x0afa, 0x2315 },
+  { 0x0afb, 0x2117 },
+  { 0x0afc, 0x2038 },
+  { 0x0afd, 0x201a },
+  { 0x0afe, 0x201e },
+  { 0x0ba3, 0x003c },
+  { 0x0ba6, 0x003e },
+  { 0x0ba8, 0x2228 },
+  { 0x0ba9, 0x2227 },
+  { 0x0bc0, 0x00af },
+  { 0x0bc2, 0x22a5 },
+  { 0x0bc3, 0x2229 },
+  { 0x0bc4, 0x230a },
+  { 0x0bc6, 0x005f },
+  { 0x0bca, 0x2218 },
+  { 0x0bcc, 0x2395 },
+  { 0x0bce, 0x22a4 },
+  { 0x0bcf, 0x25cb },
+  { 0x0bd3, 0x2308 },
+  { 0x0bd6, 0x222a },
+  { 0x0bd8, 0x2283 },
+  { 0x0bda, 0x2282 },
+  { 0x0bdc, 0x22a2 },
+  { 0x0bfc, 0x22a3 },
+  { 0x0cdf, 0x2017 },
+  { 0x0ce0, 0x05d0 },
+  { 0x0ce1, 0x05d1 },
+  { 0x0ce2, 0x05d2 },
+  { 0x0ce3, 0x05d3 },
+  { 0x0ce4, 0x05d4 },
+  { 0x0ce5, 0x05d5 },
+  { 0x0ce6, 0x05d6 },
+  { 0x0ce7, 0x05d7 },
+  { 0x0ce8, 0x05d8 },
+  { 0x0ce9, 0x05d9 },
+  { 0x0cea, 0x05da },
+  { 0x0ceb, 0x05db },
+  { 0x0cec, 0x05dc },
+  { 0x0ced, 0x05dd },
+  { 0x0cee, 0x05de },
+  { 0x0cef, 0x05df },
+  { 0x0cf0, 0x05e0 },
+  { 0x0cf1, 0x05e1 },
+  { 0x0cf2, 0x05e2 },
+  { 0x0cf3, 0x05e3 },
+  { 0x0cf4, 0x05e4 },
+  { 0x0cf5, 0x05e5 },
+  { 0x0cf6, 0x05e6 },
+  { 0x0cf7, 0x05e7 },
+  { 0x0cf8, 0x05e8 },
+  { 0x0cf9, 0x05e9 },
+  { 0x0cfa, 0x05ea },
+  { 0x0da1, 0x0e01 },
+  { 0x0da2, 0x0e02 },
+  { 0x0da3, 0x0e03 },
+  { 0x0da4, 0x0e04 },
+  { 0x0da5, 0x0e05 },
+  { 0x0da6, 0x0e06 },
+  { 0x0da7, 0x0e07 },
+  { 0x0da8, 0x0e08 },
+  { 0x0da9, 0x0e09 },
+  { 0x0daa, 0x0e0a },
+  { 0x0dab, 0x0e0b },
+  { 0x0dac, 0x0e0c },
+  { 0x0dad, 0x0e0d },
+  { 0x0dae, 0x0e0e },
+  { 0x0daf, 0x0e0f },
+  { 0x0db0, 0x0e10 },
+  { 0x0db1, 0x0e11 },
+  { 0x0db2, 0x0e12 },
+  { 0x0db3, 0x0e13 },
+  { 0x0db4, 0x0e14 },
+  { 0x0db5, 0x0e15 },
+  { 0x0db6, 0x0e16 },
+  { 0x0db7, 0x0e17 },
+  { 0x0db8, 0x0e18 },
+  { 0x0db9, 0x0e19 },
+  { 0x0dba, 0x0e1a },
+  { 0x0dbb, 0x0e1b },
+  { 0x0dbc, 0x0e1c },
+  { 0x0dbd, 0x0e1d },
+  { 0x0dbe, 0x0e1e },
+  { 0x0dbf, 0x0e1f },
+  { 0x0dc0, 0x0e20 },
+  { 0x0dc1, 0x0e21 },
+  { 0x0dc2, 0x0e22 },
+  { 0x0dc3, 0x0e23 },
+  { 0x0dc4, 0x0e24 },
+  { 0x0dc5, 0x0e25 },
+  { 0x0dc6, 0x0e26 },
+  { 0x0dc7, 0x0e27 },
+  { 0x0dc8, 0x0e28 },
+  { 0x0dc9, 0x0e29 },
+  { 0x0dca, 0x0e2a },
+  { 0x0dcb, 0x0e2b },
+  { 0x0dcc, 0x0e2c },
+  { 0x0dcd, 0x0e2d },
+  { 0x0dce, 0x0e2e },
+  { 0x0dcf, 0x0e2f },
+  { 0x0dd0, 0x0e30 },
+  { 0x0dd1, 0x0e31 },
+  { 0x0dd2, 0x0e32 },
+  { 0x0dd3, 0x0e33 },
+  { 0x0dd4, 0x0e34 },
+  { 0x0dd5, 0x0e35 },
+  { 0x0dd6, 0x0e36 },
+  { 0x0dd7, 0x0e37 },
+  { 0x0dd8, 0x0e38 },
+  { 0x0dd9, 0x0e39 },
+  { 0x0dda, 0x0e3a },
+  { 0x0ddf, 0x0e3f },
+  { 0x0de0, 0x0e40 },
+  { 0x0de1, 0x0e41 },
+  { 0x0de2, 0x0e42 },
+  { 0x0de3, 0x0e43 },
+  { 0x0de4, 0x0e44 },
+  { 0x0de5, 0x0e45 },
+  { 0x0de6, 0x0e46 },
+  { 0x0de7, 0x0e47 },
+  { 0x0de8, 0x0e48 },
+  { 0x0de9, 0x0e49 },
+  { 0x0dea, 0x0e4a },
+  { 0x0deb, 0x0e4b },
+  { 0x0dec, 0x0e4c },
+  { 0x0ded, 0x0e4d },
+  { 0x0df0, 0x0e50 },
+  { 0x0df1, 0x0e51 },
+  { 0x0df2, 0x0e52 },
+  { 0x0df3, 0x0e53 },
+  { 0x0df4, 0x0e54 },
+  { 0x0df5, 0x0e55 },
+  { 0x0df6, 0x0e56 },
+  { 0x0df7, 0x0e57 },
+  { 0x0df8, 0x0e58 },
+  { 0x0df9, 0x0e59 },
+  { 0x0ea1, 0x3131 },
+  { 0x0ea2, 0x3132 },
+  { 0x0ea3, 0x3133 },
+  { 0x0ea4, 0x3134 },
+  { 0x0ea5, 0x3135 },
+  { 0x0ea6, 0x3136 },
+  { 0x0ea7, 0x3137 },
+  { 0x0ea8, 0x3138 },
+  { 0x0ea9, 0x3139 },
+  { 0x0eaa, 0x313a },
+  { 0x0eab, 0x313b },
+  { 0x0eac, 0x313c },
+  { 0x0ead, 0x313d },
+  { 0x0eae, 0x313e },
+  { 0x0eaf, 0x313f },
+  { 0x0eb0, 0x3140 },
+  { 0x0eb1, 0x3141 },
+  { 0x0eb2, 0x3142 },
+  { 0x0eb3, 0x3143 },
+  { 0x0eb4, 0x3144 },
+  { 0x0eb5, 0x3145 },
+  { 0x0eb6, 0x3146 },
+  { 0x0eb7, 0x3147 },
+  { 0x0eb8, 0x3148 },
+  { 0x0eb9, 0x3149 },
+  { 0x0eba, 0x314a },
+  { 0x0ebb, 0x314b },
+  { 0x0ebc, 0x314c },
+  { 0x0ebd, 0x314d },
+  { 0x0ebe, 0x314e },
+  { 0x0ebf, 0x314f },
+  { 0x0ec0, 0x3150 },
+  { 0x0ec1, 0x3151 },
+  { 0x0ec2, 0x3152 },
+  { 0x0ec3, 0x3153 },
+  { 0x0ec4, 0x3154 },
+  { 0x0ec5, 0x3155 },
+  { 0x0ec6, 0x3156 },
+  { 0x0ec7, 0x3157 },
+  { 0x0ec8, 0x3158 },
+  { 0x0ec9, 0x3159 },
+  { 0x0eca, 0x315a },
+  { 0x0ecb, 0x315b },
+  { 0x0ecc, 0x315c },
+  { 0x0ecd, 0x315d },
+  { 0x0ece, 0x315e },
+  { 0x0ecf, 0x315f },
+  { 0x0ed0, 0x3160 },
+  { 0x0ed1, 0x3161 },
+  { 0x0ed2, 0x3162 },
+  { 0x0ed3, 0x3163 },
+  { 0x0ed4, 0x11a8 },
+  { 0x0ed5, 0x11a9 },
+  { 0x0ed6, 0x11aa },
+  { 0x0ed7, 0x11ab },
+  { 0x0ed8, 0x11ac },
+  { 0x0ed9, 0x11ad },
+  { 0x0eda, 0x11ae },
+  { 0x0edb, 0x11af },
+  { 0x0edc, 0x11b0 },
+  { 0x0edd, 0x11b1 },
+  { 0x0ede, 0x11b2 },
+  { 0x0edf, 0x11b3 },
+  { 0x0ee0, 0x11b4 },
+  { 0x0ee1, 0x11b5 },
+  { 0x0ee2, 0x11b6 },
+  { 0x0ee3, 0x11b7 },
+  { 0x0ee4, 0x11b8 },
+  { 0x0ee5, 0x11b9 },
+  { 0x0ee6, 0x11ba },
+  { 0x0ee7, 0x11bb },
+  { 0x0ee8, 0x11bc },
+  { 0x0ee9, 0x11bd },
+  { 0x0eea, 0x11be },
+  { 0x0eeb, 0x11bf },
+  { 0x0eec, 0x11c0 },
+  { 0x0eed, 0x11c1 },
+  { 0x0eee, 0x11c2 },
+  { 0x0eef, 0x316d },
+  { 0x0ef0, 0x3171 },
+  { 0x0ef1, 0x3178 },
+  { 0x0ef2, 0x317f },
+  { 0x0ef3, 0x3181 },
+  { 0x0ef4, 0x3184 },
+  { 0x0ef5, 0x3186 },
+  { 0x0ef6, 0x318d },
+  { 0x0ef7, 0x318e },
+  { 0x0ef8, 0x11eb },
+  { 0x0ef9, 0x11f0 },
+  { 0x0efa, 0x11f9 },
+  { 0x0eff, 0x20a9 },
+  { 0x13a4, 0x20ac },
+  { 0x13bc, 0x0152 },
+  { 0x13bd, 0x0153 },
+  { 0x13be, 0x0178 },
+  { 0x20ac, 0x20ac },
+  { 0xfe50,    '`' },
+  { 0xfe51, 0x00b4 },
+  { 0xfe52,    '^' },
+  { 0xfe53,    '~' },
+  { 0xfe54, 0x00af },
+  { 0xfe55, 0x02d8 },
+  { 0xfe56, 0x02d9 },
+  { 0xfe57, 0x00a8 },
+  { 0xfe58, 0x02da },
+  { 0xfe59, 0x02dd },
+  { 0xfe5a, 0x02c7 },
+  { 0xfe5b, 0x00b8 },
+  { 0xfe5c, 0x02db },
+  { 0xfe5d, 0x037a },
+  { 0xfe5e, 0x309b },
+  { 0xfe5f, 0x309c },
+  { 0xfe63,    '/' },
+  { 0xfe64, 0x02bc },
+  { 0xfe65, 0x02bd },
+  { 0xfe66, 0x02f5 },
+  { 0xfe67, 0x02f3 },
+  { 0xfe68, 0x02cd },
+  { 0xfe69, 0xa788 },
+  { 0xfe6a, 0x02f7 },
+  { 0xfe6e,    ',' },
+  { 0xfe6f, 0x00a4 },
+  { 0xfe80,    'a' }, // XK_dead_a
+  { 0xfe81,    'A' }, // XK_dead_A
+  { 0xfe82,    'e' }, // XK_dead_e
+  { 0xfe83,    'E' }, // XK_dead_E
+  { 0xfe84,    'i' }, // XK_dead_i
+  { 0xfe85,    'I' }, // XK_dead_I
+  { 0xfe86,    'o' }, // XK_dead_o
+  { 0xfe87,    'O' }, // XK_dead_O
+  { 0xfe88,    'u' }, // XK_dead_u
+  { 0xfe89,    'U' }, // XK_dead_U
+  { 0xfe8a, 0x0259 },
+  { 0xfe8b, 0x018f },
+  { 0xfe8c, 0x00b5 },
+  { 0xfe90,    '_' },
+  { 0xfe91, 0x02c8 },
+  { 0xfe92, 0x02cc },
+  { 0xff80 /*XKB_KEY_KP_Space*/,     ' ' },
+  { 0xff95 /*XKB_KEY_KP_7*/, 0x0037 },
+  { 0xff96 /*XKB_KEY_KP_4*/, 0x0034 },
+  { 0xff97 /*XKB_KEY_KP_8*/, 0x0038 },
+  { 0xff98 /*XKB_KEY_KP_6*/, 0x0036 },
+  { 0xff99 /*XKB_KEY_KP_2*/, 0x0032 },
+  { 0xff9a /*XKB_KEY_KP_9*/, 0x0039 },
+  { 0xff9b /*XKB_KEY_KP_3*/, 0x0033 },
+  { 0xff9c /*XKB_KEY_KP_1*/, 0x0031 },
+  { 0xff9d /*XKB_KEY_KP_5*/, 0x0035 },
+  { 0xff9e /*XKB_KEY_KP_0*/, 0x0030 },
+  { 0xffaa /*XKB_KEY_KP_Multiply*/,  '*' },
+  { 0xffab /*XKB_KEY_KP_Add*/,       '+' },
+  { 0xffac /*XKB_KEY_KP_Separator*/, ',' },
+  { 0xffad /*XKB_KEY_KP_Subtract*/,  '-' },
+  { 0xffae /*XKB_KEY_KP_Decimal*/,   '.' },
+  { 0xffaf /*XKB_KEY_KP_Divide*/,    '/' },
+  { 0xffb0 /*XKB_KEY_KP_0*/, 0x0030 },
+  { 0xffb1 /*XKB_KEY_KP_1*/, 0x0031 },
+  { 0xffb2 /*XKB_KEY_KP_2*/, 0x0032 },
+  { 0xffb3 /*XKB_KEY_KP_3*/, 0x0033 },
+  { 0xffb4 /*XKB_KEY_KP_4*/, 0x0034 },
+  { 0xffb5 /*XKB_KEY_KP_5*/, 0x0035 },
+  { 0xffb6 /*XKB_KEY_KP_6*/, 0x0036 },
+  { 0xffb7 /*XKB_KEY_KP_7*/, 0x0037 },
+  { 0xffb8 /*XKB_KEY_KP_8*/, 0x0038 },
+  { 0xffb9 /*XKB_KEY_KP_9*/, 0x0039 },
+  { 0xffbd /*XKB_KEY_KP_Equal*/,     '=' }
+};
+
+uint32_t x11_sym_to_unicode(KeySym keysym) {
+    int min = 0;
+    int max = sizeof(keysymtab) / sizeof(struct codepair) - 1;
+    int mid;
+
+    // First check for Latin-1 characters (1:1 mapping)
+    if ((keysym >= 0x0020 && keysym <= 0x007e) ||
+        (keysym >= 0x00a0 && keysym <= 0x00ff))
+    {
+        return keysym;
+    }
+
+    // Also check for directly encoded 24-bit UCS characters
+    if ((keysym & 0xff000000) == 0x01000000)
+        return keysym & 0x00ffffff;
+
+    // Binary search in table
+    while (max >= min)
+    {
+        mid = (min + max) / 2;
+        if (keysymtab[mid].keysym < keysym)
+            min = mid + 1;
+        else if (keysymtab[mid].keysym > keysym)
+            max = mid - 1;
+        else
+            return keysymtab[mid].ucs;
+    }
+
+    // No matching Unicode value found
+    return 0xffffffffu;
+}
+

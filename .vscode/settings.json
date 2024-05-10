@@ -18,6 +18,10 @@
         "unistd.h": "c",
         "dlfcn.h": "c",
         "xlibload.h": "c",
-        "xkblib.h": "c"
+        "xkblib.h": "c",
+        "xfuncproto.h": "c",
+        "cassert": "c",
+        "glxload.h": "c",
+        "xkbload.h": "c"
     }
 }

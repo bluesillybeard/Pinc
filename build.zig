@@ -14,7 +14,7 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
     pinc.addIncludePath(.{ .path = "include" });
-    pinc.addIncludePath(.{ .path = "src/ext" });
+    pinc.addIncludePath(.{ .path = "ext" });
     pinc.addIncludePath(.{ .path = "src/c" });
     pinc.addCSourceFiles(.{
         .files = &[_][]const u8{

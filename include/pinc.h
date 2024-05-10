@@ -9,18 +9,18 @@ typedef enum {
     pinc_window_api_automatic,
     /// @brief X window system Xlib is loaded dynamically at runtime, to avoid a compile time dependency.
     pinc_window_api_x,
-} pinc_window_api_t;
+} pinc_window_api_enum;
 
 typedef enum {
     /// @brief Automatically choose a graphics API
     pinc_graphics_api_automatic,
     /// @brief OpenGL 2.1.
     pinc_graphics_api_opengl_2_1,
-} pinc_graphics_api_t;
+} pinc_graphics_api_enum;
 
 /// @brief Initializes Pinc. This loads required system libraries, and gets everything ready for using functionality.
 /// @return true if success, false otherwise.
-extern bool pinc_init(pinc_window_api_t window_api, pinc_graphics_api_t graphics_api);
+extern bool pinc_init(pinc_window_api_enum window_api, pinc_graphics_api_enum graphics_api);
 
 typedef enum {
     /// @brief No error
@@ -35,17 +35,17 @@ typedef enum {
     pinc_error_null_handle,
     /// @brief A memory allocation failed
     pinc_error_allocation,
-} pinc_error_t;
+} pinc_error_enum;
 
 /// @brief Get the most recent error.
-extern pinc_error_t pinc_error_get(void);
+extern pinc_error_enum pinc_error_get(void);
 
 /// @brief Get a message for the most recent error.
 /// @return null terminated ascii string. Will never be null, but may have a length of zero.
 extern const char* pinc_error_string(void);
 
 /// @brief Returns the window api used by Pinc.
-extern pinc_window_api_t pinc_get_window_api(void);
+extern pinc_window_api_enum pinc_get_window_api(void);
 
 /// @brief A generic handle to a Pinc object. An id of 0 is equivalent to a null handle.
 typedef uint32_t pinc_handle;
@@ -295,7 +295,7 @@ typedef enum {
     /// @brief triggered when a window is told to close. This is usually the X button in the corner. This event is always placed last in the event buffer.
     ///        Only triggered once per window per call to poll_events or wait_event at most.
     pinc_event_window_close,
-} pinc_event_type_t;
+} pinc_event_type_enum;
 
 // General event functions
 
@@ -312,7 +312,7 @@ extern void pinc_advance_event(void);
 extern void pinc_wait_events(float timeout);
 
 /// @brief Gets the type of the current event
-extern pinc_event_type_t pinc_event_type(void);
+extern pinc_event_type_enum pinc_event_type(void);
 
 // alternates between type and function for each type of event.
 
@@ -403,7 +403,7 @@ typedef enum {
     pinc_key_code_q,
     pinc_key_code_r,
     pinc_key_code_s,
-    pinc_key_code_T,
+    pinc_key_code_t,
     pinc_key_code_u,
     pinc_key_code_v,
     pinc_key_code_w,
@@ -497,23 +497,23 @@ typedef enum {
     pinc_key_code_menu,
     // Don't you just love C?
     pinc_key_code_count,
-} pinc_key_code_t;
+} pinc_key_code_enum;
 
 /// @brief Key modifiers are a bitfield, however those may have strange ABI differences so it's represented the "raw" way
 typedef uint32_t pinc_key_modifiers_t;
-#define pinc_shift_bit 0x1
-#define pinc_control_bit 0x2
-#define pinc_alt_bit 0x4
-#define pinc_super_bit 0x8
-#define pinc_caps_lock_bit 0x10
-#define pinc_num_lock_bit 0x20
+#define pinc_modifier_shift_bit 1<<0
+#define pinc_modifier_control_bit 1<<1
+#define pinc_modifier_alt_bit 1<<2
+#define pinc_modifier_super_bit 1<<3
+#define pinc_modifier_caps_lock_bit 1<<4
+#define pinc_modifier_num_lock_bit 1<<5
 
 /// @brief Data for window key down event
 typedef struct {
     /// @brief The window that the key was pressed on
     pinc_window_handle_t window;
     /// @brief Cross platform key code
-    pinc_key_code_t key;
+    pinc_key_code_enum key;
     /// @brief Platform specific key code. This depends on the users keyboard layout, language, and platform.
     uint32_t token;
     pinc_key_modifiers_t modifiers;
@@ -527,7 +527,7 @@ typedef struct {
     /// @brief The window that the key was released on
     pinc_window_handle_t window;
     /// @brief Cross platform key code
-    pinc_key_code_t key;
+    pinc_key_code_enum key;
     /// @brief Platform specific key code. This depends on the users keyboard layout, language, and platform.
     uint32_t token;
     pinc_key_modifiers_t modifiers;
@@ -542,7 +542,7 @@ typedef struct {
     /// @brief The window that the key was repeated on
     pinc_window_handle_t window;
     /// @brief Cross platform key code
-    pinc_key_code_t key;
+    pinc_key_code_enum key;
     /// @brief Platform specific key code. This depends on the users keyboard layout, language, and platform.
     uint32_t token;
     pinc_key_modifiers_t modifiers;
@@ -608,17 +608,17 @@ typedef enum {
     pinc_cursor_button_left,
     pinc_cursor_button_right,
     pinc_cursor_button_middle,
-    pinc_cursor_button_front,
-    pinc_cursor_button_back,
+    pinc_cursor_button_4,
+    pinc_cursor_button_5,
     pinc_cursor_button_6,
     pinc_cursor_button_7,
     pinc_cursor_button_8,
-} pinc_cursor_button_t;
+} pinc_cursor_button_enum;
 
 /// @brief Data for pinc_event_window_cursor_button_down
 typedef struct {
     pinc_window_handle_t window;
-    pinc_cursor_button_t button;
+    pinc_cursor_button_enum button;
 
 } pinc_event_window_cursor_button_down_t;
 
@@ -628,7 +628,7 @@ extern pinc_event_window_cursor_button_down_t pinc_event_window_cursor_button_do
 /// @brief Data for pinc_event_window_cursor_button_up
 typedef struct {
     pinc_window_handle_t window;
-    pinc_cursor_button_t button;
+    pinc_cursor_button_enum button;
 
 } pinc_event_window_cursor_button_up_t;
 
@@ -648,7 +648,7 @@ extern pinc_event_window_scroll_t pinc_event_window_scroll_data(void);
 
 /// @brief Get the name of a key
 /// @return The name of the key. This returns null if the code is invalid.
-extern const char* pinc_key_name(pinc_key_code_t code);
+extern const char* pinc_key_name(pinc_key_code_enum code);
 
 /// @brief Get the name of a platform specific key code. This depends on the users keyboard layout, language, and platform.
 /// @return The name of the key token. This returns null if the token does not have a name
@@ -665,12 +665,12 @@ typedef enum {
     pinc_cursor_mode_hidden,
     /// @brief Cursor is still visible but captured. The position is undefined in this state, use movement deltas only
     pinc_cursor_mode_captured,
-} pinc_cursor_mode_t;
+} pinc_cursor_mode_enum;
 
 /// @brief Sets the cursor mode
 /// @param mode The mode to set to
 /// @param window The window to use for the mode. This is ignored when setting to normal mode.
-extern void pinc_set_cursor_mode(pinc_cursor_mode_t mode, pinc_window_handle_t window);
+extern void pinc_set_cursor_mode(pinc_cursor_mode_enum mode, pinc_window_handle_t window);
 
 typedef enum {
     /// @brief The normal arrow cursor
@@ -692,9 +692,9 @@ typedef enum {
     pinc_cursor_theme_image_resize,
     /// @brief Cursor for something being disallowed or disabled.
     pinc_cursor_theme_image_no,
-} pinc_cursor_theme_image_t;
+} pinc_cursor_theme_image_enum;
 
-extern void pinc_set_cursor_theme_image(pinc_cursor_theme_image_t image, pinc_window_handle_t window);
+extern void pinc_set_cursor_theme_image(pinc_cursor_theme_image_enum image, pinc_window_handle_t window);
 
 /// @brief Sets the cursor image to a texture
 /// @param window the window to set the cursor of
