@@ -74,7 +74,7 @@ extern pinc_window_incomplete_handle_t pinc_window_incomplete_create(char* title
 /// @param width the width of the window. Enter 0 for an automatic value.
 /// @param height the height of the window. Enter 0 for an automatic value.
 /// @return false if there was an error
-extern void pinc_window_set_size(pinc_window_incomplete_handle_t window, uint16_t width, uint16_t height);
+extern bool pinc_window_set_size(pinc_window_incomplete_handle_t window, uint16_t width, uint16_t height);
 
 extern uint16_t pinc_window_get_width(pinc_window_incomplete_handle_t window);
 

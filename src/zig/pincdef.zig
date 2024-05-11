@@ -139,7 +139,7 @@ fn pinci_send_event(event: c.pinc_event_union_t) callconv(.C) void {
             if (evdat.window == 0) return;
             if (windows.items[evdat.window - 1].native == .none) return;
             const window = &windows.items[evdat.window - 1];
-            window .eventWindowClose = evdat;
+            window.eventWindowClose = evdat;
         },
         // TODO: handle this case maybe?
         else => {},
@@ -175,7 +175,7 @@ fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.C) ?*c.
 comptime {
     @export(x11_get_window_handle, .{ .name = "x11_get_window_handle", .linkage = std.builtin.GlobalLinkage.link_once });
     @export(x11_get_x_window, .{ .name = "x11_get_x_window", .linkage = std.builtin.GlobalLinkage.link_once });
-    @export(pinci_send_event, .{.name = "pinci_send_event", .linkage = std.builtin.GlobalLinkage.link_once});
+    @export(pinci_send_event, .{ .name = "pinci_send_event", .linkage = std.builtin.GlobalLinkage.link_once });
 }
 
 // Gets the current event
@@ -410,9 +410,7 @@ pub export fn pinc_get_window_api() c.pinc_window_api_enum {
 }
 pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomplete_handle_t {
     const xWindow = c.x11_window_incomplete_create(title);
-    const windowObj = PincWindow{
-        .native = .{.x = xWindow}
-    };
+    const windowObj = PincWindow{ .native = .{ .x = xWindow } };
     // TODO: find an empty spot
     windows.append(windowObj) catch {
         _ = pinci_make_error(c.pinc_error_allocation, "Failed to create window: allocation failed");
@@ -424,7 +422,8 @@ pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomp
 }
 pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) bool {
     // If someone can get a window more than 32k pixels in size and still be practical, I'll be quite impressed
-    if((width > 32767) or (height > 32767) or (width == 0) or (height == 0)) {
+    // In fact, after 32767 or so, Mutter or X.org (not sure which one causes it) breaks down and stops rendering the window.
+    if ((width > 32767) or (height > 32767) or (width == 0) or (height == 0)) {
         _ = pinci_make_error(c.pinc_error_some, "Could not set window size: Width or Height out of range");
         return false;
     } else {
@@ -433,12 +432,12 @@ pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, wi
     }
 }
 pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {
-    if(window == 0) {
+    if (window == 0) {
         _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_width was given a null window");
         return 0;
     }
     const xWindowOrNone = x11_get_x_window(window);
-    if(xWindowOrNone) |xWindow| {
+    if (xWindowOrNone) |xWindow| {
         return @intCast(xWindow.width);
     } else {
         _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_width was given an invalid window");
@@ -446,12 +445,12 @@ pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u
     }
 }
 pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
-    if(window == 0) {
+    if (window == 0) {
         _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given a null window");
         return 0;
     }
     const xWindowOrNone = x11_get_x_window(window);
-    if(xWindowOrNone) |xWindow| {
+    if (xWindowOrNone) |xWindow| {
         return @intCast(xWindow.height);
     } else {
         _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given an invalid window");
@@ -761,8 +760,8 @@ pub export fn pinc_graphics_present_window(window: c.pinc_window_handle_t, vsync
 
 // TODO: this does not work correctly at the moment
 pub export fn pinc_util_unicode_to_uft8(unicode: u32, dest: ?[*:0]u8) bool {
-    if(unicode > std.math.maxInt(u21)) return false;
-    if(dest == null)return false;
+    if (unicode > std.math.maxInt(u21)) return false;
+    if (dest == null) return false;
     // Create a slice that points to the actual dest
     var destSlice: []u8 = undefined;
     destSlice.len = 5;

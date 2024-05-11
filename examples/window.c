@@ -120,8 +120,9 @@ int main(int argc, char** argv) {
                     int newWidth = oldWidth + ev.delta_x * 10;
                     int newHeight = oldHeight + ev.delta_y * 10;
                     if((newWidth > 0) && (newHeight > 0)) {
-                        pinc_window_set_size(window, newWidth, newHeight);
-                        printf("Resized window from (%i, %i) to (%i, %i)\n", oldWidth, oldHeight, newWidth, newHeight);
+                        if(pinc_window_set_size(window, newWidth, newHeight)){
+                            printf("Resized window from (%i, %i) to (%i, %i)\n", oldWidth, oldHeight, newWidth, newHeight);
+                        }
                     }
                     break;
                 }
