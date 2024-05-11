@@ -265,7 +265,6 @@ bool x11_window_complete(x11_window* window) {
     }
     XFree(xVisual);
     XStoreName(xDisplay, window->xWindow, window->title);
-    // TODO: Atoms and WM stuff
     XMapWindow(xDisplay, window->xWindow);
     // This is so the window shows up immediately upon completing it.
     XFlush(xDisplay);
@@ -786,13 +785,12 @@ bool x11_init_extensions(void) {
             return false;
         }
 
-        // TODO: swap control extensions (there are THREE of them!?!? Golly Goodness is X11 a bit of a mess)
-
         // create a glX context (one for the entire application)
 
         // The fact that glX lets the program make a windowless context is a bit of a cheat - it still has to know the framebuffer format ahead of time.
         // Pincs API is not designed with this limitation in mind, however it still is flexible enough to force every window to have the same format.
         // So, when choosing a framebuffer config, choose the "best" one with the most bit depth, and one with transparency if available.
+        // TODO: add user options to the pinc api to help guide FB selection
         int numFbConfigs;
         GLXFBConfig* fbConfigs = glXGetFBConfigs(xDisplay, DefaultScreen(xDisplay), &numFbConfigs);
         if(fbConfigs == NULL || numFbConfigs == 0) {
@@ -800,7 +798,7 @@ bool x11_init_extensions(void) {
             return false;
         }
         int bestFbIndex = -1;
-        // TODO: bool bestFbSupportsTransparency = false;
+        // bool bestFbSupportsTransparency = false;
         // Total number of color bits (red + green + blue + alpha)
         int bestFbBitDepth = 0;
         int bestFbDepthBits = 0;
@@ -864,8 +862,6 @@ bool x11_init_extensions(void) {
 bool x11_framebuffer_is_better(int colorBits, int depthBits, int stencilBits, int newColorBits, int newDepthBits, int newStencilBits) {
     int totalBits = colorBits + depthBits + stencilBits;
     int newTotalBits = newColorBits + newDepthBits + newStencilBits;
-    // TODO: Pinc probably needs a way for the program to describe what kind of framebuffer it needs out of its windows
-    // It might be worth adding some kind of info struct to the Pinc init method, so platform-specific options can be set before the platform instance is created.
     if(newTotalBits < totalBits) return false;
     if(newTotalBits > totalBits) return true;
     // If the number of bits is the same, then go through each value as a tiebreaker
@@ -1246,6 +1242,7 @@ void* x11_load_library(const char* name) {
 }
 
 // Stole this giant array & associated function from GLFW. See xkb_unicode.c in GLFW's source code for more detail.
+// (Honestly like 80% of Pincs X implementation is basically taken from GLFW)
 static const struct codepair {
   unsigned short keysym;
   unsigned short ucs;

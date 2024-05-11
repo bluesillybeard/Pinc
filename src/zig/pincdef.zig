@@ -24,7 +24,128 @@ const PincWindow = struct {
     eventWindowClose: ?c.pinc_event_window_close_t = null,
 };
 
-// This code is called from C
+// Internal functions - many of these exist since the C portion of the code needs to call into Zig areas
+
+// pinci -> used by any backend
+// x11 -> used only by the x11 backend
+
+fn pinci_send_event(event: c.pinc_event_union_t) callconv(.C) void {
+    switch (event.type) {
+        c.pinc_event_none => {},
+        c.pinc_event_window_resize => {
+            const evdat = event.data.window_resize;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            // override previous size
+            window.eventWindowResize = evdat;
+        },
+        c.pinc_event_window_focus => {
+            const evdat = event.data.window_focus;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            // override previous size
+            window.eventWindowFocus = evdat;
+        },
+        c.pinc_event_window_unfocus => {
+            const evdat = event.data.window_unfocus;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            // override previous size
+            window.eventWindowUnfocus = evdat;
+        },
+        c.pinc_event_window_damaged => {
+            const evdat = event.data.window_damaged;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            // override previous event
+            window.eventWindowDamaged = evdat;
+        },
+        c.pinc_event_window_key_down => {
+            const evdat = event.data.window_key_down;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowKeyDown.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_key_up => {
+            const evdat = event.data.window_key_up;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowKeyUp.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_key_repeat => {
+            const evdat = event.data.window_key_repeat;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowKeyRepeat.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_text => {
+            const evdat = event.data.window_text;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowText.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_cursor_move => {
+            // Remember: the X backend only sets the pixel coords, not delta or screen coords.
+            const evdat = event.data.window_cursor_move;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            // TODO: update current pos, calculate delta and screen coords
+            if (window.eventWindowCursorMove == null) {
+                window.eventWindowCursorMove = evdat;
+            } else {
+                window.eventWindowCursorMove.?.x_pixels = evdat.x_pixels;
+                window.eventWindowCursorMove.?.y_pixels = evdat.y_pixels;
+            }
+        },
+        c.pinc_event_window_cursor_enter => {
+            const evdat = event.data.window_cursor_enter;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowCursorEnter.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_cursor_exit => {
+            const evdat = event.data.window_cursor_exit;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowCursorExit.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_cursor_button_down => {
+            const evdat = event.data.window_cursor_button_down;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowCursorButtonDown.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_cursor_button_up => {
+            const evdat = event.data.window_cursor_button_up;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            eventsWindowCursorButtonUp.append(evdat) catch std.debug.panic("Out of memory", .{});
+        },
+        c.pinc_event_window_scroll => {
+            const evdat = event.data.window_scroll;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            // override previous event
+            window.eventWindowScroll = evdat;
+        },
+        c.pinc_event_window_close => {
+            const evdat = event.data.window_close;
+            if (evdat.window == 0) return;
+            if (windows.items[evdat.window - 1].native == .none) return;
+            const window = &windows.items[evdat.window - 1];
+            window .eventWindowClose = evdat;
+        },
+        // TODO: handle this case maybe?
+        else => {},
+    }
+}
+
 fn x11_get_window_handle(xid: u32) callconv(.C) c.pinc_window_incomplete_handle_t {
     // xid is the Xlib ID of the window
     for (windows.items, 0..) |window, i| {
@@ -48,9 +169,13 @@ fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.C) ?*c.
     return &windows.items[window - 1].native.x;
 }
 
+// We do it this way so functions are only expose to Pinc internals.
+// We don't want users trying to use these - instead they should submit an issue with their use case and why they need the function.
+// (and ideally a poll request adding a proper feature)
 comptime {
     @export(x11_get_window_handle, .{ .name = "x11_get_window_handle", .linkage = std.builtin.GlobalLinkage.link_once });
     @export(x11_get_x_window, .{ .name = "x11_get_x_window", .linkage = std.builtin.GlobalLinkage.link_once });
+    @export(pinci_send_event, .{.name = "pinci_send_event", .linkage = std.builtin.GlobalLinkage.link_once});
 }
 
 // Gets the current event
@@ -297,163 +422,42 @@ pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomp
     const wins = &windows;
     return @intCast(wins.items.len);
 }
-pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) void {
-    _ = window;
-    _ = width;
-    _ = height;
-    std.debug.panic("pinc_window_set_size is not implemented\n", .{});
-}
-pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_width is not implemented\n", .{});
-}
-pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_height is not implemented\n", .{});
-}
-pub export fn pinc_window_get_scale(window: c.pinc_window_incomplete_handle_t) f32 {
-    _ = window;
-    return 1;
-}
-pub export fn pinc_window_get_top_border(window: c.pinc_window_incomplete_handle_t) f32 {
-    _ = window;
-    std.debug.panic("pinc_window_get_top_border is not implemented\n", .{});
-}
-pub export fn pinc_window_get_left_border(window: c.pinc_window_incomplete_handle_t) f32 {
-    _ = window;
-    std.debug.panic("pinc_window_get_left_border is not implemented\n", .{});
-}
-pub export fn pinc_window_get_right_border(window: c.pinc_window_incomplete_handle_t) f32 {
-    _ = window;
-    std.debug.panic("pinc_window_get_right_border is not implemented\n", .{});
-}
-pub export fn pinc_window_get_bottom_border(window: c.pinc_window_incomplete_handle_t) f32 {
-    _ = window;
-    std.debug.panic("pinc_window_get_bottom_border is not implemented\n", .{});
-}
-pub export fn pinc_window_get_zoom(window: c.pinc_window_incomplete_handle_t) f32 {
-    _ = window;
-    std.debug.panic("pinc_window_get_zoom is not implemented\n", .{});
-}
-pub export fn pinc_window_set_icon(window: c.pinc_window_incomplete_handle_t, data: [*]u8, size: u32) void {
-    _ = window;
-    _ = data;
-    _ = size;
-    std.debug.panic("pinc_window_set_icon is not implemented\n", .{});
-}
-pub export fn pinc_window_set_minimized(window: c.pinc_window_incomplete_handle_t, minimized: bool) void {
-    _ = window;
-    _ = minimized;
-    std.debug.panic("pinc_window_set_minimized is not implemented\n", .{});
-}
-pub export fn pinc_window_get_minimized(window: c.pinc_window_incomplete_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_minimized is not implemented\n", .{});
-}
-pub export fn pinc_window_set_resizable(window: c.pinc_window_incomplete_handle_t, resizable: bool) void {
-    _ = window;
-    _ = resizable;
-    std.debug.panic("pinc_window_set_resizable is not implemented\n", .{});
-}
-pub export fn pinc_window_get_resizable(window: c.pinc_window_incomplete_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_resizable is not implemented\n", .{});
-}
-pub export fn pinc_window_set_maximized(window: c.pinc_window_incomplete_handle_t, maximized: bool) void {
-    _ = window;
-    _ = maximized;
-    std.debug.panic("pinc_window_set_maximized is not implemented\n", .{});
-}
-pub export fn pinc_window_get_maximized(window: c.pinc_window_incomplete_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_maximized is not implemented\n", .{});
-}
-pub export fn pinc_window_set_fullscreen(window: c.pinc_window_incomplete_handle_t, fullscreen: bool, resize: bool) void {
-    _ = window;
-    _ = fullscreen;
-    _ = resize;
-    std.debug.panic("pinc_window_set_fullscreen is not implemented\n", .{});
-}
-pub export fn pinc_window_get_fullscreen(window: c.pinc_window_incomplete_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_fullscreen is not implemented\n", .{});
-}
-pub export fn pinc_window_set_visible(window: c.pinc_window_incomplete_handle_t, visible: bool) void {
-    _ = window;
-    _ = visible;
-    std.debug.panic("pinc_window_set_visible is not implemented\n", .{});
-}
-pub export fn pinc_window_get_visible(window: c.pinc_window_incomplete_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_visible is not implemented\n", .{});
-}
-pub export fn pinc_window_set_transparency(window: c.pinc_window_incomplete_handle_t, blend: bool) void {
-    _ = window;
-    _ = blend;
-    std.debug.panic("pinc_window_set_transparency is not implemented\n", .{});
-}
-pub export fn pinc_window_get_transparency(window: c.pinc_window_incomplete_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_transparency is not implemented\n", .{});
-}
-pub export fn pinc_window_set_red_bits(window: c.pinc_window_incomplete_handle_t, red_bits: u16) bool {
-    _ = window;
-    _ = red_bits;
-    std.debug.panic("pinc_window_set_red_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_get_red_bits(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_red_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_set_green_bits(window: c.pinc_window_incomplete_handle_t, green_bits: u16) bool {
-    _ = window;
-    _ = green_bits;
-    std.debug.panic("pinc_window_set_green_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_get_green_bits(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_green_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_set_blue_bits(window: c.pinc_window_incomplete_handle_t, blue_bits: u16) bool {
-    _ = window;
-    _ = blue_bits;
-    std.debug.panic("pinc_window_set_blue_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_get_blue_bits(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_blue_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_set_alpha_bits(window: c.pinc_window_incomplete_handle_t, alpha_bits: u16) bool {
-    _ = window;
-    _ = alpha_bits;
-    std.debug.panic("pinc_window_set_alpha_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_get_alpha_bits(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_alpha_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_set_depth_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {
-    _ = window;
-    _ = depth_bits;
-    std.debug.panic("pinc_window_set_depth_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_get_depth_bits(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_depth_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_set_stencil_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {
-    _ = window;
-    _ = depth_bits;
-    std.debug.panic("pinc_window_set_stencil_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_get_stencil_bits(window: c.pinc_window_incomplete_handle_t) u16 {
-    _ = window;
-    std.debug.panic("pinc_window_get_stencil_bits is not implemented\n", .{});
-}
-pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {
-    _ = window;
-    std.debug.panic("pinc_window_destroy is not implemented\n", .{});
-}
+// TODO - these functions are not implemented. They are commented out entirely so attempts to use them are met with link errors.
+// pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) void {}
+// pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_get_scale(window: c.pinc_window_incomplete_handle_t) f32 {}
+// pub export fn pinc_window_get_top_border(window: c.pinc_window_incomplete_handle_t) f32 {}
+// pub export fn pinc_window_get_left_border(window: c.pinc_window_incomplete_handle_t) f32 {}
+// pub export fn pinc_window_get_right_border(window: c.pinc_window_incomplete_handle_t) f32 {}
+// pub export fn pinc_window_get_bottom_border(window: c.pinc_window_incomplete_handle_t) f32 {}
+// pub export fn pinc_window_get_zoom(window: c.pinc_window_incomplete_handle_t) f32 {}
+// pub export fn pinc_window_set_icon(window: c.pinc_window_incomplete_handle_t, data: [*]u8, size: u32) void {}
+// pub export fn pinc_window_set_minimized(window: c.pinc_window_incomplete_handle_t, minimized: bool) void {}
+// pub export fn pinc_window_get_minimized(window: c.pinc_window_incomplete_handle_t) bool {}
+// pub export fn pinc_window_set_resizable(window: c.pinc_window_incomplete_handle_t, resizable: bool) void {}
+// pub export fn pinc_window_get_resizable(window: c.pinc_window_incomplete_handle_t) bool {}
+// pub export fn pinc_window_set_maximized(window: c.pinc_window_incomplete_handle_t, maximized: bool) void {}
+// pub export fn pinc_window_get_maximized(window: c.pinc_window_incomplete_handle_t) bool {}
+// pub export fn pinc_window_set_fullscreen(window: c.pinc_window_incomplete_handle_t, fullscreen: bool, resize: bool) void {}
+// pub export fn pinc_window_get_fullscreen(window: c.pinc_window_incomplete_handle_t) bool {}
+// pub export fn pinc_window_set_visible(window: c.pinc_window_incomplete_handle_t, visible: bool) void {}
+// pub export fn pinc_window_get_visible(window: c.pinc_window_incomplete_handle_t) bool {}
+// pub export fn pinc_window_set_transparency(window: c.pinc_window_incomplete_handle_t, blend: bool) void {}
+// pub export fn pinc_window_get_transparency(window: c.pinc_window_incomplete_handle_t) bool {}
+// pub export fn pinc_window_set_red_bits(window: c.pinc_window_incomplete_handle_t, red_bits: u16) bool {}
+// pub export fn pinc_window_get_red_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_set_green_bits(window: c.pinc_window_incomplete_handle_t, green_bits: u16) bool {}
+// pub export fn pinc_window_get_green_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_set_blue_bits(window: c.pinc_window_incomplete_handle_t, blue_bits: u16) bool {}
+// pub export fn pinc_window_get_blue_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_set_alpha_bits(window: c.pinc_window_incomplete_handle_t, alpha_bits: u16) bool {}
+// pub export fn pinc_window_get_alpha_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_set_depth_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {}
+// pub export fn pinc_window_get_depth_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_set_stencil_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {}
+// pub export fn pinc_window_get_stencil_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+// pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {}
 pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
     if (incomplete == 0) {
         _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_complete was given a null handle");
@@ -471,18 +475,9 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
     }
     return incomplete;
 }
-pub export fn pinc_window_get_focused(window: c.pinc_window_handle_t) bool {
-    _ = window;
-    std.debug.panic("pinc_window_get_focused is not implemented\n", .{});
-}
-pub export fn pinc_window_request_attention(window: c.pinc_window_handle_t) void {
-    _ = window;
-    std.debug.panic("pinc_window_request_attention is not implemented\n", .{});
-}
-pub export fn pinc_window_close(window: c.pinc_window_handle_t) void {
-    _ = window;
-    std.debug.panic("pinc_window_close is not implemented\n", .{});
-}
+// pub export fn pinc_window_get_focused(window: c.pinc_window_handle_t) bool {}
+// pub export fn pinc_window_request_attention(window: c.pinc_window_handle_t) void {}
+// pub export fn pinc_window_close(window: c.pinc_window_handle_t) void {}
 pub export fn pinc_poll_events() void {
     for (windows.items) |*window| {
         // Some things are backend specific
@@ -497,123 +492,6 @@ pub export fn pinc_poll_events() void {
     }
     // This function calls pinci_send_event, where the Zig portion can then load the event into the buffer
     c.x11_poll_events();
-}
-
-export fn pinci_send_event(event: c.pinc_event_union_t) void {
-    switch (event.type) {
-        c.pinc_event_none => {},
-        c.pinc_event_window_resize => {
-            const evdat = event.data.window_resize;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            // override previous size
-            window.eventWindowResize = evdat;
-        },
-        c.pinc_event_window_focus => {
-            const evdat = event.data.window_focus;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            // override previous size
-            window.eventWindowFocus = evdat;
-        },
-        c.pinc_event_window_unfocus => {
-            const evdat = event.data.window_unfocus;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            // override previous size
-            window.eventWindowUnfocus = evdat;
-        },
-        c.pinc_event_window_damaged => {
-            const evdat = event.data.window_damaged;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            // override previous event
-            window.eventWindowDamaged = evdat;
-        },
-        c.pinc_event_window_key_down => {
-            const evdat = event.data.window_key_down;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowKeyDown.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_key_up => {
-            const evdat = event.data.window_key_up;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowKeyUp.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_key_repeat => {
-            const evdat = event.data.window_key_repeat;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowKeyRepeat.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_text => {
-            const evdat = event.data.window_text;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowText.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_cursor_move => {
-            // Remember: the X backend only sets the pixel coords, not delta or screen coords.
-            const evdat = event.data.window_cursor_move;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            // TODO: update current pos, calculate delta and screen coords
-            if (window.eventWindowCursorMove == null) {
-                window.eventWindowCursorMove = evdat;
-            } else {
-                window.eventWindowCursorMove.?.x_pixels = evdat.x_pixels;
-                window.eventWindowCursorMove.?.y_pixels = evdat.y_pixels;
-            }
-        },
-        c.pinc_event_window_cursor_enter => {
-            const evdat = event.data.window_cursor_enter;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowCursorEnter.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_cursor_exit => {
-            const evdat = event.data.window_cursor_exit;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowCursorExit.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_cursor_button_down => {
-            const evdat = event.data.window_cursor_button_down;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowCursorButtonDown.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_cursor_button_up => {
-            const evdat = event.data.window_cursor_button_up;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            eventsWindowCursorButtonUp.append(evdat) catch std.debug.panic("Out of memory", .{});
-        },
-        c.pinc_event_window_scroll => {
-            const evdat = event.data.window_scroll;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            // override previous event
-            window.eventWindowScroll = evdat;
-        },
-        c.pinc_event_window_close => {
-            const evdat = event.data.window_close;
-            if (evdat.window == 0) return;
-            if (windows.items[evdat.window - 1].native == .none) return;
-            const window = &windows.items[evdat.window - 1];
-            window .eventWindowClose = evdat;
-        },
-        // TODO: handle this case maybe?
-        else => {},
-    }
 }
 
 pub export fn pinc_advance_event() void {

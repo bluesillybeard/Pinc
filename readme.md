@@ -36,15 +36,17 @@ Pinc is a cross platform windowing / rendering library written in Zig.
     - This library was going to be written entirely in Zig. Then Xlib happened.
     - Zig makes exporting a C api easy as pie, without having to write the entire thing using the masochistic nightmare that is C.
     - Rust is far too complicated for its own good, and it's just not as ergonomic for C interop.
+    - C is just such an annoying language. The pure language itself is mostly fine, but the standard library is famously bad and limited.
 
 
 ## Important notes
 
-Pinc is a very new library, and is MASSIVELY out of scope for a single developer. As such:
+Pinc is a very new library, and is MASSIVELY out of scope for a single developer like myself. As such:
 - Expect bugs / issues
 - the API is highly variable at the moment
-    - Give me your suggestions - the API is incomplete and I don't know what's missing!
+    - Give me your suggestions - the API is VERY incomplete and I don't know what's missing!
 - the project desparately needs contributors
+    - there are so many TODOs all over the place. Anyone willing to help is welcome! Just search for instances of the string "TODO" in the repo and you're guaranteed to find something
 
 Pinc's current API is fundamentally incompatible with multithreading at the moment. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you're probably making a mistake.
 
@@ -98,17 +100,20 @@ None of these are going to be implemented any time soon - if ever.
 
 ## Next steps for this library - not nessesarily in order
 - X11
-    - literally just copying GLFW's usage of X11
+- Release to the public
 - Create the graphics API
     - Refer to [include/readme.md](./include/readme.md)
 - OpenGL 2.1
-- Release to the public
 - Refactor to start supporting alternate backends
 - Win32 backend
     - Making sure to avoid functions added after Windows 95 because reasons
 - Cocoa backend
 - any final touches to the API
     - At this point, Pinc is (hopefully) fully usable on all major desktop platforms
+- Clean up X11 backend (it's got a lot of work to be done)
+- Clean up Win32 backend and test on a Win95 VM
+- Clean up Cocoa backend and test on a real mac
+- prepare for first major release
 
 ## Todo
 - Test zero-dependency compilation
@@ -118,4 +123,7 @@ None of these are going to be implemented any time soon - if ever.
 - Make tests to check for certain annoying things
     - duplicate key events
     - duplicate cursor movement events
-    - This could be placed in some kind of validation layer system. Might need to wait until everything is placed through interfaces.
+    - This could be implemented in two stages:
+        - a 'mock' library that probes user programs to make sure they use Pinc correctly, like Vulkan validation layers
+        - a test program that probes the library to make sure it behaves correctly
+            - I can't think of a good robust way to do everything automatically without tons of extra effort.
