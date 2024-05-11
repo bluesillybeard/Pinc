@@ -37,7 +37,6 @@ typedef struct {
     // Xlib has a tendency to send duplicate key press events (SUPER annoying)
     // So we have to keep track of what time each key was last pressed
     // so the duplicates can be removed.
-    // in Xlib, a time is just a 32 bit unsigned int
     Time keyPressTime[256];
     // The memory of this string is owned by Pinc
     char* title;
@@ -92,6 +91,8 @@ void* x11_load_glX_symbol(void* context, const char* name);
 void x11_make_context_current(pinc_window_handle_t window);
 
 void x11_present_framebuffer(pinc_window_handle_t window, bool vsync);
+
+void x11_set_window_size(pinc_window_handle_t window, uint16_t width, uint16_t height);
 
 // Functions implemented somewhere in Zig
 

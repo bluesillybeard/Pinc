@@ -422,10 +422,43 @@ pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomp
     const wins = &windows;
     return @intCast(wins.items.len);
 }
+pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) bool {
+    // If someone can get a window more than 32k pixels in size and still be practical, I'll be quite impressed
+    if((width > 32767) or (height > 32767) or (width == 0) or (height == 0)) {
+        _ = pinci_make_error(c.pinc_error_some, "Could not set window size: Width or Height out of range");
+        return false;
+    } else {
+        c.x11_set_window_size(window, width, height);
+        return true;
+    }
+}
+pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {
+    if(window == 0) {
+        _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_width was given a null window");
+        return 0;
+    }
+    const xWindowOrNone = x11_get_x_window(window);
+    if(xWindowOrNone) |xWindow| {
+        return @intCast(xWindow.width);
+    } else {
+        _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_width was given an invalid window");
+        return 0;
+    }
+}
+pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
+    if(window == 0) {
+        _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given a null window");
+        return 0;
+    }
+    const xWindowOrNone = x11_get_x_window(window);
+    if(xWindowOrNone) |xWindow| {
+        return @intCast(xWindow.height);
+    } else {
+        _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given an invalid window");
+        return 0;
+    }
+}
 // TODO - these functions are not implemented. They are commented out entirely so attempts to use them are met with link errors.
-// pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) void {}
-// pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {}
 // pub export fn pinc_window_get_scale(window: c.pinc_window_incomplete_handle_t) f32 {}
 // pub export fn pinc_window_get_top_border(window: c.pinc_window_incomplete_handle_t) f32 {}
 // pub export fn pinc_window_get_left_border(window: c.pinc_window_incomplete_handle_t) f32 {}

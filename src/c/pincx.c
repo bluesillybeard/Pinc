@@ -239,9 +239,20 @@ void x11_deinit(void) {
 }
 
 x11_window x11_window_incomplete_create(const char* title) {
-    x11_window w = {};
+    x11_window w;
     w.title = pinci_dupe_string(title);
     w.xWindow = 0;
+    w.cursorX = 0;
+    w.cursorY = 0;
+    w.width = 800;
+    w.height = 600;
+    w.inputContext = None;
+    w.lastCursorX = 0;
+    w.lastCursorY = 0;
+    // TODO: actually detect if the chosen FBConfigs from init supports transparency, and use that to initialize this
+    w.transparency = false;
+    // This being set to null is how incomplete windows are detected
+    w.xWindow = None;
     return w;
 }
 
@@ -257,7 +268,7 @@ bool x11_window_complete(x11_window* window) {
         | PointerMotionMask | ButtonPressMask | ButtonReleaseMask | ExposureMask
         | FocusChangeMask | VisibilityChangeMask | EnterWindowMask | LeaveWindowMask | PropertyChangeMask;
 
-    window->xWindow = XCreateWindow(xDisplay, rootWindow, 0, 0, 800, 600, 0, xVisual->depth,
+    window->xWindow = XCreateWindow(xDisplay, rootWindow, 0, 0, window->width, window->height, 0, xVisual->depth,
         InputOutput, xVisual->visual, CWBorderPixel | CWColormap | CWEventMask, &windowAttributes);
     if(window->xWindow == None) {
         pinci_make_error(pinc_error_init, "Failed to create X window");
@@ -268,7 +279,7 @@ bool x11_window_complete(x11_window* window) {
     XMapWindow(xDisplay, window->xWindow);
     // This is so the window shows up immediately upon completing it.
     XFlush(xDisplay);
-    // Flush it a second time to expose any errors
+    // Flush a second time because that somehow fixes a crash. I genuinely don't know why or how.
     XFlush(xDisplay);
     return true;
 }
@@ -472,18 +483,22 @@ void x11_poll_events(void) {
                     switch (event.xbutton.button)
                     {
                         case 4:
-                            srevt.data.window_scroll.delta_x = 0;
-                            srevt.data.window_scroll.delta_y = 1;
-                            break;
-                        case 5:
+                            // V
                             srevt.data.window_scroll.delta_x = 0;
                             srevt.data.window_scroll.delta_y = -1;
                             break;
+                        case 5:
+                            // ^
+                            srevt.data.window_scroll.delta_x = 0;
+                            srevt.data.window_scroll.delta_y = 1;
+                            break;
                         case 6:
-                            srevt.data.window_scroll.delta_x = 1;
+                            // <
+                            srevt.data.window_scroll.delta_x = -1;
                             srevt.data.window_scroll.delta_y = 0;
                             break;
                         case 7:
+                            // >
                             srevt.data.window_scroll.delta_x = 1;
                             srevt.data.window_scroll.delta_y = 0;
                             break;
@@ -561,6 +576,8 @@ void x11_poll_events(void) {
             }
             case ConfigureNotify: {
                 if(event.xconfigure.width != windowData->width || event.xconfigure.height != windowData->height) {
+                    windowData->width = event.xconfigure.width;
+                    windowData->height = event.xconfigure.height;
                     pinc_event_union_t szevt = {};
                     szevt.type = pinc_event_window_resize;
                     szevt.data.window_resize.window = window;
@@ -671,6 +688,16 @@ void x11_present_framebuffer(pinc_window_handle_t window, bool vsync) {
     // TODO: vsync
     x11_window* w = x11_get_x_window(window);
     glXSwapBuffers(xDisplay, w->xWindow);
+}
+
+void x11_set_window_size(pinc_window_handle_t window, uint16_t width, uint16_t height) {
+    // TODO: update WM hints once those are implemented
+    // TODO: if 0 is entered, figure out some kind of default size or something
+    x11_window* xWindow = x11_get_x_window(window);
+    XResizeWindow(xDisplay, xWindow->xWindow, width, height);
+    // Update the width and height of the window
+    xWindow->width = width;
+    xWindow->height = height;
 }
 
 // implementation of private functions

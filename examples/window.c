@@ -113,6 +113,16 @@ int main(int argc, char** argv) {
                 {
                     pinc_event_window_scroll_t ev = pinc_event_window_scroll_data();
                     printf("Window %i scroll (%f, %f)\n", ev.window, ev.delta_x, ev.delta_y);
+                    // Funny effect: when scrolling, resize the window according to the scroll
+                    uint16_t oldWidth = pinc_window_get_width(window);
+                    uint16_t oldHeight = pinc_window_get_height(window);
+
+                    int newWidth = oldWidth + ev.delta_x * 10;
+                    int newHeight = oldHeight + ev.delta_y * 10;
+                    if((newWidth > 0) && (newHeight > 0)) {
+                        pinc_window_set_size(window, newWidth, newHeight);
+                        printf("Resized window from (%i, %i) to (%i, %i)\n", oldWidth, oldHeight, newWidth, newHeight);
+                    }
                     break;
                 }
                 case pinc_event_window_close:
@@ -129,7 +139,7 @@ int main(int argc, char** argv) {
                     // but some native events do not result in pinc events, this is triggered frequently.
                     // For example, the X window system sends cursor events when moving a window,
                     // but those cursor events do not result in a pinc event since they are not actually useful.
-                    printf("Last event this frame\n");
+                    printf("Empty Event\n");
                     break;
                 }
                 default:

@@ -32,6 +32,7 @@ Pinc is a cross platform windowing / rendering library written in Zig.
     - To minimize dependencies
     - GLFW is hardwired to bond each window to a GL context permanently, which is fundamentally incompatible to how this library works
     - SDL is difficult to work with in terms of getting it to cross-compile, and it's not designed for static linking
+    - Pinc's build system is completely asinine
 - Why make an abomination of Zig and C?
     - This library was going to be written entirely in Zig. Then Xlib happened.
     - Zig makes exporting a C api easy as pie, without having to write the entire thing using the masochistic nightmare that is C.
@@ -46,9 +47,16 @@ Pinc is a very new library, and is MASSIVELY out of scope for a single developer
 - the API is highly variable at the moment
     - Give me your suggestions - the API is VERY incomplete and I don't know what's missing!
 - the project desparately needs contributors
-    - there are so many TODOs all over the place. Anyone willing to help is welcome! Just search for instances of the string "TODO" in the repo and you're guaranteed to find something
+    - there are so many TODOs all over the place. Anyone willing to help is welcome! Just search for instances of the string "TODO" in the repo and you're basically guaranteed to find something relatively simple to get yourself started as a contributor.
 
 Pinc's current API is fundamentally incompatible with multithreading at the moment. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you're probably making a mistake.
+
+## How to get started
+The easiest way to do it would be to just compile Pinc into a library using `zig build static` or `zig build dynamic`, copy the artifact and the header, and just adding it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
+
+All of the files in the project automagically detect the platform using compiler macros, so it wouldn't be too dificult to add the sources to your own build system. That being said, it's only properly tested with Zig's compiler (which is basically just clang) so don't expect any other compiler to work well out of the box.
+
+Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
 ## Supported platforms
 - Linux/X11
