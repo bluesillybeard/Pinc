@@ -731,3 +731,10 @@ extern void pinc_graphics_clear_color(pinc_framebuffer_handle_t framebuffer, flo
 /// @param window the window to swap the
 /// @param vsync Whether to wait for vertical sync. Depending on the graphics driver & system, this may behave differently or be ignored.
 extern void pinc_graphics_present_window(pinc_window_handle_t window, bool vsync);
+
+// General utility functions
+
+/// Converts a unicode point to a UTF8 sequence. Returns false in the case of an error (most often an invalid unicode point)
+/// Dest must have at least 5 available bytes, 4 for the codepoint and 1 for a null byte. The codepoint may be 1 to 4 bytes im length
+/// TODO: make this function set the Pinc error
+extern bool pinc_util_unicode_to_uft8(uint32_t unicode, char* dest);

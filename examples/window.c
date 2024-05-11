@@ -26,59 +26,112 @@ int main(int argc, char** argv) {
             switch (event_type)
             {
                 case pinc_event_window_resize:
-                    printf("resize event\n");
+                {
+                    pinc_event_window_resize_t ev = pinc_event_window_resize_data();
+                    printf("window %i resized to (%i, %i)\n", ev.window, ev.width, ev.height);
                     break;
+                }
                 case pinc_event_window_focus:
-                    printf("focus event\n");
+                {
+                    pinc_event_window_focus_t ev = pinc_event_window_focus_data();
+                    printf("window %i focused\n", ev.window);
                     break;
+                }
                 case pinc_event_window_unfocus:
-                    printf("unfocus event\n");
+                {
+                    pinc_event_window_unfocus_t ev = pinc_event_window_unfocus_data();
+                    printf("Window %i UNfocused\n", ev.window);
                     break;
+                }
                 case pinc_event_window_damaged:
-                    printf("damage event\n");
+                {
+                    pinc_event_window_damaged_t ev = pinc_event_window_damaged_data();
+                    printf("Window %i damaged\n", ev.window);
                     break;
+                }
                 case pinc_event_window_key_down:
                 {
-                    pinc_event_window_key_down_t key_down_data = pinc_event_window_key_down_data();
-                    printf("key %s down\n", pinc_key_name(key_down_data.key));
+                    pinc_event_window_key_down_t ev = pinc_event_window_key_down_data();
+                    printf("Window %i key %s down\n", ev.window, pinc_key_name(ev.key));
                     break;
                 }
                 case pinc_event_window_key_up:
                 {
-                    pinc_event_window_key_up_t key_up_data = pinc_event_window_key_up_data();
-                    printf("key %s up\n", pinc_key_name(key_up_data.key));
+                    pinc_event_window_key_up_t ev = pinc_event_window_key_up_data();
+                    printf("Window %i key %s up\n", ev.window, pinc_key_name(ev.key));
                     break;
                 }
                 case pinc_event_window_key_repeat:
-                    printf("key repeat\n");
+                {
+                    pinc_event_window_key_repeat_t ev = pinc_event_window_key_repeat_data();
+                    printf("Window %i key %s repeat\n", ev.window, pinc_key_name(ev.key));
                     break;
+                }
                 case pinc_event_window_text:
-                    printf("text\n");
+                {
+                    // Assuming stdout is UTF8
+                    pinc_event_window_text_t ev = pinc_event_window_text_data();
+                    char buf[5];
+                    if(pinc_util_unicode_to_uft8(ev.codepoint, buf)) {
+                        printf("Window %i text %s unicode %i\n", ev.window, buf, ev.codepoint);
+                    } else {
+                        printf("Window %i Recieved invalid unicode %i\n", ev.window, ev.codepoint);
+                    }
                     break;
+                }
                 case pinc_event_window_cursor_move:
-                    printf("cursor move\n");
+                {
+                    pinc_event_window_cursor_move_t ev = pinc_event_window_cursor_move_data();
+                    printf("Windpw %i cursor moved to (%i, %i)\n", ev.window, ev.x_pixels, ev.y_pixels);
                     break;
+                }
                 case pinc_event_window_cursor_enter:
-                    printf("cursor enter\n");
+                {
+                    pinc_event_window_cursor_enter_t ev = pinc_event_window_cursor_enter_data();
+                    printf("Window %i cursor enter\n", ev.window);
                     break;
+                }
                 case pinc_event_window_cursor_exit:
-                    printf("cursor exit\n");
+                {
+                    pinc_event_window_cursor_exit_t ev = pinc_event_window_cursor_exit_data();
+                    printf("Window %i cursor exit\n", ev.window);
                     break;
+                }
                 case pinc_event_window_cursor_button_down:
-                    printf("button down\n");
+                {
+                    pinc_event_window_cursor_button_down_t ev = pinc_event_window_cursor_button_down_data();
+                    printf("Window %i button %i down\n", ev.window, ev.button);
                     break;
+                }
                 case pinc_event_window_cursor_button_up:
-                    printf("button up\n");
+                {
+                    pinc_event_window_cursor_button_up_t ev = pinc_event_window_cursor_button_up_data();
+                    printf("Window %i button %i up\n", ev.window, ev.button);
                     break;
+                }
                 case pinc_event_window_scroll:
-                    printf("scroll\n");
+                {
+                    pinc_event_window_scroll_t ev = pinc_event_window_scroll_data();
+                    printf("Window %i scroll (%f, %f)\n", ev.window, ev.delta_x, ev.delta_y);
                     break;
+                }
                 case pinc_event_window_close:
-                    printf("close\n");
+                {
+                    pinc_event_window_close_t ev = pinc_event_window_close_data();
+                    printf("Window %i close\n", ev.window);
                     running = false;
                     break;
+                }
                 case pinc_event_none:
+                {
+                    // In theory, this event rarely / never happens with an event based main loop.
+                    // in practice, since ANY native event can cause a pinc_wait_events to exit, 
+                    // but some native events do not result in pinc events, this is triggered frequently.
+                    // For example, the X window system sends cursor events when moving a window,
+                    // but those cursor events do not result in a pinc event since they are not actually useful.
+                    printf("Last event this frame\n");
                     break;
+                }
                 default:
                     printf("Unknown event type %i\n", event_type);
                     break;

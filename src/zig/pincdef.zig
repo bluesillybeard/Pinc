@@ -628,19 +628,19 @@ pub export fn pinc_event_type() c.pinc_event_type_enum {
     return pinc_event_union(false).type;
 }
 pub export fn pinc_event_window_close_data() c.pinc_event_window_close_t {
-    std.debug.panic("pinc_event_window_close_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_close;
 }
 pub export fn pinc_event_window_resize_data() c.pinc_event_window_resize_t {
-    std.debug.panic("pinc_event_window_resize_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_resize;
 }
 pub export fn pinc_event_window_focus_data() c.pinc_event_window_focus_t {
-    std.debug.panic("pinc_event_window_focus_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_focus;
 }
 pub export fn pinc_event_window_unfocus_data() c.pinc_event_window_unfocus_t {
-    std.debug.panic("pinc_event_window_unfocus_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_unfocus;
 }
 pub export fn pinc_event_window_damaged_data() c.pinc_event_window_damaged_t {
-    std.debug.panic("pinc_event_window_damaged_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_damaged;
 }
 pub export fn pinc_event_window_key_down_data() c.pinc_event_window_key_down_t {
     return pinc_event_union(false).data.window_key_down;
@@ -649,19 +649,19 @@ pub export fn pinc_event_window_key_up_data() c.pinc_event_window_key_up_t {
     return pinc_event_union(false).data.window_key_up;
 }
 pub export fn pinc_event_window_key_repeat_data() c.pinc_event_window_key_repeat_t {
-    std.debug.panic("pinc_event_window_key_repeat_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_key_repeat;
 }
 pub export fn pinc_event_window_text_data() c.pinc_event_window_text_t {
-    std.debug.panic("pinc_event_window_text_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_text;
 }
 pub export fn pinc_event_window_cursor_move_data() c.pinc_event_window_cursor_move_t {
-    std.debug.panic("pinc_event_window_cursor_move_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_cursor_move;
 }
 pub export fn pinc_event_window_cursor_enter_data() c.pinc_event_window_cursor_enter_t {
-    std.debug.panic("pinc_event_window_cursor_enter_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_cursor_enter;
 }
 pub export fn pinc_event_window_cursor_exit_data() c.pinc_event_window_cursor_exit_t {
-    std.debug.panic("pinc_event_window_cursor_exit_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_cursor_exit;
 }
 pub export fn pinc_event_window_cursor_button_down_data() c.pinc_event_window_cursor_button_down_t {
     return pinc_event_union(false).data.window_cursor_button_down;
@@ -670,7 +670,7 @@ pub export fn pinc_event_window_cursor_button_up_data() c.pinc_event_window_curs
     return pinc_event_union(false).data.window_cursor_button_up;
 }
 pub export fn pinc_event_window_scroll_data() c.pinc_event_window_scroll_t {
-    std.debug.panic("pinc_event_window_scroll_data is not implemented\n", .{});
+    return pinc_event_union(false).data.window_scroll;
 }
 pub export fn pinc_key_name(code: c.pinc_key_code_enum) [*:0]const u8 {
     switch (code) {
@@ -846,4 +846,17 @@ pub export fn pinc_graphics_clear_color(framebuffer: c.pinc_framebuffer_handle_t
 
 pub export fn pinc_graphics_present_window(window: c.pinc_window_handle_t, vsync: bool) void {
     c.x11_present_framebuffer(window, vsync);
+}
+
+// TODO: this does not work correctly at the moment
+pub export fn pinc_util_unicode_to_uft8(unicode: u32, dest: ?[*:0]u8) bool {
+    if(unicode > std.math.maxInt(u21)) return false;
+    if(dest == null)return false;
+    // Create a slice that points to the actual dest
+    var destSlice: []u8 = undefined;
+    destSlice.len = 5;
+    destSlice.ptr = @ptrCast(dest.?);
+    const count = std.unicode.utf8Encode(@intCast(unicode), destSlice) catch return false;
+    destSlice[count] = 0;
+    return true;
 }

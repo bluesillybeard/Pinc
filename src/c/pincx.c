@@ -42,10 +42,10 @@
 #include "pincx.h"
 
 // General TODOs for X11 go here
-// TODO: implement error handling
 // TODO: system content scale (example at GLFW x11_init.c line 1530)
 // TODO: add the XRender extension for seeing if a Visual supports transparency
 // TODO: atoms and window manager stuff
+// TODO: only integer step scroll events work at the moment
 
 // Resources used: public HTML version of libX11 documentation: https://x.org/releases/current/doc/libX11/libX11/libX11.html
 // Kinc source code, here is their website: https://kinc.tech/
@@ -53,17 +53,17 @@
 // GLFW source code
 // - This is what "inspired" 90% of the code in pincx.c
 
-// static variables
 // -> Library handles
 
-void* libX11;
+void* libX11; // This also contains Xkb and Xutil.
 void* libXi;
 void* libXcursor;
-void* libGL;
+void* libGL; // This contains glX as well
 
 // -> Xlib static vars
 
 Display* xDisplay;
+// TODO: X error handler instead of letting Xlib crash the program
 // The previous X error handler to be restored later
 XErrorHandler previousXErrorHandler;
 // Most recent error code from the X error handler
@@ -81,12 +81,14 @@ int glxErrorBase;
 
 int glxEventBase;
 
-// -> Xkb static vars
+// -> Xkb static vars - many of these are used even ifthe xkb extension is not available.
 
 // Lookup table from X11 keycode to pinc keycode.
 // This is in the XKB vars but is still properly initialized when XKB is not available.
 int16_t xkbToPinc[256];
 int16_t pincToXkb[pinc_key_code_count + 1];
+// This is for detecting key repeat events. input -> xkb code, output -> if that key is currently being pressed
+bool keystates[256] = {0};
 // Whether the XKB extension is available
 bool xkbAvailable = false;
 // Whether XKB key repeat events can be detected
@@ -318,23 +320,36 @@ void x11_poll_events(void) {
             }
 
             case KeyPress: {
+                // Unlike in GLFW, the key repeat action is detected here instead of in the event handling code down the chain.
                 const pinc_key_code_enum key = x11_translate_keycode(keycode);
                 const pinc_key_modifiers_t modifiers = x11_translate_modifiers(event.xkey.state);
 
                 if(windowData->inputContext) {
-                    // XIM tends to duplicate key presses (pain) but thankfully the repeats have the same timestamp so they can be filtered out.
+                    // XIM tends to duplicate key presses (pain) but thankfully the duplicated events have the same timestamp so they can be filtered out.
                     Time diff = event.xkey.time - windowData->keyPressTime[keycode];
-                    // This comparison is weird to handle wrap around
+                    // This comparison is weird in order to handle wrap around
                     if( diff == event.xkey.time || (diff > 0 && diff < ((Time)(1 << 31)))) {
                         windowData->keyPressTime[keycode] = event.xkey.time;
-                        // TODO: detect if this is a repeat event
-                        pinc_event_union_t kpevt = {};
-                        kpevt.type = pinc_event_window_key_down;
-                        kpevt.data.window_key_down.key = key; 
-                        kpevt.data.window_key_down.modifiers = modifiers;
-                        kpevt.data.window_key_down.token = keycode;
-                        kpevt.data.window_key_down.window = window;
-                        pinci_send_event(kpevt);
+                        if(keystates[keycode] == true) {
+                            // this is a repeat event
+                            pinc_event_union_t krevt = {};
+                            krevt.type = pinc_event_window_key_repeat;
+                            krevt.data.window_key_repeat.key = key; 
+                            krevt.data.window_key_repeat.modifiers = modifiers;
+                            krevt.data.window_key_repeat.token = keycode;
+                            krevt.data.window_key_repeat.window = window;
+                            pinci_send_event(krevt);
+                        } else {
+                            // This is not a repeat event
+                            keystates[keycode] = true;
+                            pinc_event_union_t kpevt = {};
+                            kpevt.type = pinc_event_window_key_down;
+                            kpevt.data.window_key_down.key = key; 
+                            kpevt.data.window_key_down.modifiers = modifiers;
+                            kpevt.data.window_key_down.token = keycode;
+                            kpevt.data.window_key_down.window = window;
+                            pinci_send_event(kpevt);
+                        }
                     }
 
                     if(!filtered) {
@@ -353,11 +368,15 @@ void x11_poll_events(void) {
                             const char* c = chars;
                             chars[count] = 0;
                             while(c - chars < count) {
-                                pinc_event_union_t ktevt = {};
-                                ktevt.type = pinc_event_window_text;
-                                ktevt.data.window_text.window = window;
-                                ktevt.data.window_text.codepoint = decodeUTF8(&c);
-                                pinci_send_event(ktevt);
+                                uint32_t codepoint = decodeUTF8(&c);
+                                // If the codepoint is too big, it's not a valid one and should not be sent
+                                if(codepoint <= 0x110000) {
+                                    pinc_event_union_t ktevt = {};
+                                    ktevt.type = pinc_event_window_text;
+                                    ktevt.data.window_text.window = window;
+                                    ktevt.data.window_text.codepoint = codepoint;
+                                    pinci_send_event(ktevt);
+                                }
                             }
                         }
                         if(chars != buffer) pinci_free_string(chars);
@@ -366,21 +385,35 @@ void x11_poll_events(void) {
                     // the input method is not set, so we use the 'regular' way
                     KeySym sym;
                     XLookupString(&event.xkey, NULL, 0, &sym, NULL);
-                    
-                    pinc_event_union_t kpevt = {};
-                    kpevt.type = pinc_event_window_key_down;
-                    kpevt.data.window_key_down.key = key; 
-                    kpevt.data.window_key_down.modifiers = modifiers;
-                    kpevt.data.window_key_down.token = keycode;
-                    kpevt.data.window_key_down.window = window;
-                    pinci_send_event(kpevt);
-
+                    if(keystates[keycode] == true) {
+                        // this is a repeat event
+                        pinc_event_union_t krevt = {};
+                        krevt.type = pinc_event_window_key_repeat;
+                        krevt.data.window_key_repeat.key = key; 
+                        krevt.data.window_key_repeat.modifiers = modifiers;
+                        krevt.data.window_key_repeat.token = keycode;
+                        krevt.data.window_key_repeat.window = window;
+                        pinci_send_event(krevt);
+                    } else {
+                        // this is not a repeat event
+                        keystates[keycode] = true;
+                        pinc_event_union_t kpevt = {};
+                        kpevt.type = pinc_event_window_key_down;
+                        kpevt.data.window_key_down.key = key; 
+                        kpevt.data.window_key_down.modifiers = modifiers;
+                        kpevt.data.window_key_down.token = keycode;
+                        kpevt.data.window_key_down.window = window;
+                        pinci_send_event(kpevt);
+                    }
                     const uint32_t codepoint = x11_sym_to_unicode(sym);
-                    pinc_event_union_t ktevt = {};
-                    ktevt.type = pinc_event_window_text;
-                    ktevt.data.window_text.window = window;
-                    ktevt.data.window_text.codepoint = codepoint;
-                    pinci_send_event(ktevt);
+                    // If the codepoint is too big, it's not a valid one and should not be sent
+                    if(codepoint <= 0x110000) {
+                        pinc_event_union_t ktevt = {};
+                        ktevt.type = pinc_event_window_text;
+                        ktevt.data.window_text.window = window;
+                        ktevt.data.window_text.codepoint = codepoint;
+                        pinci_send_event(ktevt);
+                    }
                 }
                 goto CONTINUE_LOOP;
             }
@@ -391,7 +424,6 @@ void x11_poll_events(void) {
                 if(!xkbDetectable) {
                     // X is a wild beast that sends *undetectable repeat release events* for some asinine reason
                     // Thankfully, these events happen very close together, so they can be filtered.
-                    // TODO: what does XEventsQueued actually do?
                     if(XEventsQueued(xDisplay, QueuedAfterReading)) {
                         XEvent next;
                         XPeekEvent(xDisplay, &next);
@@ -406,13 +438,14 @@ void x11_poll_events(void) {
                         }
                     }
                 }
-
+                keystates[keycode] = false;
                 pinc_event_union_t krevt = {};
                 krevt.type = pinc_event_window_key_up;
                 krevt.data.window_key_up.window = window;
                 krevt.data.window_key_up.token = keycode;
                 krevt.data.window_key_up.key = key;
                 krevt.data.window_key_up.modifiers = modifiers;
+                pinci_send_event(krevt);
                 goto CONTINUE_LOOP;
             }
             case ButtonPress: {
@@ -700,6 +733,9 @@ bool x11_load_libraries(void) {
 // Initializes X extensions. Assumes the functions are already loaded,
 // does not rely on functions being available (except for required extensions)
 bool x11_init_extensions(void) {
+    // TODO: for each extension, forcibly disable it and see if everything still works as intended.
+    // TODO: before doing that, it may be worth adding the ability to enable / disable X extension from the user level
+    // However, that relies on adding the platform-specific options struct to pinc_init.
     if(libXi != NULL && XIQueryVersion != NULL && XQueryExtension(xDisplay, "XInputExtension",
                                                                 &xiMajorOpcode, &xiEventBase, &xiErrorBase)) {
         int major = 2;
@@ -716,6 +752,9 @@ bool x11_init_extensions(void) {
     }
     if(xkbAvailable) {
         Bool detectable;
+        // It is not immediately clear what this means, but essentially it tells the X server that we don't want release events for repeat events.
+        // This makes detecting repeat events much easier and more reliable.
+        // We still have a fallback for when enabling this fails.
         if(XkbSetDetectableAutoRepeat(xDisplay, True, &detectable)) {
             if(detectable) {
                 xkbDetectable = true;
