@@ -128,7 +128,6 @@ None of these are going to be implemented any time soon - if ever.
 
 ## Todo
 - Test zero-dependency compilation
-- Figure out an error reporting solution
 - internal refactor of event system
     - on X11 backend, trigger cursor exit event when the window looses focus (X does not trigger an exit event when focus is lost for some reason)
 - Make tests to check for certain annoying things
