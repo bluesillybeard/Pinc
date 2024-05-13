@@ -64,6 +64,9 @@ Hopefully the header is self-exaplanatory. If it's not clear what a function or 
     - Zig makes exporting a C api easy as pie, without having to write the entire thing using the masochistic nightmare that is C.
     - Rust is far too complicated for its own good, and it's just not as ergonomic for C interop.
     - C is just such an annoying language. The pure language itself is mostly fine, but the standard library is famously bad and limited.
+- Why use LGPL instead of MIT?
+    - I usually use the MIT license, but this is a library that I care about quite a bit more, so the LGPL license felt more fitting.
+    - Don't worry, I'm pretty sure the LGPL permits adding this as a git submodule, or making your own version by forking. You may also distribute compiled artifacts in your own projects, either statically incorperated into your own, or loaded as a shared library, free or commercially.
 
 ## Planned supported APIs
 - Vulkan
