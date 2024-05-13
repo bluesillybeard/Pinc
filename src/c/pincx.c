@@ -659,7 +659,6 @@ void x11_poll_events(void) {
                         clevt.type = pinc_event_window_close;
                         clevt.data.window_close.window = window;
                         pinci_send_event(clevt);
-                        printf("Recieved exit event\n");
                     }
                 }
                 goto CONTINUE_LOOP;

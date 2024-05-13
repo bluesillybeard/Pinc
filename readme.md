@@ -105,20 +105,19 @@ None of these are going to be implemented any time soon - if ever.
 - window positioning
 
 ## Next steps for this library - not nessesarily in order
-- X11
-- Release to the public
-- Create the graphics API
-    - Refer to [include/readme.md](./include/readme.md)
-- OpenGL 2.1
 - Refactor to start supporting alternate backends
 - Win32 backend
     - Making sure to avoid functions added after Windows 95 because reasons
+- Create the graphics API
+    - Refer to [include/readme.md](./include/readme.md)
+- OpenGL 2.1
 - Cocoa backend
 - any final touches to the API
-    - At this point, Pinc is (hopefully) fully usable on all major desktop platforms
+- Implement all API functions for all backends
 - Clean up X11 backend (it's got a lot of work to be done)
 - Clean up Win32 backend and test on a Win95 VM
 - Clean up Cocoa backend and test on a real mac
+    - I do not have a real mac. Maybe someone can donate one?
 - prepare for first major release
 
 ## Todo
