@@ -51,6 +51,8 @@ x11_window x11_window_incomplete_create(const char* title);
 
 bool x11_window_complete(x11_window* window);
 
+void x11_window_destroy(pinc_window_incomplete_handle_t window);
+
 // Unlike the "public" pinc API functions, these don't have the same
 // deduplication and order guarantees.
 // they are reported directly in the order the come in from Xlib.

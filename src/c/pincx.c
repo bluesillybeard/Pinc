@@ -14,6 +14,7 @@
 #include <math.h>
 #include <time.h>
 #include <unistd.h>
+#include <stdlib.h>
 // Includes of X and X extensions
 #include <X11/Xlib.h>
 #include "load/XlibLoad.h"
@@ -49,9 +50,9 @@
 
 // Resources used: public HTML version of libX11 documentation: https://x.org/releases/current/doc/libX11/libX11/libX11.html
 // Kinc source code, here is their website: https://kinc.tech/
-// - Kinc is full of confusing macros and other insanity so that may have been a waste of time
+// - Kinc is full of confusing macros and other insanity so that was probably a waste of time
 // GLFW source code
-// - This is what "inspired" 90% of the code in pincx.c
+// - This is what "inspired" 90% of the code in pincx.c (I basically went line by line and duplicated GLFW's X11 backend)
 
 // -> Library handles
 
@@ -70,6 +71,10 @@ XErrorHandler previousXErrorHandler;
 int xErrorCode;
 char* primarySelectionString;
 char* clipboardString;
+
+Atom WM_PROTOCOLS;
+
+Atom WM_DELETE_WINDOW;
 
 // -> glX static vars
 
@@ -192,6 +197,10 @@ bool x11_init(void) {
     result = x11_init_extensions();
     if(!result) return false;
 
+    WM_PROTOCOLS = XInternAtom(xDisplay, "WM_PROTOCOLS", False);
+
+    WM_DELETE_WINDOW = XInternAtom(xDisplay, "WM_DELETE_WINDOW", False);
+
     if(Xutf8LookupString && Xutf8SetWMProperties) {
         if(XSupportsLocale()) {
             XSetLocaleModifiers("");
@@ -257,7 +266,6 @@ x11_window x11_window_incomplete_create(const char* title) {
 }
 
 bool x11_window_complete(x11_window* window) {
-    // TODO: redirect window close
     XVisualInfo* xVisual = glXGetVisualFromFBConfig(xDisplay, glxFbConfig);
     Window rootWindow = DefaultRootWindow(xDisplay);
     Colormap cmap = XCreateColormap(xDisplay, rootWindow, xVisual->visual, AllocNone);
@@ -277,11 +285,60 @@ bool x11_window_complete(x11_window* window) {
     XFree(xVisual);
     XStoreName(xDisplay, window->xWindow, window->title);
     XMapWindow(xDisplay, window->xWindow);
+
+    {
+        XWMHints* hints = XAllocWMHints();
+        hints->flags = StateHint;
+        hints->initial_state = NormalState;
+        XSetWMHints(xDisplay, window->xWindow, hints);
+        XFree(hints);
+    }
+
+    {
+        XClassHint* hint = XAllocClassHint();
+        const char* envResourceName = getenv("RESOURCE_NAME");
+        if(envResourceName && strlen(envResourceName)) {
+            hint->res_name = envResourceName;
+        } else if(strlen(window->title)) {
+            hint->res_name = window->title;
+        } else {
+            hint->res_name = "untitled-pinc";
+        }
+
+        if(strlen(window->title)) {
+            hint->res_class = window->title;
+        } else {
+            hint->res_class = "untitled-pinc";
+        }
+        XSetClassHint(xDisplay, window->xWindow, hint);
+        XFree(hint);
+    }
+    {
+        Atom protocols[] = {
+            WM_DELETE_WINDOW,
+        };
+        XSetWMProtocols(xDisplay, window->xWindow, protocols, 1);
+    }
     // This is so the window shows up immediately upon completing it.
     XFlush(xDisplay);
     // Flush a second time because that somehow fixes a crash. I genuinely don't know why or how.
     XFlush(xDisplay);
     return true;
+}
+
+void x11_window_destroy(pinc_window_incomplete_handle_t window) {
+    x11_window* xWindow = x11_get_x_window(window);
+    if(!xWindow) return;
+    if(xWindow->xWindow) {
+        if(xWindow->inputContext) {
+            XDestroyIC(xWindow->inputContext);
+            xWindow->inputContext = NULL;
+        }
+        XUnmapWindow(xDisplay, xWindow->xWindow);
+        XDestroyWindow(xDisplay, xWindow->xWindow);
+        xWindow->xWindow = 0;
+        XFlush(xDisplay);
+    }
 }
 
 void x11_poll_events(void) {
@@ -592,8 +649,19 @@ void x11_poll_events(void) {
                 // We got mail! Probably from the window manager.
                 if(filtered) goto CONTINUE_LOOP;
                 if(event.xclient.message_type == None) goto CONTINUE_LOOP;
-                // TODO: WM protocol stuff (GLFW x11_window.c line 1547 is a good reference)
-                // TODO: drag/drop operations, which are apparently quite complex actually
+                // TODO: drag/drop operations, which are apparently quite complex actually (GLFW x11_window.c line 1547 is a good reference)
+                if(event.xclient.message_type == WM_PROTOCOLS) {
+                    Atom protocol = event.xclient.data.l[0];
+                    if(protocol == WM_DELETE_WINDOW) {
+                        // Someone is telling this window to exit
+                        // The user application is in charge of destroying this window.
+                        pinc_event_union_t clevt;
+                        clevt.type = pinc_event_window_close;
+                        clevt.data.window_close.window = window;
+                        pinci_send_event(clevt);
+                        printf("Recieved exit event\n");
+                    }
+                }
                 goto CONTINUE_LOOP;
             }
             case SelectionNotify: {

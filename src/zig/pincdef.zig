@@ -364,6 +364,10 @@ pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc
     return true;
 }
 
+pub export fn pinc_destroy() void {
+    c.x11_deinit();
+}
+
 fn getOpenglProc(context: void, name: [:0]const u8) ?gl21bind.FunctionPointer {
     _ = context;
     return @ptrCast(pinc_graphics_opengl_get_proc(name.ptr));
@@ -489,7 +493,9 @@ pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) 
 // pub export fn pinc_window_get_depth_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
 // pub export fn pinc_window_set_stencil_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {}
 // pub export fn pinc_window_get_stencil_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {}
+pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {
+    c.x11_window_destroy(window);
+}
 pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
     if (incomplete == 0) {
         _ = pinci_make_error(c.pinc_error_null_handle, "pinc_window_complete was given a null handle");

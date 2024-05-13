@@ -22,6 +22,10 @@ typedef enum {
 /// @return true if success, false otherwise.
 extern bool pinc_init(pinc_window_api_enum window_api, pinc_graphics_api_enum graphics_api);
 
+/// @brief Cleans up Pinc. This does not automatically destroy resources, however the OS will likely do that.
+/// The only exception is X11, as some WMs might not behave correctly to sudden exits.
+extern void pinc_destroy(void);
+
 typedef enum {
     /// @brief No error
     pinc_error_none = 0,
@@ -241,9 +245,6 @@ extern bool pinc_window_get_focused(pinc_window_handle_t window);
 /// @brief Notifies the user that this window is "ready".
 /// @param window a window
 extern void pinc_window_request_attention(pinc_window_handle_t window);
-
-/// @brief Closes a window. Once a window is closed, it must never be referenced again.
-extern void pinc_window_close(pinc_window_handle_t window);
 
 // Types and functions for events
 

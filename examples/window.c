@@ -6,6 +6,13 @@
 // I don't even know how it's physically possible for the modulus operator to be undefined for floats
 #include <math.h>
 
+// How does libc STILL not have a sleep function?
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>>
+#endif
+
 int main(int argc, char** argv) {
     // Initialize Pinc
     if(!pinc_init(pinc_window_api_automatic, pinc_graphics_api_automatic)) {
@@ -53,6 +60,9 @@ int main(int argc, char** argv) {
                 {
                     pinc_event_window_key_down_t ev = pinc_event_window_key_down_data();
                     printf("Window %i key %s down\n", ev.window, pinc_key_name(ev.key));
+                    if(ev.key == pinc_key_code_escape) {
+                        running = false;
+                    }
                     break;
                 }
                 case pinc_event_window_key_up:
@@ -82,7 +92,7 @@ int main(int argc, char** argv) {
                 case pinc_event_window_cursor_move:
                 {
                     pinc_event_window_cursor_move_t ev = pinc_event_window_cursor_move_data();
-                    printf("Windpw %i cursor moved to (%i, %i)\n", ev.window, ev.x_pixels, ev.y_pixels);
+                    printf("Window %i cursor moved to (%i, %i)\n", ev.window, ev.x_pixels, ev.y_pixels);
                     break;
                 }
                 case pinc_event_window_cursor_enter:
@@ -158,7 +168,14 @@ int main(int argc, char** argv) {
         pinc_graphics_present_window(window, false);
         ++frames;
     }
-    // TODO: actually dispose of things
+    pinc_window_destroy(window);
+    pinc_destroy();
+    // Plot twist: wait 10 seconds before actually exiting, so if the window didn't actually exit we can see that's the case
+    #ifdef _WIN32
+    Sleep(10 000);
+    #else
+    sleep(10);
+    #endif
     return 0;
 }
 

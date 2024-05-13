@@ -22,6 +22,7 @@
         "xfuncproto.h": "c",
         "cassert": "c",
         "glxload.h": "c",
-        "xkbload.h": "c"
+        "xkbload.h": "c",
+        "stdlib.h": "c"
     }
 }
