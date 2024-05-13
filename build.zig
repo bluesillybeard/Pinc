@@ -1,7 +1,6 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    // TODO: options to build different artifacts (static lib, dynamic lib, examples)
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -10,7 +9,6 @@ pub fn build(b: *std.Build) void {
         .name = "pinc",
         .optimize = optimize,
         .target = target,
-        // libc is so fundamentally engrained into all software that it's insanely dificult to avoid linking with it.
         .link_libc = true,
     });
     pincStatic.addIncludePath(.{ .path = "include" });
@@ -28,7 +26,6 @@ pub fn build(b: *std.Build) void {
         .name = "pinc",
         .optimize = optimize,
         .target = target,
-        // libc is so fundamentally engrained into all software that it's insanely dificult to avoid linking with it.
         .link_libc = true,
     });
     pincDynamic.addIncludePath(.{ .path = "include" });
