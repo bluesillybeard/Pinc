@@ -4,6 +4,9 @@
 // Refactoring functionality out of this file would require modifying the loader headers
 // to support separating the file that holds the function pointers and files that access them.
 
+// This macro avoids attempting to compile posix-specific code on other platforms
+#if __linux__
+
 // Includes of C standard library (Linux stuff)
 #include <stddef.h>
 #include <stdbool.h>
@@ -2203,3 +2206,4 @@ uint32_t x11_sym_to_unicode(KeySym keysym) {
     return 0xffffffffu;
 }
 
+#endif

@@ -172,7 +172,7 @@ int main(int argc, char** argv) {
     pinc_destroy();
     // Plot twist: wait 10 seconds before actually exiting, so if the window didn't actually exit we can see that's the case
     #ifdef _WIN32
-    Sleep(10 000);
+    Sleep(10000);
     #else
     sleep(10);
     #endif
