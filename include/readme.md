@@ -1,5 +1,7 @@
 # Designing the API
 
+Pinc's graphics API does not exist yet. This serves as a reminder of what that API needs to have
+
 Pinc's API needs to have these fundamental graphics features:
 - mesh
 - texture

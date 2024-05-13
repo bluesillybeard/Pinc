@@ -69,6 +69,8 @@ pub fn build(b: *std.Build) void {
     const dynamicInstall = b.addInstallArtifact(pincDynamic, .{});
     var dynamicStep = b.step("dynamic", "Build Pinc as a dynaic / shader library (.so / .dll)");
     dynamicStep.dependOn(&dynamicInstall.step);
-    
 
+    const headerInstall = b.addInstallHeaderFile(.{.path = "include/pinc.h"}, "pinc.h");
+    staticStep.dependOn(&headerInstall.step);
+    dynamicStep.dependOn(&headerInstall.step);
 }
