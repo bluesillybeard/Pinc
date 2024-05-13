@@ -1,10 +1,9 @@
 # Pinc
 Pinc is a cross platform windowing / rendering library written in Zig.
 
-## Pinc design goals
+## Pincs goals
 - Lightweight - minimal dependencies (within reason)
-    - fundamental libraries (Xlib for example) are fair game
-        - Technically Xlib is not a fundamental library but it's basically a fundamental library at this point
+    - fundamental libraries are fair game (Xlib, libGL, Kernel32, etc)
     - Any non-system libraries are statically linked (ex: SPIRV-cross)
 - Language agnostic - The external API is entirely in C, which makes binding to other languages relatively simple
     - Specifically, the header is written in C99 as described in the [GNU C manual](https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html)
@@ -12,7 +11,8 @@ Pinc is a cross platform windowing / rendering library written in Zig.
 - ABSOLUTELY ZERO compile time dependencies, other than Pinc and and the Zig compiler
     - This includes system libraries that are not included in Zig's cross-compile toolchain. They must be loaded at runtime.
 - Easy to use
-    - Similar ease of use, comparable to something like SDL or SFML
+    - comparable to something like SDL or SFML, with the bonus of being a lot easier to compile and link
+    - admittedly the API is a bit verbose
 - Flexible
     - can be linked statically or dynamically
     - determines the API to use at runtime, so fewer compilation targets are needed
@@ -28,14 +28,20 @@ Pinc is a cross platform windowing / rendering library written in Zig.
 ## Important notes
 Pinc is a very new library, and is MASSIVELY out of scope for a single developer like myself. As such:
 - Expect bugs / issues
-- the API is highly variable at the moment
+    - a large portion of the API is not implemented yet
+- the API is highly variable for the forseeable future
     - Give me your suggestions - the API is VERY incomplete and I don't know what's missing!
 - the project desparately needs contributors
     - there are so many TODOs all over the place. Anyone willing to help is welcome! Just search for instances of the string "TODO" in the repo and you're basically guaranteed to find something relatively simple to get yourself started as a contributor.
 
-Pinc's current API is fundamentally incompatible with multithreading at the moment. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you're probably making a mistake.
+Pinc's current API is fundamentally incompatible with multithreading. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you're probably making a mistake.
 
 ## How to get started
+- Get Zig (this is tested on zig master but it might work on older versions)
+- Clone the repository
+- Make sure it works by running `zig build run`, which will run the window example.
+- The library is ready to be used...
+
 The easiest way to do it would be to just compile Pinc into a library using `zig build static` or `zig build dynamic`, copy the artifact and the header, and just adding it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
