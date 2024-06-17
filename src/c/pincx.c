@@ -183,7 +183,7 @@ static uint32_t decodeUTF8(const char** s)
 
 // implementations of functions in pincx.h
 
-bool x11_init(void) {
+bool x11_init(pinc_graphics_api_enum) {
     // HACK: (stolen from GLFW) If the application has left the locale as "C" then both wide
     //       character text input and explicit UTF-8 input via XIM will break
     //       This sets the CTYPE part of the current locale from the environment

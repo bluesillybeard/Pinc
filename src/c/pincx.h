@@ -18,7 +18,7 @@ typedef struct _XIC *XIC;
 #endif
 
 // Functions implemented in pinx.c
-bool x11_init(void);
+bool x11_init(pinc_graphics_api_enum);
 
 void x11_deinit(void);
 
