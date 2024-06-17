@@ -17,6 +17,7 @@ pub fn build(b: *std.Build) void {
     pincStatic.addCSourceFiles(.{
         .files = &[_][]const u8{
             "pincx.c",
+            "pincwin32.c",
         },
         .root = .{ .path = "src/c" },
     });
@@ -34,6 +35,7 @@ pub fn build(b: *std.Build) void {
     pincDynamic.addCSourceFiles(.{
         .files = &[_][]const u8{
             "pincx.c",
+            "pincwin32.c",
         },
         .root = .{ .path = "src/c" },
     });
@@ -67,7 +69,7 @@ pub fn build(b: *std.Build) void {
     var dynamicStep = b.step("dynamic", "Build Pinc as a dynaic / shader library (.so / .dll)");
     dynamicStep.dependOn(&dynamicInstall.step);
 
-    const headerInstall = b.addInstallHeaderFile(.{.path = "include/pinc.h"}, "pinc.h");
+    const headerInstall = b.addInstallHeaderFile(.{ .path = "include/pinc.h" }, "pinc.h");
     staticStep.dependOn(&headerInstall.step);
     dynamicStep.dependOn(&headerInstall.step);
 }

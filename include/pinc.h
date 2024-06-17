@@ -7,8 +7,10 @@
 typedef enum {
     /// @brief Automatically choose a windowing API
     pinc_window_api_automatic,
-    /// @brief X window system Xlib is loaded dynamically at runtime, to avoid a compile time dependency.
+    /// @brief X window system Xlib is loaded dynamically at runtime, to avoid a compile time dependency. The only supported backend on Linux, as Wayland has not been implemented.
     pinc_window_api_x,
+    /// @brief Win32 backend, for windows NT. Windows 95 also has a minified version of Win32, which may be supported eventually.
+    pinc_window_api_win32
 } pinc_window_api_enum;
 
 typedef enum {
