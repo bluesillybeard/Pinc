@@ -2,11 +2,8 @@
 // This file was originally going to have all implementations, but I decided to do it differently once the win32 backend was started.
 // So, this is a strange mix of attempting to handle the case of a different platform while also only actually being implemented for x11.
 // TODO: refactor this file so it actually makes sense.
-const c = @cImport({
-    @cInclude("pinc.h");
-    @cInclude("pincx.h");
-    @cInclude("pincinternal.h");
-});
+const c = @import("c.zig");
+
 const std = @import("std");
 
 const gl21bind = @import("ext/gl21load.zig");
@@ -27,7 +24,7 @@ fn pinci_send_event(event: c.pinc_event_union_t) callconv(.C) void {
             const evdat = event.data.window_resize;
             if (evdat.window == 0) return;
             if (windows.items[evdat.window - 1] == null) return;
-            const window = &windows.items[evdat.window - 1];
+            const window = &windows.items[evdat.window - 1].?;
             // override previous size
             window.eventWindowResize = evdat;
         },
@@ -35,7 +32,7 @@ fn pinci_send_event(event: c.pinc_event_union_t) callconv(.C) void {
             const evdat = event.data.window_focus;
             if (evdat.window == 0) return;
             if (windows.items[evdat.window - 1] == null) return;
-            const window = &windows.items[evdat.window - 1];
+            const window = &windows.items[evdat.window - 1].?;
             // override previous size
             window.eventWindowFocus = evdat;
         },
@@ -43,7 +40,7 @@ fn pinci_send_event(event: c.pinc_event_union_t) callconv(.C) void {
             const evdat = event.data.window_unfocus;
             if (evdat.window == 0) return;
             if (windows.items[evdat.window - 1] == null) return;
-            const window = &windows.items[evdat.window - 1];
+            const window = &windows.items[evdat.window - 1].?;
             // override previous size
             window.eventWindowUnfocus = evdat;
         },
@@ -51,7 +48,7 @@ fn pinci_send_event(event: c.pinc_event_union_t) callconv(.C) void {
             const evdat = event.data.window_damaged;
             if (evdat.window == 0) return;
             if (windows.items[evdat.window - 1] == null) return;
-            const window = &windows.items[evdat.window - 1];
+            const window = &windows.items[evdat.window - 1].?;
             // override previous event
             window.eventWindowDamaged = evdat;
         },
@@ -171,42 +168,44 @@ comptime {
 fn pinc_event_union(clear: bool) c.pinc_event_union_t {
     // This comes pretty close to the worst code I have ever emitted from my dumb brain.
     // Section for top priority
-    for (windows.items) |*window| {
-        if (window == null) continue;
-        if (window.?.eventWindowResize) |resize| {
+    for (windows.items) |*windowOrNone| {
+        if (windowOrNone.* == null) continue;
+        const window = &windowOrNone.*.?;
+        if (window.eventWindowResize) |resize| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_resize,
                 .data = .{ .window_resize = resize },
             };
-            if (clear) window.?.eventWindowResize = null;
+            if (clear) window.eventWindowResize = null;
             return eventUnion;
         }
-        if (window.?.eventWindowFocus) |focus| {
+        if (window.eventWindowFocus) |focus| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_focus,
                 .data = .{ .window_focus = focus },
             };
-            if (clear) window.?.eventWindowFocus = null;
+            if (clear) window.eventWindowFocus = null;
             return eventUnion;
         }
-        if (window.?.eventWindowUnfocus) |unfocus| {
+        if (window.eventWindowUnfocus) |unfocus| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_unfocus,
                 .data = .{ .window_unfocus = unfocus },
             };
-            if (clear) window.?.eventWindowUnfocus = null;
+            if (clear) window.eventWindowUnfocus = null;
             return eventUnion;
         }
     }
     // section for second priority
-    for (windows.items) |*window| {
-        if (window == null) continue;
-        if (window.?.eventWindowDamaged) |damaged| {
+    for (windows.items) |*windowOrNone| {
+        if (windowOrNone.* == null) continue;
+        const window = &windowOrNone.*.?;
+        if (window.eventWindowDamaged) |damaged| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_damaged,
                 .data = .{ .window_damaged = damaged },
             };
-            if (clear) window.?.eventWindowDamaged = null;
+            if (clear) window.eventWindowDamaged = null;
             return eventUnion;
         }
     }
@@ -238,22 +237,23 @@ fn pinc_event_union(clear: bool) c.pinc_event_union_t {
         };
     }
     // section for 4th priority
-    for (windows.items) |*window| {
-        if (window == null) continue;
-        if (window.?.eventWindowCursorMove) |move| {
+    for (windows.items) |*windowOrNone| {
+        if (windowOrNone.* == null) continue;
+        const window = &windowOrNone.*.?;
+        if (window.eventWindowCursorMove) |move| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_cursor_move,
                 .data = .{ .window_cursor_move = move },
             };
-            if (clear) window.?.eventWindowCursorMove = null;
+            if (clear) window.eventWindowCursorMove = null;
             return eventUnion;
         }
-        if (window.?.eventWindowScroll) |scroll| {
+        if (window.eventWindowScroll) |scroll| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_scroll,
                 .data = .{ .window_scroll = scroll },
             };
-            if (clear) window.?.eventWindowScroll = null;
+            if (clear) window.eventWindowScroll = null;
             return eventUnion;
         }
     }
@@ -283,14 +283,15 @@ fn pinc_event_union(clear: bool) c.pinc_event_union_t {
     }
     // section for lowest priority.
 
-    for (windows.items) |*window| {
-        if (window == null) continue;
+    for (windows.items) |*windowOrNone| {
+        if (windowOrNone.* == null) continue;
+        const window = &windowOrNone.*.?;
         if (window.eventWindowClose) |close| {
             const eventUnion = c.pinc_event_union_t{
                 .type = c.pinc_event_window_close,
                 .data = .{ .window_close = close },
             };
-            if (clear) window.?.eventWindowClose = null;
+            if (clear) window.eventWindowClose = null;
             return eventUnion;
         }
     }
@@ -406,7 +407,7 @@ pub export fn pinc_get_window_api() c.pinc_window_api_enum {
 }
 pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomplete_handle_t {
     const xWindow = c.x11_window_incomplete_create(title);
-    const windowObj = PincWindow{ .native = .{ .x = xWindow } };
+    const windowObj = PincWindow{ .native = xWindow };
     // TODO: find an empty spot
     windows.append(windowObj) catch {
         _ = pinci_make_error(c.pinc_error_allocation, "Failed to create window: allocation failed");
@@ -496,7 +497,7 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
     // Get a pointer to the internal window handle.
     // The list does not change within this function call so the memory will stay valid
     // the internal function does not keep a pointer to the window.
-    const xWindow: *c.x11_window = &windows.items[incomplete - 1].native.x;
+    const xWindow: *c.x11_window = &windows.items[incomplete - 1].?.native;
     if (!c.x11_window_complete(xWindow)) {
         // completing the window failed, return a null handle.
         // TODO: make error enum more specific
@@ -510,15 +511,12 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
 // pub export fn pinc_window_close(window: c.pinc_window_handle_t) void {}
 pub export fn pinc_poll_events() void {
     for (windows.items) |*window| {
+        // TODO: error
+        if(window.* == null) return;
         // Some things are backend specific
-        switch (window.native) {
-            .none => {},
-            .x => |*xWindow| {
-                // on X, update last cursor pos to current
-                xWindow.lastCursorX = xWindow.cursorX;
-                xWindow.lastCursorY = xWindow.cursorY;
-            },
-        }
+        const xWindow = &window.*.?.native;
+        xWindow.lastCursorX = xWindow.cursorX;
+        xWindow.lastCursorY = xWindow.cursorY;
     }
     // This function calls pinci_send_event, where the Zig portion can then load the event into the buffer
     c.x11_poll_events();
