@@ -48,6 +48,7 @@ Hopefully the header is self-exaplanatory. If it's not clear what a function or 
 
 ## Other notes
 - When cross-compiling, it is generally a good idea to specify the ABI (eg: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying. (In particular, compiling from Windows to Linux uses musl, which does not work as Pinc uses dynamic loading)
+- The main branch is "stable" in the sense that it should always work. Before commiting to the main branch, We'll make sure everything still works.
 
 ## Q&A
 - Why make this when other libraries already exist?
@@ -80,22 +81,23 @@ Hopefully the header is self-exaplanatory. If it's not clear what a function or 
 - Software rasterizer (Low Priority)
 
 ## Planned supported platforms
+- freeBSD
+    - this should be quite easy. I just need an install to test it on.
 - Win32 API / windows
 - Coacoa / macos
+    - I do not own a mac so this probably a ways off.
+- Haiku
+    - They have an X11 compatibility layer so this shouldn't be too hard
 - Andriod (Low Priority)
 - IOS (Low Priority)
-- Xbox (Low Priority)
-- Nintendo switch (Low Priority)
-    - There seems to be a lack of info on how this could be done.
 - Wayland (Low Priority)
 
 ## Planned supported platforms in the far future
 None of these are going to be implemented any time soon - if ever.
 - Playstation 4/5
-- BSD
-    - BSD might already work (due to X11), however it is not tested.
-- Haiku
-    - They have an X11 compatibility layer so I'm not too worried at the moment
+- Xbox (Low Priority)
+- Nintendo switch (Low Priority)
+    - There seems to be a lack of info on how this could be done.
 
 ## Other planned features
 - ability to access native API interactions and convert native objects to/from pinc objects
