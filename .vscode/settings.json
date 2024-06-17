@@ -23,6 +23,9 @@
         "cassert": "c",
         "glxload.h": "c",
         "xkbload.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "xinput2load.h": "c",
+        "windows.h": "c",
+        "wingdi.h": "c"
     }
 }

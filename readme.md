@@ -46,6 +46,9 @@ The easiest way to do it would be to just compile Pinc into a library using `zig
 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
+## Other notes
+- When cross-compiling, it is generally a good idea to specify the ABI (eg: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying. (In particular, compiling from Windows to Linux uses musl, which does not work as Pinc uses dynamic loading)
+
 ## Q&A
 - Why make this when other libraries already exist?
     - I am frustrated at the state of low-level windowing / graphics libraries. Kinc's build system is a mess, Raylib is too minimal to do anything serious, V-EZ hasn't been updated in many years, bgfx is written in C++, SDL is a giant pain to cross-compile with, nicegraf and llgl don't provide a way to create a window, GLFW has no way to have multiple windows on a single OpenGL context, Jai is a programming language instead of a library, and the list goes on and on and on. They are all great, but they all suck in specific ways that are conveniently very bad for my own requirements.

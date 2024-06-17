@@ -44,6 +44,7 @@
 
 #define PINC_X_INCLUDED
 #include "pincx.h"
+#include <pincinternal.h>
 
 // General TODOs for X11 go here
 // TODO: system content scale (example at GLFW x11_init.c line 1530)
