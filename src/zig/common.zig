@@ -1,10 +1,7 @@
 // Common for all platforms.
 // The individual platform file imports this file.
 
-const c = @cImport({
-    @cInclude("pinc.h");
-    @cInclude("pincinternal.h");
-});
+const c = @import("c.zig");
 
 pub fn Common(NativeWindow: type) type {
     return struct {
