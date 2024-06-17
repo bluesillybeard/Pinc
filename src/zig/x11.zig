@@ -5,6 +5,7 @@
 const c = @cImport({
     @cInclude("pinc.h");
     @cInclude("pincx.h");
+    @cInclude("pincinternal.h");
 });
 const std = @import("std");
 const NativeWindow = union(enum) {
