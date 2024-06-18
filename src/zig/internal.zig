@@ -30,5 +30,5 @@ pub export fn pinci_free_string(str: [*:0]u8) void {
 }
 
 pub export fn pinci_send_event(event: c.pinc_event_union_t) void {
-    pinc.pinci_send_event(event);
+    pinc.sendEvent(event);
 }

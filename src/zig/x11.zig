@@ -30,12 +30,6 @@ export fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.
     return &pinc.windows.items[window - 1].?.native;
 }
 
-// the C api cannot use Zig errors,
-// and returning a result type on every single function is just really annoying.
-// So, functions that may result in an error return a boolean, and if the return value is false the program can then get more detail
-var latestError: c.pinc_error_enum = c.pinc_error_none;
-var latestErrorString: [*:0]const u8 = "";
-
 pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc_graphics_api_enum) bool {
     _ = window_api;
     return pinc.init(graphics_api, c.x11_init);
@@ -46,11 +40,11 @@ pub export fn pinc_destroy() void {
 }
 
 pub export fn pinc_error_get() c.pinc_error_enum {
-    return latestError;
+    return pinc.latestError;
 }
 
 pub export fn pinc_error_string() [*:0]const u8 {
-    return latestErrorString;
+    return pinc.latestErrorString;
 }
 
 pub export fn pinc_get_window_api() c.pinc_window_api_enum {

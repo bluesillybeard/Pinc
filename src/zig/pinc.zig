@@ -14,13 +14,26 @@ const native = switch (builtin.os.tag) {
     .windows => @import("win32.zig"),
     else => @compileError("Unsupported OS"),
 };
+// This is to make sure the compiler actually includes all of our exported functions
+usingnamespace native;
+
 const graphics = @import("graphics.zig");
+usingnamespace graphics;
+
+const internal = @import("internal.zig");
+usingnamespace internal;
 
 const NativeWindow = switch(builtin.os.tag) {
     .linux => c.x11_window,
     // .windows => c.win32_window,
     else => @compileError("Unsupported OS"),
 };
+
+// the C api cannot use Zig errors,
+// and returning a result type on every single function is just really annoying.
+// So, functions that may result in an error return a boolean, and if the return value is false the program can then get more detail
+pub var latestError: c.pinc_error_enum = c.pinc_error_none;
+pub var latestErrorString: [*:0]const u8 = "";
 
 pub const Window = struct {
     native: NativeWindow,
@@ -50,7 +63,7 @@ pub var eventsWindowCursorButtonUp: std.ArrayList(c.pinc_event_window_cursor_but
 
 const AllocatorType = std.heap.GeneralPurposeAllocator(.{});
 var allocatorObj: AllocatorType = undefined;
-var allocator: std.mem.Allocator = undefined;
+pub var allocator: std.mem.Allocator = undefined;
 
 pub fn init(graphics_api: c.pinc_graphics_api_enum, nativeInit: fn(c.pinc_graphics_api_enum) callconv(.C) bool) bool {
     allocatorObj = .{};
