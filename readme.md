@@ -18,6 +18,7 @@ Pinc is a cross platform windowing / rendering library written in Zig.
     - determines the API to use at runtime, so fewer compilation targets are needed
     - cross-compiles from any platform to any platform (supported by the Zig compiler of course)
     - Can be made to work with any C ABI (Zig's compiler for the win!)
+        - Except for musl, since it doesn't allow loading libraries at runtime (sad)
 
 ## Supported platforms
 - Linux/X11
