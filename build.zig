@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     const pincStatic = b.addStaticLibrary(.{
-        .root_source_file = .{ .path = "src/zig/pincdef.zig" },
+        .root_source_file = .{ .path = "src/zig/pinc.zig" },
         .name = "pinc",
         .optimize = optimize,
         .target = target,
@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
     });
 
     const pincDynamic = b.addSharedLibrary(.{
-        .root_source_file = .{ .path = "src/zig/pincdef.zig" },
+        .root_source_file = .{ .path = "src/zig/pinc.zig" },
         .name = "pinc",
         .optimize = optimize,
         .target = target,
