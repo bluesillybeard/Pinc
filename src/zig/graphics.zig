@@ -1,5 +1,6 @@
 // Pinc's non-API specific graphics functions
 // Graphics functions that only touch OpenGL
+// TODO: refactor so all functions with the "pinc_graphics_" prefix are exported here (even if it just immediately calls to somewhere else)
 
 // My dumb brain was thinking "If this file is included more than once, it will cause duplicates of the OpenGL function pointers!"
 // Then I remembered I'm programming in Zig, not C. Here in Zig land, things actually make sense (most of the time) instead of C's annoying compiling and linking semantics.

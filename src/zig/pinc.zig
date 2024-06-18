@@ -23,6 +23,9 @@ usingnamespace graphics;
 const internal = @import("internal.zig");
 usingnamespace internal;
 
+const util = @import("util.zig");
+usingnamespace util;
+
 const NativeWindow = switch(builtin.os.tag) {
     .linux => c.x11_window,
     // .windows => c.win32_window,
