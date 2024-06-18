@@ -31,10 +31,9 @@ Pinc is a very new library, and is MASSIVELY out of scope for a single developer
     - a large portion of the API is not implemented yet
 - the API is highly variable for the forseeable future
     - Give me your suggestions - the API is VERY incomplete and I don't know what's missing!
-- the project desparately needs contributors
-    - there are so many TODOs all over the place. Anyone willing to help is welcome! Just search for instances of the string "TODO" in the repo and you're basically guaranteed to find something relatively simple to get yourself started as a contributor.
+- the project desparately needs contributors - see [contribution guide](contribute.md)
 
-Pinc's current API is fundamentally incompatible with multithreading. If you are building a new project with Pinc, design around that constraint. If you are integrating Pinc into an existing project with multithreaded rendering, you're probably making a mistake.
+Pinc's current API is fundamentally incompatible with multithreading.
 
 ## How to get started
 - Get Zig (this is tested on zig master but it might work on older versions)
@@ -121,7 +120,6 @@ None of these are going to be implemented any time soon - if ever.
 ## Next steps for this library - not nessesarily in order
 - Refactor to start supporting alternate backends
 - Win32 backend
-    - Making sure to avoid functions added after Windows 95 because reasons
 - Create the graphics API
     - Refer to [include/readme.md](./include/readme.md)
 - OpenGL 2.1
@@ -129,7 +127,7 @@ None of these are going to be implemented any time soon - if ever.
 - any final touches to the API
 - Implement all API functions for all backends
 - Clean up X11 backend (it's got a lot of work to be done)
-- Clean up Win32 backend and test on a Win95 VM
+- Clean up Win32 backend and test on win95
 - Clean up Cocoa backend and test on a real mac
     - I do not have a real mac. Maybe someone can donate one?
 - prepare for first major release
