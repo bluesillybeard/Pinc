@@ -1,14 +1,10 @@
-// Pinc's X implementation.
-// This file was originally going to have all implementations, but I decided to do it differently once the win32 backend was started.
-// So, this is a strange mix of attempting to handle the case of a different platform while also only actually being implemented for x11.
-// TODO: refactor this file so it actually makes sense.
+// Pinc's X implementation. Well, most of the actual implementation is in pincx.c, this is just the Zig part.
+
 const c = @import("c.zig");
-
 const std = @import("std");
-
 const pinc = @import("pinc.zig");
 
-// x11 -> used only by the x11 backend
+// Some functions used by pincx.c
 
 export fn x11_get_window_handle(xid: u32) c.pinc_window_incomplete_handle_t {
     // xid is the Xlib ID of the window
@@ -29,6 +25,8 @@ export fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.
     if (pinc.windows.items[window - 1] == null) return null;
     return &pinc.windows.items[window - 1].?.native;
 }
+
+// implementation of the public API
 
 pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc_graphics_api_enum) bool {
     _ = window_api;
@@ -136,7 +134,7 @@ pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) voi
 }
 pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
     if (incomplete == 0) {
-        _ =c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_complete was given a null handle");
+        _ = c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_complete was given a null handle");
         return 0;
     }
     // Get a pointer to the internal window handle.
@@ -146,7 +144,7 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
     if (!c.x11_window_complete(xWindow)) {
         // completing the window failed, return a null handle.
         // TODO: make error enum more specific
-        _ =c.pinci_make_error(c.pinc_error_some, "Failed to complete X11 window");
+        _ = c.pinci_make_error(c.pinc_error_some, "Failed to complete X11 window");
         return 0;
     }
     return incomplete;
@@ -353,35 +351,14 @@ pub export fn pinc_key_name(code: c.pinc_key_code_enum) [*:0]const u8 {
         else => return "unknown",
     }
 }
-pub export fn pinc_key_token_name(token: u32) [*:0]u8 {
-    _ = token;
-    std.debug.panic("pinc_key_token_name is not implemented\n", .{});
-}
-pub export fn pinc_set_cursor_mode(mode: c.pinc_cursor_mode_enum, window: c.pinc_window_handle_t) void {
-    _ = mode;
-    _ = window;
-    std.debug.panic("pinc_set_cursor_mode is not implemented\n", .{});
-}
-pub export fn pinc_set_cursor_theme_image(image: c.pinc_cursor_theme_image_enum, window: c.pinc_window_handle_t) void {
-    _ = image;
-    _ = window;
-    std.debug.panic("pinc_set_cursor_theme_image is not implemented\n", .{});
-}
-pub export fn pinc_set_cursor_image(window: c.pinc_window_handle_t, data: [*]u8, size: u32) void {
-    _ = window;
-    _ = data;
-    _ = size;
-    std.debug.panic("pinc_set_cursor_image is not implemented\n", .{});
-}
-pub export fn pinc_get_clipboard_string() [*:0]u8 {
-    std.debug.panic("pinc_get_clipboard_string is not implemented\n", .{});
-}
+// pub export fn pinc_key_token_name(token: u32) [*:0]u8 ;
+// pub export fn pinc_set_cursor_mode(mode: c.pinc_cursor_mode_enum, window: c.pinc_window_handle_t) void ;
+// pub export fn pinc_set_cursor_theme_image(image: c.pinc_cursor_theme_image_enum, window: c.pinc_window_handle_t) void ;
+// pub export fn pinc_set_cursor_image(window: c.pinc_window_handle_t, data: [*]u8, size: u32) void ;
+// pub export fn pinc_get_clipboard_string() [*:0]u8 ;
 
 pub export fn pinc_graphics_opengl_set_framebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
     c.x11_make_context_current(framebuffer);
-    // TODO: implement for arbitrary framebuffers
-    // this will be a bit annoying (and probably not ideal for performance) to do on OpenGL2.1
-    // due to needing to blit pixels from a real framebuffer to the 'fake' one
 }
 
 pub export fn pinc_graphics_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque {
@@ -390,17 +367,4 @@ pub export fn pinc_graphics_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque
 
 pub export fn pinc_graphics_present_window(window: c.pinc_window_handle_t, vsync: bool) void {
     c.x11_present_framebuffer(window, vsync);
-}
-
-// TODO: this does not work correctly at the moment
-pub export fn pinc_util_unicode_to_uft8(unicode: u32, dest: ?[*:0]u8) bool {
-    if (unicode > std.math.maxInt(u21)) return false;
-    if (dest == null) return false;
-    // Create a slice that points to the actual dest
-    var destSlice: []u8 = undefined;
-    destSlice.len = 5;
-    destSlice.ptr = @ptrCast(dest.?);
-    const count = std.unicode.utf8Encode(@intCast(unicode), destSlice) catch return false;
-    destSlice[count] = 0;
-    return true;
 }
