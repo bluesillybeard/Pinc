@@ -6,9 +6,10 @@ const gl21bind = @import("ext/gl21load.zig");
 const c = @import("c.zig");
 const pinc = @import("pinc.zig");
 
+// TODO: when adding non-window framebuffers, completely refactor so the native backend doesn't have to worry about that
+
 pub export fn pinc_graphics_clear_color(framebuffer: c.pinc_framebuffer_handle_t, r: f32, g: f32, b: f32, a: f32) void {
-    // TODO: account for non-window framebuffers
-    c.x11_make_context_current(framebuffer);
+    pinc.native.setOpenGLFramebuffer(framebuffer);
     gl21bind.clearColor(r, g, b, a);
     gl21bind.clear(gl21bind.COLOR_BUFFER_BIT);
 }

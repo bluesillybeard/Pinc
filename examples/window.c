@@ -170,11 +170,11 @@ int main(int argc, char** argv) {
     }
     pinc_window_destroy(window);
     pinc_destroy();
-    // Plot twist: wait 10 seconds before actually exiting, so if the window didn't actually exit we can see that's the case
+    // Plot twist: wait 2 seconds before actually exiting, so if the window didn't actually exit we can see that's the case
     #ifdef _WIN32
-    Sleep(10000);
+    Sleep(2000);
     #else
-    sleep(10);
+    sleep(2);
     #endif
     return 0;
 }
