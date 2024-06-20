@@ -80,55 +80,24 @@ pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u
     if (xWindowOrNone) |xWindow| {
         return @intCast(xWindow.width);
     } else {
-        _ =c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_width was given an invalid window");
+        _ = c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_width was given an invalid window");
         return 0;
     }
 }
 pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
     if (window == 0) {
-        _ =c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given a null window");
+        _ = c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given a null window");
         return 0;
     }
     const xWindowOrNone = x11_get_x_window(window);
     if (xWindowOrNone) |xWindow| {
         return @intCast(xWindow.height);
     } else {
-        _ =c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given an invalid window");
+        _ = c.pinci_make_error(c.pinc_error_null_handle, "pinc_window_get_height was given an invalid window");
         return 0;
     }
 }
-// TODO - these functions are not implemented. They are commented out entirely so attempts to use them are met with link errors.
-// pub export fn pinc_window_get_scale(window: c.pinc_window_incomplete_handle_t) f32 {}
-// pub export fn pinc_window_get_top_border(window: c.pinc_window_incomplete_handle_t) f32 {}
-// pub export fn pinc_window_get_left_border(window: c.pinc_window_incomplete_handle_t) f32 {}
-// pub export fn pinc_window_get_right_border(window: c.pinc_window_incomplete_handle_t) f32 {}
-// pub export fn pinc_window_get_bottom_border(window: c.pinc_window_incomplete_handle_t) f32 {}
-// pub export fn pinc_window_get_zoom(window: c.pinc_window_incomplete_handle_t) f32 {}
-// pub export fn pinc_window_set_icon(window: c.pinc_window_incomplete_handle_t, data: [*]u8, size: u32) void {}
-// pub export fn pinc_window_set_minimized(window: c.pinc_window_incomplete_handle_t, minimized: bool) void {}
-// pub export fn pinc_window_get_minimized(window: c.pinc_window_incomplete_handle_t) bool {}
-// pub export fn pinc_window_set_resizable(window: c.pinc_window_incomplete_handle_t, resizable: bool) void {}
-// pub export fn pinc_window_get_resizable(window: c.pinc_window_incomplete_handle_t) bool {}
-// pub export fn pinc_window_set_maximized(window: c.pinc_window_incomplete_handle_t, maximized: bool) void {}
-// pub export fn pinc_window_get_maximized(window: c.pinc_window_incomplete_handle_t) bool {}
-// pub export fn pinc_window_set_fullscreen(window: c.pinc_window_incomplete_handle_t, fullscreen: bool, resize: bool) void {}
-// pub export fn pinc_window_get_fullscreen(window: c.pinc_window_incomplete_handle_t) bool {}
-// pub export fn pinc_window_set_visible(window: c.pinc_window_incomplete_handle_t, visible: bool) void {}
-// pub export fn pinc_window_get_visible(window: c.pinc_window_incomplete_handle_t) bool {}
-// pub export fn pinc_window_set_transparency(window: c.pinc_window_incomplete_handle_t, blend: bool) void {}
-// pub export fn pinc_window_get_transparency(window: c.pinc_window_incomplete_handle_t) bool {}
-// pub export fn pinc_window_set_red_bits(window: c.pinc_window_incomplete_handle_t, red_bits: u16) bool {}
-// pub export fn pinc_window_get_red_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_set_green_bits(window: c.pinc_window_incomplete_handle_t, green_bits: u16) bool {}
-// pub export fn pinc_window_get_green_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_set_blue_bits(window: c.pinc_window_incomplete_handle_t, blue_bits: u16) bool {}
-// pub export fn pinc_window_get_blue_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_set_alpha_bits(window: c.pinc_window_incomplete_handle_t, alpha_bits: u16) bool {}
-// pub export fn pinc_window_get_alpha_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_set_depth_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {}
-// pub export fn pinc_window_get_depth_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
-// pub export fn pinc_window_set_stencil_bits(window: c.pinc_window_incomplete_handle_t, depth_bits: u16) bool {}
-// pub export fn pinc_window_get_stencil_bits(window: c.pinc_window_incomplete_handle_t) u16 {}
+
 pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {
     c.x11_window_destroy(window);
 }
@@ -149,83 +118,6 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
     }
     return incomplete;
 }
-// pub export fn pinc_window_get_focused(window: c.pinc_window_handle_t) bool {}
-// pub export fn pinc_window_request_attention(window: c.pinc_window_handle_t) void {}
-// pub export fn pinc_window_close(window: c.pinc_window_handle_t) void {}
-pub export fn pinc_event_poll() void {
-    for (pinc.windows.items) |*window| {
-        // TODO: error
-        if(window.* == null) return;
-        // Some things are backend specific
-        const xWindow = &window.*.?.native;
-        xWindow.lastCursorX = xWindow.cursorX;
-        xWindow.lastCursorY = xWindow.cursorY;
-    }
-    // This function calls pinci_send_event, where the Zig portion can then load the event into the buffer
-    c.x11_poll_events();
-}
-
-pub export fn pinc_event_advance() void {
-    // I think this stupidity makes the need to refactor event management really obvious
-    _ = pinc.getEvent(true);
-}
-pub export fn pinc_event_wait(timeout: f32) void {
-    c.x11_wait_events(timeout);
-    pinc_event_poll();
-}
-pub export fn pinc_event_type() c.pinc_event_type_enum {
-    return pinc.getEvent(false).type;
-}
-pub export fn pinc_event_window_close_data() c.pinc_event_window_close_t {
-    return pinc.getEvent(false).data.window_close;
-}
-pub export fn pinc_event_window_resize_data() c.pinc_event_window_resize_t {
-    return pinc.getEvent(false).data.window_resize;
-}
-pub export fn pinc_event_window_focus_data() c.pinc_event_window_focus_t {
-    return pinc.getEvent(false).data.window_focus;
-}
-pub export fn pinc_event_window_unfocus_data() c.pinc_event_window_unfocus_t {
-    return pinc.getEvent(false).data.window_unfocus;
-}
-pub export fn pinc_event_window_damaged_data() c.pinc_event_window_damaged_t {
-    return pinc.getEvent(false).data.window_damaged;
-}
-pub export fn pinc_event_window_key_down_data() c.pinc_event_window_key_down_t {
-    return pinc.getEvent(false).data.window_key_down;
-}
-pub export fn pinc_event_window_key_up_data() c.pinc_event_window_key_up_t {
-    return pinc.getEvent(false).data.window_key_up;
-}
-pub export fn pinc_event_window_key_repeat_data() c.pinc_event_window_key_repeat_t {
-    return pinc.getEvent(false).data.window_key_repeat;
-}
-pub export fn pinc_event_window_text_data() c.pinc_event_window_text_t {
-    return pinc.getEvent(false).data.window_text;
-}
-pub export fn pinc_event_window_cursor_move_data() c.pinc_event_window_cursor_move_t {
-    return pinc.getEvent(false).data.window_cursor_move;
-}
-pub export fn pinc_event_window_cursor_enter_data() c.pinc_event_window_cursor_enter_t {
-    return pinc.getEvent(false).data.window_cursor_enter;
-}
-pub export fn pinc_event_window_cursor_exit_data() c.pinc_event_window_cursor_exit_t {
-    return pinc.getEvent(false).data.window_cursor_exit;
-}
-pub export fn pinc_event_window_cursor_button_down_data() c.pinc_event_window_cursor_button_down_t {
-    return pinc.getEvent(false).data.window_cursor_button_down;
-}
-pub export fn pinc_event_window_cursor_button_up_data() c.pinc_event_window_cursor_button_up_t {
-    return pinc.getEvent(false).data.window_cursor_button_up;
-}
-pub export fn pinc_event_window_scroll_data() c.pinc_event_window_scroll_t {
-    return pinc.getEvent(false).data.window_scroll;
-}
-// pub export fn pinc_key_token_name(token: u32) [*:0]u8 ;
-// pub export fn pinc_set_cursor_mode(mode: c.pinc_cursor_mode_enum, window: c.pinc_window_handle_t) void ;
-// pub export fn pinc_set_cursor_theme_image(image: c.pinc_cursor_theme_image_enum, window: c.pinc_window_handle_t) void ;
-// pub export fn pinc_set_cursor_image(window: c.pinc_window_handle_t, data: [*]u8, size: u32) void ;
-// pub export fn pinc_get_clipboard_string() [*:0]u8 ;
 
 // functions used by other pinc modules (notably graphics.zig)
 // A lot of these exist because platform agnostic parts of Pinc often need to call platform-specific code.
@@ -240,4 +132,21 @@ pub inline fn getOpenglProc(procname: [*:0]const u8) ?*anyopaque {
 
 pub inline fn presentWindow(window: c.pinc_window_handle_t, vsync: bool) void {
     c.x11_present_framebuffer(window, vsync);
+}
+
+pub inline fn waitForEvent(timeoutSeconds: f32) void {
+    c.x11_wait_events(timeoutSeconds);
+}
+
+pub inline fn collectEvents() void {
+    // TODO: Would it be worth moving cursor position data to be platform agnostic? Probably not.
+    for (pinc.windows.items) |*window| {
+        // TODO: error
+        if(window.* == null) return;
+        // Some things are backend specific
+        const xWindow = &window.*.?.native;
+        xWindow.lastCursorX = xWindow.cursorX;
+        xWindow.lastCursorY = xWindow.cursorY;
+    }
+    c.x11_poll_events();
 }
