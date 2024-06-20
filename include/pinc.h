@@ -5,6 +5,7 @@
 // general functions and types
 
 // Prefix notes:
+// The prefix is assigned depending on where it's actually implemented in pinc.
 // pinc_graphics_ -> exported from graphics.zig
 // pinc_util_ -> exported from util.zig
 // pinc_ -> A function that is exported from the backend zig file
@@ -313,15 +314,15 @@ typedef enum {
 
 /// @brief Pulls events for all windows into an internal buffer. Does not block. This merges all events for the entire frame.
 /// Events that were not processed from the last call are incorperated into the new buffer, and properly sorted accordingly.
-extern void pinc_poll_events(void);
+extern void pinc_event_poll(void);
 
 /// @brief Moves to the next event.
-extern void pinc_advance_event(void);
+extern void pinc_event_advance(void);
 
 /// @brief Waits for events. Does not block if the event buffer contains events to be processed.
 ///        Note that using this function still requires calling advance event. The timeout is in seconds, use Infinity, NaN, or 0 for an infinite timeout.
 ///        This is logically equivalent calling poll_events and event_type in a loop until event_type != none, implemented more efficiently.
-extern void pinc_wait_events(float timeout);
+extern void pinc_event_wait(float timeout);
 
 /// @brief Gets the type of the current event
 extern pinc_event_type_enum pinc_event_type(void);
@@ -658,10 +659,6 @@ extern pinc_event_window_scroll_t pinc_event_window_scroll_data(void);
 
 // Additional keyboard types and functions
 
-/// @brief Get the name of a key
-/// @return The name of the key. This returns null if the code is invalid.
-extern const char* pinc_key_name(pinc_key_code_enum code);
-
 /// @brief Get the name of a platform specific key code. This depends on the users keyboard layout, language, and platform.
 /// @return The name of the key token. This returns null if the token does not have a name
 extern const char* pinc_key_token_name(uint32_t token);
@@ -717,11 +714,12 @@ extern void pinc_set_cursor_image(pinc_window_handle_t window, uint8_t* data, ui
 // general IO functions
 
 /// @brief Gets the clipboard string
-/// @return the clipboard string. Its lifetime is at least as long as until the next call to Pinc, it is recomended to make a copy of it.
+/// @return the clipboard string. Its lifetime is at least as long as until the next call to Pinc, do not hold on to the returned pointer beyond your next function call to pinc.
 extern char* pinc_get_clipboard_string(void);
 
 // Pinc functions that allow Pinc to be used like GLFW - in other words, use the graphics API directly
-// These CANNOT be used alongisde graphics functions. Things WILL break if you do that!
+// They may be used alongside the ordinary pinc graphics API, however that is probably a bad idea.
+// I suggest either going all the way and only using the non-opengl pinc functions, or just only using opengl.
 
 /// @brief Set the OpenGL context to a framebuffer or window.
 ///        There is one OpenGL context for the entire application, unlike GLFW where the context is per window.
@@ -729,14 +727,14 @@ extern char* pinc_get_clipboard_string(void);
 extern void pinc_graphics_opengl_set_framebuffer(pinc_framebuffer_handle_t framebuffer);
 
 /// @brief Returns the pointer of an OpenGL function.
-/// @param procname the name of the opengl function
-/// @return a raw pointer to that function.
+/// @param procname the name of the opengl function.
+/// @return a raw nullable pointer to that function.
 extern void* pinc_graphics_opengl_get_proc(const char* procname);
 
 // pinc graphics functions
 
 /// @brief Clears a given framebuffer to an RGB color. The color values range from 0 to 1.
-/// @param framebuffer The framebuffer to clear. Must be complete
+/// @param framebuffer The framebuffer to clear. Must be complete.
 extern void pinc_graphics_clear_color(pinc_framebuffer_handle_t framebuffer, float r, float g, float b, float a);
 
 /// @brief Presents a window framebuffer
@@ -745,6 +743,10 @@ extern void pinc_graphics_clear_color(pinc_framebuffer_handle_t framebuffer, flo
 extern void pinc_graphics_present_window(pinc_window_handle_t window, bool vsync);
 
 // General utility functions
+
+/// @brief Get the name of a key
+/// @return The name of the key. This returns null if the code is invalid.
+extern const char* pinc_util_key_name(pinc_key_code_enum code);
 
 /// Converts a unicode point to a UTF8 sequence. Returns false in the case of an error (most often an invalid unicode point)
 /// Dest must have at least 5 available bytes, 4 for the codepoint and 1 for a null byte. The codepoint may be 1 to 4 bytes in length

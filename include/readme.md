@@ -41,17 +41,17 @@ Properties / principles of the API:
 The basic order of events:
 - init Pinc
 - enter main loop (or not, what happens in and out of the loop is up to the user.)
-- Optionally create drawables
+- Optionally create framebuffers
     - this can happen before any windows are created, and in fact an application can be created that never opens a window.
-    - First create an incomplete drawable with required parameters (width, height)
-    - optionally set drawable properties (bit depth of channels)
-    - complete the drawable
-    - A drawable is also polymorphically also a 
+    - First create an incomplete framebuffers with required parameters (width, height)
+    - optionally set framebuffers properties (bit depth of channels)
+    - complete the framebuffers
+    - A framebuffer is also polymorphically also a 
 - Optionally create window(s)
     - create an incomplete window with required parameters
     - set optional parameters
     - complete the window
-    - the window is polymorphically also a drawable.
+    - the window is polymorphically also a framebuffer.
 - Upload mesh and texture data
     - create an incomplete object with the required parameters, set any optional parameters, and complete the object
     - An existing mesh or texture can have its data modified 
@@ -63,5 +63,5 @@ General notes:
     - Instead, the pipeline defines how a buffer is interpereted as vertices
 - Pinc has no such thing as a texture sampler
     - Again, this is part of the pipeline
-- Instead of calling OpenGL / Vulkan / whatever directly, there should be a queue system where events are queued up (probably on a per-framebuffer basis) and optimized to some degree before being sent out to the API - or maybe even dequeued by a separate thread
+- Instead of calling OpenGL / Vulkan / whatever immediately on a pinc function call, there should be a queue system where events are queued up (probably on a per-framebuffer basis) and optimized to some degree before being sent out to the API - or maybe even dequeued by a separate thread
 - In the future, I want everything to be thread safe. For now it's definitely NOT thread safe, but in the future it would be nice to have some form of thread safety.
