@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     int frames = 0;
     bool running = true;
     while(running) {
-        pinc_wait_events(1);
+        pinc_event_wait(1);
         do {
             // Get the current event
             pinc_event_type_enum event_type = pinc_event_type();
@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
                 case pinc_event_window_key_down:
                 {
                     pinc_event_window_key_down_t ev = pinc_event_window_key_down_data();
-                    printf("Window %i key %s down\n", ev.window, pinc_key_name(ev.key));
+                    printf("Window %i key %s down\n", ev.window, pinc_util_key_name(ev.key));
                     if(ev.key == pinc_key_code_escape) {
                         running = false;
                     }
@@ -68,13 +68,13 @@ int main(int argc, char** argv) {
                 case pinc_event_window_key_up:
                 {
                     pinc_event_window_key_up_t ev = pinc_event_window_key_up_data();
-                    printf("Window %i key %s up\n", ev.window, pinc_key_name(ev.key));
+                    printf("Window %i key %s up\n", ev.window, pinc_util_key_name(ev.key));
                     break;
                 }
                 case pinc_event_window_key_repeat:
                 {
                     pinc_event_window_key_repeat_t ev = pinc_event_window_key_repeat_data();
-                    printf("Window %i key %s repeat\n", ev.window, pinc_key_name(ev.key));
+                    printf("Window %i key %s repeat\n", ev.window, pinc_util_key_name(ev.key));
                     break;
                 }
                 case pinc_event_window_text:
@@ -158,7 +158,7 @@ int main(int argc, char** argv) {
                     break;
             }
             // Move to the next event
-            pinc_advance_event();
+            pinc_event_advance();
             // If the next event is none, we are done iterating events
         } while(pinc_event_type() != pinc_event_none);
         // The G component makes the window fade from magenta to white as frames are rendered.

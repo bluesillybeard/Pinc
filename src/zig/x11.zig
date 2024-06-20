@@ -152,7 +152,7 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
 // pub export fn pinc_window_get_focused(window: c.pinc_window_handle_t) bool {}
 // pub export fn pinc_window_request_attention(window: c.pinc_window_handle_t) void {}
 // pub export fn pinc_window_close(window: c.pinc_window_handle_t) void {}
-pub export fn pinc_poll_events() void {
+pub export fn pinc_event_poll() void {
     for (pinc.windows.items) |*window| {
         // TODO: error
         if(window.* == null) return;
@@ -165,13 +165,13 @@ pub export fn pinc_poll_events() void {
     c.x11_poll_events();
 }
 
-pub export fn pinc_advance_event() void {
+pub export fn pinc_event_advance() void {
     // I think this stupidity makes the need to refactor event management really obvious
     _ = pinc.getEvent(true);
 }
-pub export fn pinc_wait_events(timeout: f32) void {
+pub export fn pinc_event_wait(timeout: f32) void {
     c.x11_wait_events(timeout);
-    pinc_poll_events();
+    pinc_event_poll();
 }
 pub export fn pinc_event_type() c.pinc_event_type_enum {
     return pinc.getEvent(false).type;
@@ -221,150 +221,23 @@ pub export fn pinc_event_window_cursor_button_up_data() c.pinc_event_window_curs
 pub export fn pinc_event_window_scroll_data() c.pinc_event_window_scroll_t {
     return pinc.getEvent(false).data.window_scroll;
 }
-pub export fn pinc_key_name(code: c.pinc_key_code_enum) [*:0]const u8 {
-    switch (code) {
-        c.pinc_key_code_unknown => return "unknown",
-        c.pinc_key_code_space => return "space",
-        c.pinc_key_code_apostrophe => return "apostrophe",
-        c.pinc_key_code_comma => return "comma",
-        c.pinc_key_code_dash => return "dash",
-        c.pinc_key_code_dot => return "dot",
-        c.pinc_key_code_slash => return "slash",
-        c.pinc_key_code_0 => return "0",
-        c.pinc_key_code_1 => return "1",
-        c.pinc_key_code_2 => return "2",
-        c.pinc_key_code_3 => return "3",
-        c.pinc_key_code_4 => return "4",
-        c.pinc_key_code_5 => return "5",
-        c.pinc_key_code_6 => return "6",
-        c.pinc_key_code_7 => return "7",
-        c.pinc_key_code_8 => return "8",
-        c.pinc_key_code_9 => return "9",
-        c.pinc_key_code_semicolon => return "semicolon",
-        c.pinc_key_code_equals => return "equals",
-        c.pinc_key_code_a => return "a",
-        c.pinc_key_code_b => return "b",
-        c.pinc_key_code_c => return "c",
-        c.pinc_key_code_d => return "d",
-        c.pinc_key_code_e => return "e",
-        c.pinc_key_code_f => return "f",
-        c.pinc_key_code_g => return "g",
-        c.pinc_key_code_h => return "h",
-        c.pinc_key_code_i => return "i",
-        c.pinc_key_code_j => return "j",
-        c.pinc_key_code_k => return "k",
-        c.pinc_key_code_l => return "l",
-        c.pinc_key_code_m => return "m",
-        c.pinc_key_code_n => return "n",
-        c.pinc_key_code_o => return "o",
-        c.pinc_key_code_p => return "p",
-        c.pinc_key_code_q => return "q",
-        c.pinc_key_code_r => return "r",
-        c.pinc_key_code_s => return "s",
-        c.pinc_key_code_t => return "T",
-        c.pinc_key_code_u => return "u",
-        c.pinc_key_code_v => return "v",
-        c.pinc_key_code_w => return "w",
-        c.pinc_key_code_x => return "x",
-        c.pinc_key_code_y => return "y",
-        c.pinc_key_code_z => return "z",
-        c.pinc_key_code_left_bracket => return "left_bracket",
-        c.pinc_key_code_backslash => return "backslash",
-        c.pinc_key_code_right_bracket => return "right_bracket",
-        c.pinc_key_code_backtick,
-        => return "backtick",
-        c.pinc_key_code_escape => return "escape",
-        c.pinc_key_code_enter => return "enter",
-        c.pinc_key_code_tab => return "tab",
-        c.pinc_key_code_backspace => return "backspace",
-        c.pinc_key_code_insert => return "insert",
-        c.pinc_key_code_delete => return "delete",
-        c.pinc_key_code_right => return "right",
-        c.pinc_key_code_left => return "left",
-        c.pinc_key_code_down => return "down",
-        c.pinc_key_code_up => return "up",
-        c.pinc_key_code_page_up => return "page_up",
-        c.pinc_key_code_page_down => return "page_down",
-        c.pinc_key_code_home => return "home",
-        c.pinc_key_code_end => return "end",
-        c.pinc_key_code_caps_lock => return "caps_lock",
-        c.pinc_key_code_scroll_lock => return "scroll_lock",
-        c.pinc_key_code_num_lock => return "num_lock",
-        c.pinc_key_code_print_screen => return "print_screen",
-        c.pinc_key_code_pause => return "pause",
-        c.pinc_key_code_f1 => return "f1",
-        c.pinc_key_code_f2 => return "f2",
-        c.pinc_key_code_f3 => return "f3",
-        c.pinc_key_code_f4 => return "f4",
-        c.pinc_key_code_f5 => return "f5",
-        c.pinc_key_code_f6 => return "f6",
-        c.pinc_key_code_f7 => return "f7",
-        c.pinc_key_code_f8 => return "f8",
-        c.pinc_key_code_f9 => return "f9",
-        c.pinc_key_code_f10 => return "f10",
-        c.pinc_key_code_f11 => return "f11",
-        c.pinc_key_code_f12 => return "f12",
-        c.pinc_key_code_f13 => return "f13",
-        c.pinc_key_code_f14 => return "f14",
-        c.pinc_key_code_f15 => return "f15",
-        c.pinc_key_code_f16 => return "f16",
-        c.pinc_key_code_f17 => return "f17",
-        c.pinc_key_code_f18 => return "f18",
-        c.pinc_key_code_f19 => return "f19",
-        c.pinc_key_code_f20 => return "f20",
-        c.pinc_key_code_f21 => return "f21",
-        c.pinc_key_code_f22 => return "f22",
-        c.pinc_key_code_f23 => return "f23",
-        c.pinc_key_code_f24 => return "f24",
-        c.pinc_key_code_f25 => return "f25",
-        c.pinc_key_code_f26 => return "f26",
-        c.pinc_key_code_f27 => return "f27",
-        c.pinc_key_code_f28 => return "f28",
-        c.pinc_key_code_f29 => return "f29",
-        c.pinc_key_code_f30 => return "f30",
-        c.pinc_key_code_numpad_0 => return "numpad_0",
-        c.pinc_key_code_numpad_1 => return "numpad_1",
-        c.pinc_key_code_numpad_2 => return "numpad_2",
-        c.pinc_key_code_numpad_3 => return "numpad_3",
-        c.pinc_key_code_numpad_4 => return "numpad_4",
-        c.pinc_key_code_numpad_5 => return "numpad_5",
-        c.pinc_key_code_numpad_6 => return "numpad_6",
-        c.pinc_key_code_numpad_7 => return "numpad_7",
-        c.pinc_key_code_numpad_8 => return "numpad_8",
-        c.pinc_key_code_numpad_9 => return "numpad_9",
-        c.pinc_key_code_numpad_dot => return "numpad_dot",
-        c.pinc_key_code_numpad_slash => return "numpad_slash",
-        c.pinc_key_code_numpad_asterisk => return "numpad_asterisk",
-        c.pinc_key_code_numpad_dash => return "numpad_dash",
-        c.pinc_key_code_numpad_plus => return "numpad_plus",
-        c.pinc_key_code_numpad_enter => return "numpad_enter",
-        c.pinc_key_code_numpad_equal => return "numpad_equal",
-        c.pinc_key_code_left_shift => return "left_shift",
-        c.pinc_key_code_left_control => return "left_control",
-        c.pinc_key_code_left_alt => return "left_alt",
-        c.pinc_key_code_left_super => return "left_super",
-        c.pinc_key_code_right_shift => return "right_shift",
-        c.pinc_key_code_right_control => return "right_control",
-        c.pinc_key_code_right_alt => return "right_alt",
-        c.pinc_key_code_right_super => return "right_super",
-        c.pinc_key_code_menu => return "menu",
-        else => return "unknown",
-    }
-}
 // pub export fn pinc_key_token_name(token: u32) [*:0]u8 ;
 // pub export fn pinc_set_cursor_mode(mode: c.pinc_cursor_mode_enum, window: c.pinc_window_handle_t) void ;
 // pub export fn pinc_set_cursor_theme_image(image: c.pinc_cursor_theme_image_enum, window: c.pinc_window_handle_t) void ;
 // pub export fn pinc_set_cursor_image(window: c.pinc_window_handle_t, data: [*]u8, size: u32) void ;
 // pub export fn pinc_get_clipboard_string() [*:0]u8 ;
 
-pub fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
+// functions used by other pinc modules (notably graphics.zig)
+// A lot of these exist because platform agnostic parts of Pinc often need to call platform-specific code.
+
+pub inline fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
     c.x11_make_context_current(framebuffer);
 }
 
-pub fn getOpenglProc(procname: [*:0]const u8) ?*anyopaque {
+pub inline fn getOpenglProc(procname: [*:0]const u8) ?*anyopaque {
     return c.x11_load_glX_symbol(null, procname);
 }
 
-pub fn presentWindow(window: c.pinc_window_handle_t, vsync: bool) void {
+pub inline fn presentWindow(window: c.pinc_window_handle_t, vsync: bool) void {
     c.x11_present_framebuffer(window, vsync);
 }
