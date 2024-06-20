@@ -8,6 +8,7 @@
 // The prefix is assigned depending on where it's actually implemented in pinc.
 // pinc_graphics_ -> exported from graphics.zig
 // pinc_util_ -> exported from util.zig
+// pinc_event -> exported from event.zig
 // pinc_ -> A function that is exported from the backend zig file
 // pinci_ -> exported from internal.zig (not in any public headers)
 // x11_ -> exported from x11.zig (not in any public headers)

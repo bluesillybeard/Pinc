@@ -26,6 +26,9 @@ usingnamespace internal;
 const util = @import("util.zig");
 usingnamespace util;
 
+const eventExports = @import("event.zig");
+usingnamespace eventExports;
+
 const NativeWindow = switch(builtin.os.tag) {
     .linux => c.x11_window,
     // .windows => c.win32_window,
