@@ -9,7 +9,7 @@ const builtin = @import("builtin");
 // We do it like this so that functions that aren't implemented for a specific backend cause link errors.
 // The alternative is getting some kind of crash when an unimplemented function is called at runtime, which is definitely not ideal.
 // This does mean more boilerplate code, but I think that's OK.
-const native = switch (builtin.os.tag) {
+pub const native = switch (builtin.os.tag) {
     .linux => @import("x11.zig"),
     .windows => @import("win32.zig"),
     else => @compileError("Unsupported OS"),

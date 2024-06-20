@@ -4,6 +4,14 @@
 
 // general functions and types
 
+// Prefix notes:
+// pinc_graphics_ -> exported from graphics.zig
+// pinc_util_ -> exported from util.zig
+// pinc_ -> A function that is exported from the backend zig file
+// pinci_ -> exported from internal.zig (not in any public headers)
+// x11_ -> exported from x11.zig (not in any public headers)
+// win32_ -> exported from win32.zig (not in any public headers)
+
 typedef enum {
     /// @brief Automatically choose a windowing API
     pinc_window_api_automatic,
@@ -739,6 +747,5 @@ extern void pinc_graphics_present_window(pinc_window_handle_t window, bool vsync
 // General utility functions
 
 /// Converts a unicode point to a UTF8 sequence. Returns false in the case of an error (most often an invalid unicode point)
-/// Dest must have at least 5 available bytes, 4 for the codepoint and 1 for a null byte. The codepoint may be 1 to 4 bytes im length
-/// TODO: make this function set the Pinc error
+/// Dest must have at least 5 available bytes, 4 for the codepoint and 1 for a null byte. The codepoint may be 1 to 4 bytes in length
 extern bool pinc_util_unicode_to_uft8(uint32_t unicode, char* dest);

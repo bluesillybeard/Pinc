@@ -1,15 +1,25 @@
 // Pinc's non-API specific graphics functions
-// Graphics functions that only touch OpenGL
-// TODO: refactor so all functions with the "pinc_graphics_" prefix are exported here (even if it just immediately calls to somewhere else)
-
+// functions with the "pinc_graphics" prefix
 // My dumb brain was thinking "If this file is included more than once, it will cause duplicates of the OpenGL function pointers!"
 // Then I remembered I'm programming in Zig, not C. Here in Zig land, things actually make sense (most of the time) instead of C's annoying compiling and linking semantics.
 const gl21bind = @import("ext/gl21load.zig");
 const c = @import("c.zig");
+const pinc = @import("pinc.zig");
 
 pub export fn pinc_graphics_clear_color(framebuffer: c.pinc_framebuffer_handle_t, r: f32, g: f32, b: f32, a: f32) void {
     // TODO: account for non-window framebuffers
     c.x11_make_context_current(framebuffer);
     gl21bind.clearColor(r, g, b, a);
     gl21bind.clear(gl21bind.COLOR_BUFFER_BIT);
+}
+
+// These would have been exported from native directly, however they have the "pinc_graphics" prefix
+pub export fn pinc_graphics_opengl_set_framebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
+    pinc.native.setOpenGLFramebuffer(framebuffer);
+}
+pub export fn  pinc_graphics_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque {
+    return pinc.native.getOpenglProc(procname);
+}
+pub export fn pinc_graphics_present_window(window: c.pinc_window_handle_t, vsync: bool) void {
+    pinc.native.presentWindow(window, vsync);
 }

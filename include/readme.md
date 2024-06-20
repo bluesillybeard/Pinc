@@ -63,3 +63,5 @@ General notes:
     - Instead, the pipeline defines how a buffer is interpereted as vertices
 - Pinc has no such thing as a texture sampler
     - Again, this is part of the pipeline
+- Instead of calling OpenGL / Vulkan / whatever directly, there should be a queue system where events are queued up (probably on a per-framebuffer basis) and optimized to some degree before being sent out to the API - or maybe even dequeued by a separate thread
+- In the future, I want everything to be thread safe. For now it's definitely NOT thread safe, but in the future it would be nice to have some form of thread safety.

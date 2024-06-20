@@ -144,3 +144,11 @@ None of these are going to be implemented any time soon - if ever.
         - a 'mock' library that probes user programs to make sure they use Pinc correctly, like Vulkan validation layers
         - a test program that probes the library to make sure it behaves correctly
             - I can't think of a good robust way to do everything automatically without tons of extra effort.
+
+## Some stats (may be outdated)
+
+backend      |functions|todos|lines (approx, excluding auto-generated code)
+---          |---      |---  |--
+Linux/X11    |34       |34   |2580
+Windows/Win32|0        |2    |70
+Macos/Cocoa  |0        |0    |0

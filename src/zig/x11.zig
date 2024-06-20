@@ -357,14 +357,14 @@ pub export fn pinc_key_name(code: c.pinc_key_code_enum) [*:0]const u8 {
 // pub export fn pinc_set_cursor_image(window: c.pinc_window_handle_t, data: [*]u8, size: u32) void ;
 // pub export fn pinc_get_clipboard_string() [*:0]u8 ;
 
-pub export fn pinc_graphics_opengl_set_framebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
+pub fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
     c.x11_make_context_current(framebuffer);
 }
 
-pub export fn pinc_graphics_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque {
+pub fn getOpenglProc(procname: [*:0]const u8) ?*anyopaque {
     return c.x11_load_glX_symbol(null, procname);
 }
 
-pub export fn pinc_graphics_present_window(window: c.pinc_window_handle_t, vsync: bool) void {
+pub fn presentWindow(window: c.pinc_window_handle_t, vsync: bool) void {
     c.x11_present_framebuffer(window, vsync);
 }
