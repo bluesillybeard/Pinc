@@ -125,12 +125,10 @@ None of these are going to be implemented any time soon - if ever.
     - Refer to [include/readme.md](./include/readme.md)
 - OpenGL 2.1
 - Cocoa backend
+    - I do not have a real mac. Maybe someone can donate one?
 - any final touches to the API
 - Implement all API functions for all backends
-- Clean up X11 backend (it's got a lot of work to be done)
-- Clean up Win32 backend and test on win95
-- Clean up Cocoa backend and test on a real mac
-    - I do not have a real mac. Maybe someone can donate one?
+- Clean things up a bunch up
 - prepare for first major release
 
 ## Todo
@@ -144,6 +142,7 @@ None of these are going to be implemented any time soon - if ever.
         - a 'mock' library that probes user programs to make sure they use Pinc correctly, like Vulkan validation layers
         - a test program that probes the library to make sure it behaves correctly
             - I can't think of a good robust way to do everything automatically without tons of extra effort.
+- Set up github discussions thingy
 
 ## Some stats (may be outdated)
 
@@ -151,4 +150,3 @@ backend      |functions|todos|lines (approx, excluding auto-generated code)
 ---          |---      |---  |--
 Linux/X11    |34       |34   |2580
 Windows/Win32|0        |2    |70
-Macos/Cocoa  |0        |0    |0
