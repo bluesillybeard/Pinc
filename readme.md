@@ -1,8 +1,6 @@
-<!-- Cursed HTML mixed with Markdown -->
+![Logo](logo.svg)
 
-<h1 style="display:flex"> <img src="./logo.svg" alt="Logo" style="width: 1.5ch;"> <div style="">ink</div></h1>
-
-(Sorry for the cringe of using the logo as the first letter of the title ... Also sorry if your markdown viewer doesn't support embedded HTML)
+# Pinc
 
 Pinc is a cross platform windowing / rendering library written in Zig.
 
