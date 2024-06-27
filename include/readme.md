@@ -11,6 +11,7 @@ Pinc's API needs to have these fundamental graphics features:
 - drawing to any surface & using it as a texture
     - OpenGL 2.1 does not initally appear to natively support this, however by blitting the framebuffer to a texture it is possible. (blitting happens entirely on the GPU, the CPU is not involved other than to issue the command)
     - There might also be a way to set up another framebuffer (aka a secret window) to be used directly as a texture, and make everyframebuffer secretly a window.
+    - See CopyTexSubImage2D in the GL docs
 - drawing from just vertices
 - drawing with an index buffer
     - indices with 8, 16, 32 bits
