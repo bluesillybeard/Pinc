@@ -148,5 +148,5 @@ None of these are going to be implemented any time soon - if ever.
 
 backend      |functions|todos|lines (approx, excluding auto-generated code)
 ---          |---      |---  |--
-Linux/X11    |34       |34   |2580
+Linux/X11    |15       |7    |2300
 Windows/Win32|0        |2    |70
