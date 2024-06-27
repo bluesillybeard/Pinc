@@ -101,26 +101,6 @@ extern uint16_t pinc_window_get_height(pinc_window_incomplete_handle_t window);
 /// @return the scale factor of the given window, in pixels per screen unit.
 extern float pinc_window_get_scale(pinc_window_incomplete_handle_t window);
 
-/// @brief Returns the thickness of the top border / decoration of a window.
-/// @param window a window, complete or not
-/// @return the thickness of the windows top border, in screen units (NOT PIXELS!)
-extern float pinc_window_get_top_border(pinc_window_incomplete_handle_t window);
-
-/// @brief Returns the thickness of the left border / decoration of a window.
-/// @param window a window, complete or not
-/// @return the thickness of the windows left border, in screen units (NOT PIXELS!)
-extern float pinc_window_get_left_border(pinc_window_incomplete_handle_t window);
-
-/// @brief Returns the thickness of the right border / decoration of a window.
-/// @param window a window, complete or not
-/// @return the thickness of the windows right border, in screen units (NOT PIXELS!)
-extern float pinc_window_get_right_border(pinc_window_incomplete_handle_t window);
-
-/// @brief Returns the thickness of the bottom border / decoration of a window.
-/// @param window a window, complete or not
-/// @return the thickness of the windows bottom border, in screen units (NOT PIXELS!)
-extern float pinc_window_get_bottom_border(pinc_window_incomplete_handle_t window);
-
 /// @brief Gets the zoom factor of a window. Often, as an accessibility setting, users can scale things.
 ///        For example, a user with a high resolution but small screen may set the scale to 2, so everything is twice as large.
 /// @param window a window, complete or not 
@@ -133,7 +113,6 @@ extern float pinc_window_get_zoom(pinc_window_incomplete_handle_t window);
 ///             The pixels are arranged starting at the top left, each row defined as left to right, each row stacked top to bottom.
 /// @param size the size of each side the icon. Exactly 256 pixels is recomended.
 extern void pinc_window_set_icon(pinc_window_incomplete_handle_t window, uint8_t* data, uint32_t size);
-
 
 /// @brief Sets a window to be iconified / minimized
 /// @param window a window, complete or not
@@ -187,6 +166,9 @@ extern void pinc_window_set_transparency(pinc_window_incomplete_handle_t window,
 /// @param window a window
 /// @return whether the given window's alpha channel will be used to blend with anything behind it.
 extern bool pinc_window_get_transparency(pinc_window_incomplete_handle_t window);
+
+// TODO: this weird thing where the app has to probe pinc for a good set of bits is bad.
+// Make the API better so it's not so weird
 
 /// @brief Attempts to set the number of bits for the red channel for the windows framebuffer. Returns false if the bit depth is unsupported.
 ///        Note that some platforms may treat each channel differently, but they will always be roughly the same. (+- 1 bit, maybe 2 or 3 bits in certain edge cases)

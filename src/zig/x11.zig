@@ -98,6 +98,19 @@ pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) 
     }
 }
 
+pub export fn pinc_window_get_scale(window: c.pinc_window_incomplete_handle_t) f32 {
+    _ = window;
+    // For now, in X11 one pixel = in screen unit
+    // TODO: fix this - From what I can tell, X11 does have extensions to map pixel space to other spaces
+    return 1;
+}
+
+pub export fn pinc_window_get_zoom(window: c.pinc_window_incomplete_handle_t) f32 {
+    _ = window;
+    // TODO: don't assume one.
+    return 1;
+}
+
 pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {
     c.x11_window_destroy(window);
 }
