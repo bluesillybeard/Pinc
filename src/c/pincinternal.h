@@ -3,7 +3,7 @@
 #include <pinc.h>
 #include <stdint.h>
 
-// Internal functions and types. These are generally implemented in Zig and used by C.
+// Internal functions and types. These are implemented in Zig and used by C.
 
 // Event union - this isn't in the main header because
 // the main header is designed around the limitations of other languages
