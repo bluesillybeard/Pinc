@@ -19,6 +19,17 @@ int main(int argc, char** argv) {
         printf("Failed to initialize Pinc\n");
         return 1;
     }
+    // Before makine a window, print out the API we're going to use
+    switch(pinc_get_window_api()) {
+        case pinc_window_api_x:
+            printf("Using X11\n");
+            break;
+        case pinc_window_api_win32:
+            printf("Using win32\n");
+            break;
+        default:
+            printf("Using unknown API");
+    }
     // Create the incomplete window
     pinc_window_incomplete_handle_t incomplete_window = pinc_window_incomplete_create("Hello, I am a window!");
     // complete the window

@@ -29,8 +29,19 @@ export fn x11_get_x_window(window: c.pinc_window_incomplete_handle_t) callconv(.
 // implementation of the public API
 
 pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc_graphics_api_enum) bool {
-    _ = window_api;
-    return pinc.init(graphics_api, c.x11_init);
+    if(window_api != c.pinc_window_api_automatic and window_api != c.pinc_window_api_x) {
+        return c.pinci_make_error(c.pinc_error_init, "Unsupported window API for X11 backend");
+    }
+    if(!pinc.init()){
+        return false;
+    }
+    if(!c.x11_init(graphics_api)) {
+        return false;
+    }
+    if(!pinc.initGraphics(graphics_api)) {
+        return false;
+    }
+    return true;
 }
 
 pub export fn pinc_destroy() void {
@@ -163,3 +174,6 @@ pub inline fn collectEvents() void {
     }
     c.x11_poll_events();
 }
+
+// We also need to provide NativeWindow, which is used elsewhere in the codebase - even though this is just a passthrough to a type from C.
+pub const NativeWindow = c.x11_window;

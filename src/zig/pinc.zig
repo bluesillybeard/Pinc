@@ -4,16 +4,52 @@ const c = @import("c.zig");
 const std = @import("std");
 const gl21bind = @import("ext/gl21load.zig");
 const builtin = @import("builtin");
-
+const pincOptions = @import("pincOptions");
 // API functions are exported by this native struct.
 // We do it like this so that functions that aren't implemented for a specific backend cause link errors.
 // The alternative is getting some kind of crash when an unimplemented function is called at runtime, which is definitely not ideal.
 // This does mean more boilerplate code, but I think that's OK.
-pub const native = switch (builtin.os.tag) {
-    .linux => @import("x11.zig"),
-    .windows => @import("win32.zig"),
-    else => @compileError("Unsupported OS"),
+// This does not nessesarily mean the native backend - this also includes backends based on other libraries, like the SDL2 backend.
+pub const native = blk: {
+    // In case it wasn't clear from the readme, THIS is why we have an SDL backend.
+    // It's just unreasonable for such a small project to support even half of these platforms.
+    const sdlNative: bool = switch (builtin.os.tag) {
+        .linux, .freebsd, .netbsd, .openbsd, .solaris, .windows, .macos, .ios, .haiku, .nacl => true,
+        // TODO: andriod is not seen as a separate OS, as it's perfectly binary-compatible with Linux. The API is completely different though (no X11 on Andriod), so yeah.
+        // To test this, compile SDL for andriod, but Pinc for linux (via SDL backend), and see if it works.
+        // TODO: for emscripten, SDL *must* be linked statically, which is different from all the other planforms where SDL is loaded at runtime.
+        // That being said, I plan on implementing my own WASM backend, since it will be (relatively) easy since web doesn't even have the concept of a separate "window"
+        else => @compileError("Unsupported OS")
+    };
+
+    const rawNative: bool = switch (builtin.os.tag) {
+        .linux, .windows => true,
+        else => false,
+    };
+
+    if(pincOptions.prioritizeSdl) {
+        if(sdlNative) {
+            break :blk @import("sdl2.zig");
+        } else if(rawNative) {
+            break :blk getNativeStruct(builtin.os.tag);
+        } else @compileError("Unsupported OS");
+    } else {
+        if(rawNative) {
+            break :blk getNativeStruct(builtin.os.tag);
+        } else if(sdlNative) {
+            break :blk @import("sdl2.zig");
+        } else @compileError("Unsupported OS");
+    }
 };
+
+pub fn getNativeStruct(tag: @TypeOf(builtin.os.tag)) type {
+    return switch (tag) {
+        .linux => @import("x11.zig"),
+        .windows => @import("win32.zig"),
+        else => void,
+    };
+}
+
 // This is to make sure the compiler actually includes all of our exported functions
 usingnamespace native;
 
@@ -29,11 +65,7 @@ usingnamespace util;
 const eventExports = @import("event.zig");
 usingnamespace eventExports;
 
-const NativeWindow = switch(builtin.os.tag) {
-    .linux => c.x11_window,
-    // .windows => c.win32_window,
-    else => @compileError("Unsupported OS"),
-};
+const NativeWindow = native.NativeWindow;
 
 // the C api cannot use Zig errors,
 // and returning a result type on every single function is just really annoying.
@@ -71,7 +103,8 @@ const AllocatorType = std.heap.GeneralPurposeAllocator(.{});
 var allocatorObj: AllocatorType = undefined;
 pub var allocator: std.mem.Allocator = undefined;
 
-pub fn init(graphics_api: c.pinc_graphics_api_enum, nativeInit: fn(c.pinc_graphics_api_enum) callconv(.C) bool) bool {
+/// Initializes Pinc's data structures
+pub fn init() bool {
     allocatorObj = .{};
     allocator = allocatorObj.allocator();
     // Initialize data structures and stuff
@@ -84,12 +117,16 @@ pub fn init(graphics_api: c.pinc_graphics_api_enum, nativeInit: fn(c.pinc_graphi
     eventsWindowCursorExit = std.ArrayList(c.pinc_event_window_cursor_exit_t).init(allocator);
     eventsWindowCursorButtonDown = std.ArrayList(c.pinc_event_window_cursor_button_down_t).init(allocator);
     eventsWindowCursorButtonUp = std.ArrayList(c.pinc_event_window_cursor_button_up_t).init(allocator);
-    if(!nativeInit(graphics_api)) {
-        return false;
+    return true;
+}
+
+/// Initializes Pinc's graphics
+pub fn initGraphics(graphicsApi: c.pinc_graphics_api_enum) bool {
+    if(graphicsApi != c.pinc_graphics_api_opengl_2_1 and graphicsApi != c.pinc_graphics_api_automatic) {
+        return c.pinci_make_error(c.pinc_error_some, "Unsupported graphics API");
     }
-    std.log.info("Loading OpenGL 2.1 functions", .{});
     gl21bind.load(void{}, getOpenglProc) catch {
-        _ = c.pinci_make_error(c.pinc_error_init, "Failed to load OpenGL functions");
+        return c.pinci_make_error(c.pinc_error_init, "Failed to load OpenGL functions");
     };
     return true;
 }

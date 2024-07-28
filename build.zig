@@ -4,6 +4,15 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Compile options
+    
+    // Whether to prioritize the generic SDLs backend or the native backend
+    // (For now, default to SDL because the native backends are nowhere near finished)
+    const prioritizeSdl = b.option(bool, "pinc_sdl", "When set to true (currently default), Pinc will prioritize the SDL backend") orelse true;
+    
+    const options = b.addOptions();
+    options.addOption(bool, "prioritizeSdl", prioritizeSdl);
+
     const pincStatic = b.addStaticLibrary(.{
         .root_source_file = b.path("src/zig/pinc.zig"),
         .name = "pinc",
@@ -11,6 +20,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .link_libc = true,
     });
+    pincStatic.root_module.addOptions("pincOptions", options);
     pincStatic.addIncludePath(b.path("include"));
     pincStatic.addIncludePath(b.path("ext"));
     pincStatic.addIncludePath(b.path("src/c"));
@@ -29,6 +39,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .link_libc = true,
     });
+    pincDynamic.root_module.addOptions("pincOptions", options);
     pincDynamic.addIncludePath(b.path("include"));
     pincDynamic.addIncludePath(b.path("ext"));
     pincDynamic.addIncludePath(b.path("src/c"));

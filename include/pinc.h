@@ -60,7 +60,7 @@ extern pinc_error_enum pinc_error_get(void);
 /// @return null terminated ascii string. Will never be null, but may have a length of zero.
 extern const char* pinc_error_string(void);
 
-/// @brief Returns the window api used by Pinc.
+/// @brief Returns the window api used by Pinc. Returns automatic if the native API is unknown - only occurs when using another library for the backend (like SDL)
 extern pinc_window_api_enum pinc_get_window_api(void);
 
 /// @brief A generic handle to a Pinc object. An id of 0 is equivalent to a null handle.

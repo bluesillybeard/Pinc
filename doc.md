@@ -13,3 +13,7 @@ Using more function calls in Pinc is straightforward. First, call a function cal
 
 ## Unimplemented functions
 As pinc is a new library, many functions will not be implemeted. Functions that are not implemented are not exported, so a link error will occur if you try to use them. Whether a function is implemented can be target specific. Some functions are partially implemented, and (for the time being) will crash the program if an unimplemented part of a function is called. Eventually, I plan on having all functions implemented in all backends, but for now you'll have to be weary of them.
+
+Note that not all unimplemented functions will cause link errors at compile time, so it's still worth testing the application by running it (which you should be doing anyway!)
+
+the SDL backend is the one with the fewest unimplemented functions - which is why Pinc will use SDL by default instead of the raw backend.

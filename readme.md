@@ -7,12 +7,14 @@ Pinc is a cross platform windowing / rendering library written in Zig.
 ## Pincs goals
 - Lightweight - minimal dependencies (within reason)
     - fundamental libraries are fair game (Xlib, libGL, Kernel32, etc)
-    - Any non-system libraries are statically linked (ex: SPIRV-cross)
+    - (most) external libraries are linked statically
+        - There are exceptions for libraries that are widely available and optional, such as SDL
 - Language agnostic - The external API is entirely in C, which makes binding to other languages relatively simple
     - Specifically, the header is written in C99 as described in the [GNU C manual](https://www.gnu.org/software/gnu-c-manual/gnu-c-manual.html)
     - ABI compatibility is a nightmare, but the Zig compiler makes that (relatively) a breeze.
 - ABSOLUTELY ZERO compile time dependencies, other than Pinc and and the Zig compiler
     - This includes system libraries that are not included in Zig's cross-compile toolchain. They must be loaded at runtime.
+    - All of the headers needed are included in the repository. The headers all have their individual licenses listed at the top of the file.
 - Easy to use
     - comparable to something like SDL or SFML, with the bonus of being a lot easier to compile and link
     - admittedly the API is a bit verbose
@@ -23,8 +25,14 @@ Pinc is a cross platform windowing / rendering library written in Zig.
     - Can be made to work with any C ABI (Zig's compiler for the win!)
         - Except for musl, since it doesn't allow loading libraries at runtime (sad)
 
+## Other things
+- Pinc does not take hold of the entry point.
+- Pinc does not provide a main loop
+
 ## Supported platforms
 - Linux/X11
+- Any platform supported by SDL2 (theoretically)
+    - Pinc (for now) needs to load it at runtime, which takes emscripten out of the picture
 
 ## Supported APIs
 - OpenGL 2.1
@@ -50,7 +58,8 @@ The easiest way to do it would be to just compile Pinc into a library using `zig
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
 ## Other notes
-- When cross-compiling, it is generally a good idea to specify the ABI (eg: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying. (In particular, compiling from Windows to Linux uses musl, which does not work as Pinc uses dynamic loading)
+- When cross-compiling, it is generally a good idea to specify the ABI (eg: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying.
+    - In particular, compiling from Windows to Linux uses musl, which does not work as Pinc uses dynamic loading
 - The main branch is "stable" in the sense that it should always work. Before commiting to the main branch, We'll make sure everything still works.
 
 ## Q&A
@@ -64,7 +73,6 @@ Hopefully the header is self-exaplanatory. If it's not clear what a function or 
 - Why use X11 / Win32 / Cocoa directly
     - To minimize dependencies
     - GLFW is hardwired to bond each window to a GL context permanently, which is fundamentally incompatible to how this library works
-    - SDL is difficult to work with in terms of getting it to cross-compile, and it's not designed for static linking
     - Kinc's build system is completely asinine
 - Why make an abomination of Zig and C?
     - This library was going to be written entirely in Zig. Then Xlib happened.
@@ -76,21 +84,72 @@ Hopefully the header is self-exaplanatory. If it's not clear what a function or 
 - Vulkan (Medium Priority)
 - Metal via MoltenVK (Medium Priority)
 - OpenGL 4.6 (Low Priority)
-- OpenGL 4.1 (Low Priority)
+- OpenGL 4.1 (Low Priority) (for Macos which apparently never supported anything newer)
 - OpenGL 3.3 (Low Priority)
 - Software rasterizer (Low Priority)
 
+## Supported & tested platforms
+OS + Arch         | Hardware I have        | notes 
+---               |---                     |---
+Linux x64         | #2 #3 #4 #8            |
+
 ## Planned supported platforms
-- freeBSD
-    - this should be quite easy. I just need an install to test it on.
-- Win32 API / windows
-- Coacoa / macos
-    - I do not own a mac so this probably a ways off.
+Platforms I want to support & whether I have real hardware to test it on:
+
+OS + Arch         | Hardware I have        | notes                 | Justification
+---               |---                     |---                    |---
+Windows x86       | #1 #2 #3 #4 #5 #6 #8   |                       | 32 bit may be unsupported, but compilers still support it pretty well so yeah
+Windows x64       | #2 #3 #4 #4 #8         |                       | This is the primary PC platform
+Windows arm       | #7? #9?                | Surface RT. 32 bit arm support on Windows was short lived. |
+Windows aarch64   | #7? #9?                | One of those ARM microsoft surface things are probably a good bet | This is where Microsoft seems to want to go
+Linux x86         | #1 #2 #3 #4 #5 #6 #8   |                       | 32 bit linux, although rare, is still supported by some distros and used by some people
+Linux arm         | #7? #9?                |                       | rasberry pi moment
+Linux aarch64     | #7? #9?                | A modern Rasberry pi (or similar) is probably a good idea | This is the future (in my opinion)
+Linux riscv64     |                        | Nobody really has good affordable consumer grade hardware for this yet. | It is modern, supported by compilers, and growing
+Linux powerpc     |                        | a G2 or G3 desktop computer is probably the best bet here | G3 and newer are still usable today with the right software
+Macos x64         | #2? #3? #4? #5? #8?    | A used macbook is probably the best bet here | the tertiary PC platform
+Macos aarch64     | #7? #9?                | A used M1 mac is a probably the best bet here | the other tertiary PC platform
+Macos powerpc     |                        | a G2 or G3 desktop computer is probably the best bet here | G3 and newer are still usable with the right software
+BSD x86           | #1 #2 #3 #4 #5 #6 #8   |                       | BSD x86 is well supported (as far as I know)
+BSD x64           | #2 #3 #4 #8            |                       | BSD is well supported
+BSD powerpc       |                        | a G2 or G3 desktop computer is probably the best bet here | G3 and newer is still usable today with the right software
+
+here is all the hardware I have available for testing:
+1. Hackberry, My dad's old Pentium II computer. I don't know if it works or not, or if its GPU supports OpenGL 2.1
+2. My main PC, x64, supports most of the modern extensions
+3. An old computer with a Pentium D, saved from being thrown away by an organization, one of the earliest 64 bit x86 machines made for the mass market. I don't know if it works or if its GPU supports OpenGl 2.1.
+4. An old laptop from ~2008 or so, works and the GPU supports OpenGL
+5. EEE PC, 32 bit x86. Works great, despite how old it is. The battery life is even pretty decent still, somehow. I don't know if the GPU supports OpenGL 2.1.
+6. Pentium PC I plan on taking from an uncle
+7. Cubieboard, arm (idk if its 32 bit or 64 bit)
+8. My wndows dev machine - x64, GPU supports up to OpenGL 4.6
+9. Rasberry pi, (unknown if 32bit or 64bit)
+
+Priority of supported platforms:
+1. Linux x64
+2. Windows x64
+3. Macos x64
+4. Windows aarch64
+5. Linux aarch64
+6. Macos aarch64
+7. Linux x86
+8. Windows x86
+9. Linux arm
+1. Linux riscv64
+1. Linux powerpc
+1. Macos powerpc
+1. Windows arm
+1. BSD x64
+1. BSD powerpc
+1. BSD x86
+
 - Haiku
     - They have an X11 compatibility layer so this shouldn't be too hard
 - Andriod (Low Priority)
 - IOS (Low Priority)
 - Wayland (Low Priority)
+    - XWayland means this is essentially a waste of time until wayland-specific features start to get added (such as trackpad gestures)
+    - The performance gain is nice, but not a particularily big deal at the moment
 
 ## Planned supported platforms in the far future
 None of these are going to be implemented any time soon - if ever.
@@ -98,10 +157,16 @@ None of these are going to be implemented any time soon - if ever.
 - Xbox (Low Priority)
 - Nintendo switch (Low Priority)
     - There seems to be a lack of info on how this could be done.
+- Windows PowerPC
+    - Yes, this did actually exist at one point, although Macos beat them to it and Microsoft abandoned PowerPC for x86
+- Raw X11 - no client library, just pure network packets and weird horrible hacks to get glX to work
+    - This is an insane undertaking that nobody in their right mind should do for a library like this. Xlib is literally on every system with X11 and it's way more than fast enough.
+- Xcb instead of Xlib
+    - Like with raw X11, this would be a complete waste of everyone's time. Xcb as a whole is kinda a big waste of people's time, although from what I've heard modern Xlib is actually implemented on top of Xcb, which is interesting. Either way, for Pinc specifically, Xcb is a no-go.
 
 ## Other planned features
 - ability to access native API interactions and convert native objects to/from pinc objects
-    - there are a LOT of these - X display, windows, events, input contexts, colormap, glX context and related objects, the list goes on and on and on.
+    - there are a LOT of these - not to mention there is a completely different set of them for every platform and graphics API.
 - Ability to get system theme colors and name
     - Probably pretty easy on Windows
     - Does MacOS even have themes?
@@ -116,7 +181,12 @@ None of these are going to be implemented any time soon - if ever.
         - Budgeee
         - Mate
         - ... and a billion more, although most of the current smaller ones will likely die along with X11
+        - could probably just read the GTK and QT system themes and get 99% coverage
 - window positioning
+- It might be worth making something like an SDL or GLFW backend, that implements Pinc on top of another library. This has the benefit of:
+    - making it easier to migrate to/from Pinc and the other library
+    - Wider platform support (for example, we wouldn't have to implement a Cocoa backend directly in order to get macos support)
+    - People can read the source code for the backend, and it will be easier to understand since it's not a backend directly to some convoluted platform-specific API
 
 ## Next steps for this library - not nessesarily in order
 - Refactor to start supporting alternate backends
@@ -124,14 +194,20 @@ None of these are going to be implemented any time soon - if ever.
 - Create the graphics API
     - Refer to [include/readme.md](./include/readme.md)
 - OpenGL 2.1
+    - Rendering is already possible, but 
 - Cocoa backend
     - I do not have a real mac. Maybe someone can donate one?
+    - XQuartz exists, but it's a terrible solution
 - any final touches to the API
 - Implement all API functions for all backends
 - Clean things up a bunch up
 - prepare for first major release
 
-## Todo
+## Todo (NOT IN ORDER)
+- SDL backends
+    - SDL 2.x
+    - SDL 3.x
+    - SDL 1.x maybe??
 - Test zero-dependency compilation
 - internal refactor of event system
     - on X11 backend, trigger cursor exit event when the window looses focus (X does not trigger an exit event when focus is lost for some reason)
@@ -143,6 +219,15 @@ None of these are going to be implemented any time soon - if ever.
         - a test program that probes the library to make sure it behaves correctly
             - I can't think of a good robust way to do everything automatically without tons of extra effort.
 - Set up github discussions thingy
+- The API needs some decent changes
+    - Setting the bit depth of a framebuffer is just not well designed. OpenGL needs bit depths before even creating a window in many cases, so it is probably best to add the limitation of the user getting their framebuffer bit depths set before calling init.
+- Test (theoretically) supported platforms that haven't been tested yet:
+    - x86 linux
+    - arm linux
+    - aarch64 linux
+    - riscv64 linux
+    - powerpc linux
+
 
 ## Some stats (may be outdated)
 
