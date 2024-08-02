@@ -41,15 +41,15 @@ const sdlf = struct {
         var lib = try std.DynLib.open(sdl2libname);
         return sdlf {
             .lib = lib,
-            // TODO: investigate why lib.lookup returns null.
-            // From what I can gather, libSDL.so doesn't actually export any symbols according to objdump... Very confusing.
             .Init = @ptrCast(lib.lookup(*anyopaque, "SDL_Init")),
             .Quit = @ptrCast(lib.lookup(*anyopaque, "SDL_Quit")),
             .GetWindowWMInfo = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowWMInfo")),
             .CreateWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_CreateWindow")),
             .DestroyWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_DestroyWindow")),
             .SetWindowSize = @ptrCast(lib.lookup(*anyopaque, "SDL_SetWindowSize")),
-            .GetWindowSizeInPixels = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowSizeInPixels")),
+            // Apparently GetWindowSizeInPixels is a newer function that is not in some builds of SDL.
+            // Thankfully, it is binary compatible with the regular GetWindowSize, so fallback to that.
+            .GetWindowSizeInPixels = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowSizeInPixels") orelse lib.lookup(*anyopaque, "SDL_GetWindowSize")),
             .GL_CreateContext = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_CreateContext")),
             .GL_MakeCurrent = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_MakeCurrent")),
             .GL_GetProcAddress = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_GetProcAddress")),
@@ -70,6 +70,8 @@ var libsdl: sdlf = undefined;
 // This variable is not nullable because the SDL_GLContext type is itself nullable due to the translate-c thing.
 var context: sdl.SDL_GLContext = null;
 
+var graphicsApi: c.pinc_graphics_api_enum = c.pinc_graphics_api_automatic;
+
 pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc_graphics_api_enum) bool {
     if(!pinc.init()){
         return false;
@@ -77,13 +79,15 @@ pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc
     libsdl = sdlf.load() catch {
         return c.pinci_make_error(c.pinc_error_init, "Failed to load SDL2");
     };
+    graphicsApi = graphics_api;
     _ = window_api;
     // TODO: check error
     _ = libsdl.Init(sdl.SDL_INIT_VIDEO | sdl.SDL_INIT_EVENTS);
 
-    if(!pinc.initGraphics(graphics_api)) {
-        return false;
-    }
+    // Don't load the OpenGL functions here, wait until the first window (and thus the OpenGL context) is created.
+    // if(!pinc.initGraphics(graphics_api)) {
+    //     return false;
+    // }
     return true;
 }
 
@@ -245,7 +249,7 @@ pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t
     return incomplete;
 }
 
-pub inline fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
+pub inline fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) bool {
     // TODO: don't assume the framebuffer is a window
     const windowObj = &pinc.windows.items[framebuffer-1].?;
     std.debug.assert(windowObj.native.coi == .complete);
@@ -254,6 +258,11 @@ pub inline fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) voi
     }
     // TODO: check error
     _ = libsdl.GL_MakeCurrent(windowObj.native.coi.complete.sdlWin, context);
+    // Now that the opengl context is created, load the OpenGL functions from it
+    if(!pinc.initGraphics(graphicsApi)) {
+        return false;
+    }
+    return true;
 }
 
 pub inline fn getOpenglProc(procname: [*:0]const u8) ?*anyopaque {

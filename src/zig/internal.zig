@@ -25,7 +25,8 @@ pub export fn pinci_dupe_string(str: [*:0]u8) [*:0]u8 {
 }
 
 pub export fn pinci_free_string(str: [*:0]u8) void {
-    const buffer: []u8 = std.mem.sliceTo(str, 0);
+    var buffer: []u8 = std.mem.sliceTo(str, 0);
+    buffer.len += 1;
     pinc.allocator.free(buffer);
 }
 

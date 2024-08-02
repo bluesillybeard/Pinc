@@ -708,7 +708,8 @@ extern char* pinc_get_clipboard_string(void);
 /// @brief Set the OpenGL context to a framebuffer or window.
 ///        There is one OpenGL context for the entire application, unlike GLFW where the context is per window.
 /// @param window The framebuffer whose framebuffer to draw to. Must be complete.
-extern void pinc_graphics_opengl_set_framebuffer(pinc_framebuffer_handle_t framebuffer);
+/// @return false if something went wrong (notably, some backends don't create the OpenGL context until this is called), otherwise true.
+extern bool pinc_graphics_opengl_set_framebuffer(pinc_framebuffer_handle_t framebuffer);
 
 /// @brief Returns the pointer of an OpenGL function.
 /// @param procname the name of the opengl function.
