@@ -113,10 +113,9 @@ pub export fn pinc_get_window_api() c.pinc_window_api_enum {
 }
 
 pub export fn pinc_window_incomplete_create(title: ?[*:0]u8) c.pinc_window_incomplete_handle_t {
-    std.debug.assert(title != null);
     const windowObj = pinc.Window {
         .native = .{
-            .title = internal.pinci_dupe_string(title),
+            .title = internal.pinci_dupe_string(title.?),
             .coi = .{
                 .incomplete = .{
                     .width = 800,
@@ -128,16 +127,16 @@ pub export fn pinc_window_incomplete_create(title: ?[*:0]u8) c.pinc_window_incom
     // TODO: search for an empty slot instead of always making a new one
     pinc.windows.append(windowObj) catch {
         // TODO: a failed memory allocation probably warrants a full crash?
-        internal.pinci_make_error(c.pinc_error_some, "Failed to allocate memory");
+        _ = internal.pinci_make_error(c.pinc_error_some, "Failed to allocate memory");
         return 0;
     };
     // Remember, the handle to a window is its index + 1
-    return pinc.windows.items.len;
+    return @intCast(pinc.windows.items.len);
 }
 
 pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) bool {
     std.debug.assert(window > 0);
-    const windowObj = pinc.windows.items[window-1].?;
+    const windowObj = &pinc.windows.items[window-1].?;
     switch(windowObj.native.coi) {
         .incomplete => |*incomplete| {
             incomplete.height = height;
@@ -158,7 +157,7 @@ pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u
     const windowObj = pinc.windows.items[window-1].?;
     switch(windowObj.native.coi) {
         .incomplete => |incomplete| {
-            return incomplete.width;
+            return @intCast(incomplete.width);
         },
         .complete => |complete| {
             var width: c_int = 0;
