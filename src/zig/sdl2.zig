@@ -20,18 +20,29 @@ const sdlf = struct {
     DestroyWindow: *@TypeOf(sdl.SDL_DestroyWindow),
     SetWindowSize: *@TypeOf(sdl.SDL_SetWindowSize),
     GetWindowSizeInPixels: *@TypeOf(sdl.SDL_GetWindowSizeInPixels),
-
+    GL_CreateContext: *@TypeOf(sdl.SDL_GL_CreateContext),
+    GL_MakeCurrent: *@TypeOf(sdl.SDL_GL_MakeCurrent),
+    GL_GetProcAddress: *@TypeOf(sdl.SDL_GL_GetProcAddress),
+    GL_SetSwapInterval: *@TypeOf(sdl.SDL_GL_SetSwapInterval),
+    GL_SwapWindow: *@TypeOf(sdl.SDL_GL_SwapWindow),
+    PollEvent: *@TypeOf(sdl.SDL_PollEvent),
+    GetWindowFromID: *@TypeOf(sdl.SDL_GetWindowFromID),
+    WaitEvent: *@TypeOf(sdl.SDL_WaitEvent),
+    WaitEventTimeout: *@TypeOf(sdl.SDL_WaitEventTimeout),
     lib: std.DynLib,
     pub fn load() !sdlf {
         const sdl2libname = comptime switch (builtin.os.tag) {
-            .linux, .freebsd, .netbsd, .openbsd, .dragonfly, .solaris, .illumos => ".so",
-            .windows => ".dll",
-            .macos, .ios, .tvos, .watchos, .visionos => ".dylib",
+            .linux, .freebsd, .netbsd, .openbsd, .dragonfly, .solaris, .illumos => "libSDL2.so",
+            .windows => "SDL2.dll",
+            // TODO: figure out if this is the correct name for darwin systems
+            .macos, .ios, .tvos, .watchos, .visionos => "libSDL2.dylib",
             else => @compileError("Unsupported platform for loading SDL at runtime")
         };
         var lib = try std.DynLib.open(sdl2libname);
         return sdlf {
             .lib = lib,
+            // TODO: investigate why lib.lookup returns null.
+            // From what I can gather, libSDL.so doesn't actually export any symbols according to objdump... Very confusing.
             .Init = @ptrCast(lib.lookup(*anyopaque, "SDL_Init")),
             .Quit = @ptrCast(lib.lookup(*anyopaque, "SDL_Quit")),
             .GetWindowWMInfo = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowWMInfo")),
@@ -39,6 +50,15 @@ const sdlf = struct {
             .DestroyWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_DestroyWindow")),
             .SetWindowSize = @ptrCast(lib.lookup(*anyopaque, "SDL_SetWindowSize")),
             .GetWindowSizeInPixels = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowSizeInPixels")),
+            .GL_CreateContext = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_CreateContext")),
+            .GL_MakeCurrent = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_MakeCurrent")),
+            .GL_GetProcAddress = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_GetProcAddress")),
+            .GL_SetSwapInterval = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_SetSwapInterval")),
+            .GL_SwapWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_SwapWindow")),
+            .PollEvent = @ptrCast(lib.lookup(*anyopaque, "SDL_PollEvent")),
+            .GetWindowFromID = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowFromID")),
+            .WaitEvent = @ptrCast(lib.lookup(*anyopaque, "SDL_WaitEvent")),
+            .WaitEventTimeout = @ptrCast(lib.lookup(*anyopaque, "SDL_WaitEventTimeout")),
         };
     }
 };
@@ -46,6 +66,9 @@ const sdlf = struct {
 // static bits
 var libsdl: sdlf = undefined;
 
+// the OpenGL context is lazy-initialized due to requiring a window (and I prefer to not keep a random temp window around if possible)
+// This variable is not nullable because the SDL_GLContext type is itself nullable due to the translate-c thing.
+var context: sdl.SDL_GLContext = null;
 
 pub export fn pinc_init(window_api: c.pinc_window_api_enum, graphics_api: c.pinc_graphics_api_enum) bool {
     if(!pinc.init()){
@@ -173,9 +196,22 @@ pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u
     return false;
 }
 
-// pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
-//     _ = window; // autofix
-// }
+pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
+    std.debug.assert(window > 0);
+    const windowObj = pinc.windows.items[window-1].?;
+    switch(windowObj.native.coi) {
+        .incomplete => |incomplete| {
+            return @intCast(incomplete.height);
+        },
+        .complete => |complete| {
+            var width: c_int = 0;
+            var height: c_int = 0;
+            libsdl.GetWindowSizeInPixels(complete.sdlWin, &width, &height);
+            return @intCast(height);
+        }
+    }
+    return false;
+}
 
 // pub export fn pinc_window_get_scale(window: c.pinc_window_incomplete_handle_t) f32 {
 //     _ = window; // autofix
@@ -185,33 +221,120 @@ pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u
 //     _ = window; // autofix
 // }
 
-// pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {
-//     _ = window; // autofix
-// }
+pub export fn pinc_window_destroy(window: c.pinc_window_incomplete_handle_t) void {
+    const windowObj = &pinc.windows.items[window-1].?;
+    switch (windowObj.native.coi) {
+        .incomplete => {},
+        .complete => |complete| {
+            libsdl.DestroyWindow(complete.sdlWin);
+        }
+    }
+    c.pinci_free_string(@constCast(windowObj.native.title));
+    pinc.windows.items[window-1] = null;
+}
 
-// pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
-//     _ = incomplete; // autofix
-// }
+pub export fn pinc_window_complete(incomplete: c.pinc_window_incomplete_handle_t) c.pinc_window_handle_t {
+    const windowObj = &pinc.windows.items[incomplete-1].?;
+    // Don't want to complete a window that has already been completed
+    std.debug.assert(windowObj.native.coi == .incomplete);
+
+    windowObj.native.coi = .{.complete = .{
+        // TODO: handle case where returned window is null
+        .sdlWin = libsdl.CreateWindow(windowObj.native.title, sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, @intCast(windowObj.native.coi.incomplete.width), @intCast(windowObj.native.coi.incomplete.height), sdl.SDL_WINDOW_RESIZABLE | sdl.SDL_WINDOW_OPENGL).?,
+    }};
+    return incomplete;
+}
 
 pub inline fn setOpenGLFramebuffer(framebuffer: c.pinc_framebuffer_handle_t) void {
-    _ = framebuffer; // autofix
+    // TODO: don't assume the framebuffer is a window
+    const windowObj = &pinc.windows.items[framebuffer-1].?;
+    std.debug.assert(windowObj.native.coi == .complete);
+    if(context == null) {
+        context = libsdl.GL_CreateContext(windowObj.native.coi.complete.sdlWin);
+    }
+    // TODO: check error
+    _ = libsdl.GL_MakeCurrent(windowObj.native.coi.complete.sdlWin, context);
 }
 
 pub inline fn getOpenglProc(procname: [*:0]const u8) ?*anyopaque {
-    _ = procname; // autofix
-    return null;
+    return libsdl.GL_GetProcAddress(procname);
 }
 
 pub inline fn presentWindow(window: c.pinc_window_handle_t, vsync: bool) void {
-    _ = window; // autofix
-    _ = vsync; // autofix
+    const windowObj = pinc.windows.items[window-1].?;
+    std.debug.assert(windowObj.native.coi == .complete);
+    // Unfortunately for me, setting the swap interval is OpenGL specific for SDL, which means I also have to make the window current...
+    // TODO: error check
+    // TODO: some extra logic to avoid calling MakeCurrent and SetSwapInterval where possible
+    _ = libsdl.GL_MakeCurrent(windowObj.native.coi.complete.sdlWin, context);
+    // TODO: error check
+    _ = libsdl.GL_SetSwapInterval(if(vsync) -1 else 0);
+    libsdl.GL_SwapWindow(windowObj.native.coi.complete.sdlWin);
+
 }
 
 pub inline fn waitForEvent(timeoutSeconds: f32) void {
-    _ = timeoutSeconds; // autofix
+
+    // SDL, annoyingly, will pop the event off the queue, so when we collect the events later it will be skipped...
+    // Thankfully, Pinc's event system is nice and we can just shove it into our queue (:
+    var ev: sdl.SDL_Event = undefined;
+    if(std.math.isFinite(timeoutSeconds) and timeoutSeconds > 0){
+        if(libsdl.WaitEventTimeout(&ev, @intFromFloat(timeoutSeconds * 1000)) == 0) {
+            // TODO: error check
+            return;
+        }
+    } else {
+        // TODO: error check
+        _ = libsdl.WaitEvent(&ev);
+    }
+    submitSdlEvent(&ev);
 }
 
 pub inline fn collectEvents() void {
+    var event: sdl.SDL_Event = undefined;
+    while(libsdl.PollEvent(&event) == sdl.SDL_TRUE) {
+        submitSdlEvent(&event);
+    }
+}
+
+fn submitSdlEvent(ev: *sdl.SDL_Event) void {
+    // TODO: implement the rest of the events
+    switch (ev.type) {
+        sdl.SDL_WINDOWEVENT => {
+            switch (ev.window.event) {
+                sdl.SDL_WINDOWEVENT_CLOSE => {
+                    const sdlWinOrNone = libsdl.GetWindowFromID(ev.window.windowID);
+                    if(sdlWinOrNone) |sdlWin| {
+                        const windowHandle = getWindowHandleFromSdlWindow(sdlWin);
+                        if(windowHandle != 0){
+                            c.pinci_send_event(.{
+                                .type = c.pinc_event_window_close,
+                                .data = .{.window_close = .{.window = windowHandle}}
+                            });
+                        }
+                    }
+                },
+                else => {}
+            }
+        },
+        else => {},
+    }
+}
+
+fn getWindowHandleFromSdlWindow(sdlWin: *sdl.SDL_Window) c.pinc_window_incomplete_handle_t {
+    for(pinc.windows.items, 0..) |item, index| {
+        if(item) |window| {
+            switch (window.native.coi) {
+                .complete => |complete| {
+                    if(complete.sdlWin == sdlWin) {
+                        return @intCast(index+1);
+                    }
+                },
+                else => {}
+            }
+        }
+    }
+    return 0;
 }
 
 const CompleteWindow = struct {

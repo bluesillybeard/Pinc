@@ -12,6 +12,14 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "examples"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug window example without building",
+            "program": "${workspaceFolder}/zig-out/bin/window",
+            "args": [],
+            "cwd": "${workspaceFolder}",
         }
     ]
 }

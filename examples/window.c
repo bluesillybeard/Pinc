@@ -16,7 +16,7 @@
 int main(int argc, char** argv) {
     // Initialize Pinc
     if(!pinc_init(pinc_window_api_automatic, pinc_graphics_api_automatic)) {
-        printf("Failed to initialize Pinc\n");
+        printf("Failed to initialize Pinc: %s\n", pinc_error_string());
         return 1;
     }
     // Before makine a window, print out the API we're going to use
