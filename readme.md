@@ -57,6 +57,8 @@ The easiest way to do it would be to just compile Pinc into a library using `zig
 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
+It's worth noting the Pinc makes heavy use of asserts that will not trigger in ReleaseFast mode. I suggest using Debug to build the library, until you are confident everything works correctly, in which case ReleaseFast is a decent option. That being said, ReleaseSafe is almost certainly fast enough for any reasonable use case, but retains the safety checks of Debug mode.
+
 ## Other notes
 - When cross-compiling, it is generally a good idea to specify the ABI (eg: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying.
     - In particular, compiling from Windows to Linux uses musl, which does not work as Pinc uses dynamic loading
@@ -221,6 +223,7 @@ None of these are going to be implemented any time soon - if ever.
 - Set up github discussions thingy
 - The API needs some decent changes
     - Setting the bit depth of a framebuffer is just not well designed. OpenGL needs bit depths before even creating a window in many cases, so it is probably best to add the limitation of the user getting their framebuffer bit depths set before calling init.
+- error callback function, instead of forcing everyone to manually get the error if a function returns a value indicating an error
 - Test (theoretically) supported platforms that haven't been tested yet:
     - x86 linux
     - arm linux

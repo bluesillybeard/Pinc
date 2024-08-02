@@ -2,6 +2,7 @@ const std = @import("std");
 const builtin = @import("builtin");
 const c = @import("c.zig");
 const pinc = @import("pinc.zig");
+const internal = @import("internal.zig");
 
 // SDL's API is very nice to use directly translate-c'd from the header,
 // So there is no sdlLoad.h, pincsdl.h, or pincsdl.c
@@ -80,12 +81,20 @@ pub export fn pinc_get_window_api() c.pinc_window_api_enum {
     const sdlSubsys = blk: {
         var info = sdl.SDL_SysWMinfo{};
         // if there is already an existing window, use that to get the WM info
-        if(pinc.windows.items.len > 0) {
-            // TODO: error check
-            _ = libsdl.GetWindowWMInfo(pinc.windows.items[0].?.native.sdlWin, &info);
-            break :blk info.subsystem;
+        for(pinc.windows.items) |windowOrIncompleteOrNone|{
+            if(windowOrIncompleteOrNone) |windowOrIncomplete| {
+                switch (windowOrIncomplete.native.coi) {
+                    .complete => |completeWindow| {
+                        // There is an existing window, return its subsystem
+                        // TODO: error check
+                        _ = libsdl.GetWindowWMInfo(completeWindow.sdlWin, &info);
+                        break :blk info.subsystem;
+                    },
+                    else => {},
+                }
+            }
         }
-        // No windows to use, make a super quick microscopic temp window that has a lifetime of literal microseconds in order to determine the underlying API
+        // No existing windows to use, make a super quick microscopic temp window that has a lifetime of literal microseconds in order to determine the underlying API
         const tempwindow = libsdl.CreateWindow("temp Pinc window", sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, 10, 10, sdl.SDL_WINDOW_OPENGL);
         if(tempwindow == null) {
             _ = c.pinci_make_error(c.pinc_error_some, "Failed to make temporary window to determine underlying API");
@@ -103,21 +112,63 @@ pub export fn pinc_get_window_api() c.pinc_window_api_enum {
     };
 }
 
-// pub export fn pinc_window_incomplete_create(title: [*:0]u8) c.pinc_window_incomplete_handle_t {
-//     _ = title; // autofix
-//     return 0;
-// }
+pub export fn pinc_window_incomplete_create(title: ?[*:0]u8) c.pinc_window_incomplete_handle_t {
+    std.debug.assert(title != null);
+    const windowObj = pinc.Window {
+        .native = .{
+            .title = internal.pinci_dupe_string(title),
+            .coi = .{
+                .incomplete = .{
+                    .width = 800,
+                    .height = 600,
+                }
+            }
+        },
+    };
+    // TODO: search for an empty slot instead of always making a new one
+    pinc.windows.append(windowObj) catch {
+        // TODO: a failed memory allocation probably warrants a full crash?
+        internal.pinci_make_error(c.pinc_error_some, "Failed to allocate memory");
+        return 0;
+    };
+    // Remember, the handle to a window is its index + 1
+    return pinc.windows.items.len;
+}
 
-// pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) bool {
-//     _ = window; // autofix
-//     _ = width; // autofix
-//     _ = height; // autofix
-//     return false;
-// }
+pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, width: u16, height: u16) bool {
+    std.debug.assert(window > 0);
+    const windowObj = pinc.windows.items[window-1].?;
+    switch(windowObj.native.coi) {
+        .incomplete => |*incomplete| {
+            incomplete.height = height;
+            incomplete.width = width;
+        },
+        .complete => |complete| {
+            // this SDL function, annoyingly, does not work in Pixels.
+            // However, Pincs window size is done in pixels, leaving it to the user to determine the window's size in screen units.
+            // TODO: anyway, just pretend that's not something that exist and just shove the pixel size into the function anyway
+            sdl.SDL_SetWindowSize(complete.sdlWin, @intCast(width), @intCast(height));
+        }
+    }
+    return false;
+}
 
-// pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {
-//     _ = window; // autofix
-// }
+pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u16 {
+    std.debug.assert(window > 0);
+    const windowObj = pinc.windows.items[window-1].?;
+    switch(windowObj.native.coi) {
+        .incomplete => |incomplete| {
+            return incomplete.width;
+        },
+        .complete => |complete| {
+            var width: c_int = 0;
+            var height: c_int = 0;
+            sdl.SDL_GetWindowSizeInPixels(complete.sdlWin, &width, &height);
+            return @intCast(width);
+        }
+    }
+    return false;
+}
 
 // pub export fn pinc_window_get_height(window: c.pinc_window_incomplete_handle_t) u16 {
 //     _ = window; // autofix
@@ -160,6 +211,24 @@ pub inline fn waitForEvent(timeoutSeconds: f32) void {
 pub inline fn collectEvents() void {
 }
 
-pub const NativeWindow = struct {
-    sdlWin: *sdl.SDL_Window
+const CompleteWindow = struct {
+    sdlWin: *sdl.SDL_Window,
 };
+
+const IncompleteWindow = struct {
+    width: u32,
+    height: u32,
+};
+
+// This may seem like a complex data structure,
+// But keep in mind that because the SDL backend is written entirely in Zig,
+// it's worth taking full advantage of Zig's superior type system.
+pub const NativeWindow = struct {
+    title: [*:0]const u8,
+    // Complete Or Incomplete
+    coi: union(enum) {
+        incomplete: IncompleteWindow,
+        complete: CompleteWindow,
+    },
+};
+
