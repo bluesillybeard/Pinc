@@ -99,12 +99,12 @@ pub export fn pinc_error_string() [*:0]const u8 {
     return pinc.latestErrorString;
 }
 
-// Cahced value for pinc_get_window_api
+// cached value for pinc_get_window_api
 var underlyingApi: ?c.pinc_window_api_enum = null;
 
 pub export fn pinc_get_window_api() c.pinc_window_api_enum {
     if(underlyingApi) |api| return api;
-    // My friend, SDL, my pal, why the heck do I have to make a window in order to see what the backend API is?
+    // My friend, SDL, my pal, why do I have to make a window in order to see what the backend API is?
     const sdlSubsys = blk: {
         var info = sdl.SDL_SysWMinfo{};
         // if there is already an existing window, use that to get the WM info
