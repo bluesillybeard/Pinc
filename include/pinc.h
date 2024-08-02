@@ -86,6 +86,7 @@ typedef pinc_handle pinc_framebuffer_handle_t;
 extern pinc_window_incomplete_handle_t pinc_window_incomplete_create(char* title);
 
 /// @brief Sets the size of a window in pixels. Note that the underlying system has ultimate control over the window size and this call may be ignored.
+///     It should be noted that this sets the size of the window's framebuffer, decorations are not included here.
 /// @param window the window to set the size of
 /// @param width the width of the window. Enter 0 for an automatic value.
 /// @param height the height of the window. Enter 0 for an automatic value.

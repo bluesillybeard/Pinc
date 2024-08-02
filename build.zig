@@ -8,7 +8,7 @@ pub fn build(b: *std.Build) void {
     
     // Whether to prioritize the generic SDLs backend or the native backend
     // (For now, default to SDL because the native backends are nowhere near finished)
-    const prioritizeSdl = b.option(bool, "pinc_sdl", "When set to true (currently default), Pinc will prioritize the SDL backend") orelse true;
+    const prioritizeSdl = b.option(bool, "pinc_sdl", "When set to true, Pinc will prioritize the SDL backend") orelse false;
     
     const options = b.addOptions();
     options.addOption(bool, "prioritizeSdl", prioritizeSdl);

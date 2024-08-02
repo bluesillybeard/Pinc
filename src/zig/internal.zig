@@ -1,5 +1,5 @@
 // Internal stuff.
-// This is the implementation of pincinternal.c
+// This is the implementation of pincinternal.h
 
 const c = @import("c.zig");
 const pinc = @import("pinc.zig");
