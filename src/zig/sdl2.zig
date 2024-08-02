@@ -18,6 +18,8 @@ const sdlf = struct {
     GetWindowWMInfo: *@TypeOf(sdl.SDL_GetWindowWMInfo),
     CreateWindow: *@TypeOf(sdl.SDL_CreateWindow),
     DestroyWindow: *@TypeOf(sdl.SDL_DestroyWindow),
+    SetWindowSize: *@TypeOf(sdl.SDL_SetWindowSize),
+    GetWindowSizeInPixels: *@TypeOf(sdl.SDL_GetWindowSizeInPixels),
 
     lib: std.DynLib,
     pub fn load() !sdlf {
@@ -35,6 +37,8 @@ const sdlf = struct {
             .GetWindowWMInfo = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowWMInfo")),
             .CreateWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_CreateWindow")),
             .DestroyWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_DestroyWindow")),
+            .SetWindowSize = @ptrCast(lib.lookup(*anyopaque, "SDL_SetWindowSize")),
+            .GetWindowSizeInPixels = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowSizeInPixels")),
         };
     }
 };
@@ -146,7 +150,7 @@ pub export fn pinc_window_set_size(window: c.pinc_window_incomplete_handle_t, wi
             // this SDL function, annoyingly, does not work in Pixels.
             // However, Pincs window size is done in pixels, leaving it to the user to determine the window's size in screen units.
             // TODO: anyway, just pretend that's not something that exist and just shove the pixel size into the function anyway
-            sdl.SDL_SetWindowSize(complete.sdlWin, @intCast(width), @intCast(height));
+            libsdl.SetWindowSize(complete.sdlWin, @intCast(width), @intCast(height));
         }
     }
     return false;
@@ -162,7 +166,7 @@ pub export fn pinc_window_get_width(window: c.pinc_window_incomplete_handle_t) u
         .complete => |complete| {
             var width: c_int = 0;
             var height: c_int = 0;
-            sdl.SDL_GetWindowSizeInPixels(complete.sdlWin, &width, &height);
+            libsdl.GetWindowSizeInPixels(complete.sdlWin, &width, &height);
             return @intCast(width);
         }
     }
