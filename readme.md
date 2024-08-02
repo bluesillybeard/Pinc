@@ -31,8 +31,6 @@ Pinc is a cross platform windowing / rendering library written in Zig.
 
 ## Supported platforms
 - Linux/X11
-- Any platform supported by SDL2 (theoretically)
-    - Pinc (for now) needs to load it at runtime, which takes emscripten out of the picture
 
 ## Supported APIs
 - OpenGL 2.1
