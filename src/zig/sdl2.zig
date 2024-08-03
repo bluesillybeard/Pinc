@@ -310,24 +310,395 @@ fn submitSdlEvent(ev: *sdl.SDL_Event) void {
     // TODO: implement the rest of the events
     switch (ev.type) {
         sdl.SDL_WINDOWEVENT => {
-            switch (ev.window.event) {
-                sdl.SDL_WINDOWEVENT_CLOSE => {
-                    const sdlWinOrNone = libsdl.GetWindowFromID(ev.window.windowID);
-                    if(sdlWinOrNone) |sdlWin| {
-                        const windowHandle = getWindowHandleFromSdlWindow(sdlWin);
-                        if(windowHandle != 0){
+            const sdlWinOrNone = libsdl.GetWindowFromID(ev.window.windowID);
+            if(sdlWinOrNone) |sdlWin|{
+                const windowHandle = getWindowHandleFromSdlWindow(sdlWin);
+                if(windowHandle != 0){
+                    switch (ev.window.event) {
+                        sdl.SDL_WINDOWEVENT_CLOSE => {
                             c.pinci_send_event(.{
                                 .type = c.pinc_event_window_close,
                                 .data = .{.window_close = .{.window = windowHandle}}
                             });
-                        }
+                        },
+                        sdl.SDL_WINDOWEVENT_SIZE_CHANGED => {
+                            var width: c_int = 0;
+                            var height: c_int = 0;
+                            libsdl.GetWindowSizeInPixels(sdlWin, &width, &height);
+                            c.pinci_send_event(.{
+                                .type = c.pinc_event_window_resize,
+                                .data = .{.window_resize = .{.window = windowHandle, .width = @intCast(width), .height = @intCast(height)}}
+                            });
+                        },
+                        // Not sure what the difference between resized and size changed is.
+                        // The documentation is not clear either. SDL2 may be a great library, but it's positively confusing sometimes...
+                        sdl.SDL_WINDOWEVENT_RESIZED => {
+                            c.pinci_send_event(.{
+                                .type = c.pinc_event_window_resize,
+                                .data = .{.window_resize = .{.window = windowHandle, .width = @intCast(ev.window.data1), .height = @intCast(ev.window.data2)}}
+                            });
+                        },
+                        sdl.SDL_WINDOWEVENT_FOCUS_GAINED => {
+                            c.pinci_send_event(.{
+                                .type = c.pinc_event_window_focus,
+                                .data = .{.window_focus =  .{.window = windowHandle}}
+                            });
+                        },
+                        sdl.SDL_WINDOWEVENT_FOCUS_LOST => {
+                            c.pinci_send_event(.{
+                                .type = c.pinc_event_window_unfocus,
+                                .data = .{.window_unfocus = .{.window = windowHandle}}
+                            });
+                        },
+                        sdl.SDL_WINDOWEVENT_EXPOSED => {
+                            c.pinci_send_event(.{
+                                .type = c.pinc_event_window_damaged,
+                                .data = .{.window_damaged = .{.window = windowHandle}}
+                            });
+                        },
+                        else => {}
                     }
-                },
-                else => {}
+                }
+            }
+        },
+        sdl.SDL_KEYDOWN => {
+            const sdlWinOrNone = libsdl.GetWindowFromID(ev.key.windowID);
+            if(sdlWinOrNone) |sdlWin|{
+                const windowHandle = getWindowHandleFromSdlWindow(sdlWin);
+                if(windowHandle != 0){
+                    if(ev.key.repeat == sdl.SDL_TRUE){
+                        c.pinci_send_event(.{
+                            .type = c.pinc_event_window_key_repeat,
+                            .data =.{.window_key_repeat = .{
+                                .key = translateKeySym(ev.key.keysym.scancode),
+                                .modifiers = translateModifiers(ev.key.keysym.mod),
+                                .token = 0, // SDL does not give us the native API token (for example, the X keysym on the X11 backend), so just use zero.
+                                .window = windowHandle
+                                }
+                            }
+                        });
+                    } else {
+                        c.pinci_send_event(.{
+                            .type = c.pinc_event_window_key_down,
+                            .data =.{.window_key_down = .{
+                                .key = translateKeySym(ev.key.keysym.scancode),
+                                .modifiers = translateModifiers(ev.key.keysym.mod),
+                                .token = 0, // SDL does not give us the native API token (for example, the X keysym on the X11 backend), so just use zero.
+                                .window = windowHandle
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        },
+        sdl.SDL_KEYUP => {
+            const sdlWinOrNone = libsdl.GetWindowFromID(ev.key.windowID);
+            if(sdlWinOrNone) |sdlWin|{
+                const windowHandle = getWindowHandleFromSdlWindow(sdlWin);
+                if(windowHandle != 0){
+                    c.pinci_send_event(.{
+                        .type = c.pinc_event_window_key_up,
+                        .data =.{.window_key_up = .{
+                            .key = translateKeySym(ev.key.keysym.scancode),
+                            .modifiers = translateModifiers(ev.key.keysym.mod),
+                            .token = 0, // SDL does not give us the native API token (for example, the X keysym on the X11 backend), so just use zero.
+                            .window = windowHandle
+                            }
+                        }
+                    });
+                }
+            }
+        },
+        sdl.SDL_TEXTINPUT => {
+            const sdlWinOrNone = libsdl.GetWindowFromID(ev.text.windowID);
+            if(sdlWinOrNone) |sdlWin|{
+                const windowHandle = getWindowHandleFromSdlWindow(sdlWin);
+                if(windowHandle != 0){
+                    // Pinc text events are done as an event per unicode point,
+                    // As such we need to iterate the UTF8 string that SDL provides
+                    var unicodeIter = std.unicode.Utf8Iterator{
+                        .bytes = std.mem.sliceTo(&ev.text.text, 0),
+                        .i = 0,
+                    };
+                    while(unicodeIter.nextCodepoint()) |codepoint|{
+                            c.pinci_send_event(.{
+                            .type = c.pinc_event_window_text,
+                            .data = .{
+                                .window_text = .{
+                                    .codepoint = codepoint,
+                                    .window = windowHandle,
+                                }
+                            }
+                        });
+                    }
+                }
             }
         },
         else => {},
     }
+}
+
+fn translateModifiers(mods: u16) c.pinc_key_modifiers_t {
+    var pincMods: c.pinc_key_modifiers_t = 0;
+    if(mods & sdl.KMOD_SHIFT != 0) pincMods |= c.pinc_modifier_shift_bit;
+    if(mods & sdl.KMOD_CTRL != 0) pincMods |= c.pinc_modifier_control_bit;
+    if(mods & sdl.KMOD_ALT != 0) pincMods |= c.pinc_modifier_alt_bit;
+    // I can only assume the "gui" modifier corresponds with the super key
+    if(mods & sdl.KMOD_GUI != 0) pincMods |= c.pinc_modifier_super_bit;
+    if(mods & sdl.KMOD_CAPS != 0) pincMods |= c.pinc_modifier_caps_lock_bit;
+    if(mods & sdl.KMOD_NUM != 0) pincMods |= c.pinc_modifier_num_lock_bit;
+    return pincMods;
+}
+
+fn translateKeySym(sym: sdl.SDL_Scancode) c.pinc_key_code_enum {
+    return switch (sym) {
+        sdl.SDL_SCANCODE_UNKNOWN => c.pinc_key_code_unknown,
+        sdl.SDL_SCANCODE_A => c.pinc_key_code_a,
+        sdl.SDL_SCANCODE_B => c.pinc_key_code_b,
+        sdl.SDL_SCANCODE_C => c.pinc_key_code_c,
+        sdl.SDL_SCANCODE_D => c.pinc_key_code_d,
+        sdl.SDL_SCANCODE_E => c.pinc_key_code_e,
+        sdl.SDL_SCANCODE_F => c.pinc_key_code_f,
+        sdl.SDL_SCANCODE_G => c.pinc_key_code_g,
+        sdl.SDL_SCANCODE_H => c.pinc_key_code_h,
+        sdl.SDL_SCANCODE_I => c.pinc_key_code_i,
+        sdl.SDL_SCANCODE_J => c.pinc_key_code_j,
+        sdl.SDL_SCANCODE_K => c.pinc_key_code_k,
+        sdl.SDL_SCANCODE_L => c.pinc_key_code_l,
+        sdl.SDL_SCANCODE_M => c.pinc_key_code_m,
+        sdl.SDL_SCANCODE_N => c.pinc_key_code_n,
+        sdl.SDL_SCANCODE_O => c.pinc_key_code_o,
+        sdl.SDL_SCANCODE_P => c.pinc_key_code_p,
+        sdl.SDL_SCANCODE_Q => c.pinc_key_code_q,
+        sdl.SDL_SCANCODE_R => c.pinc_key_code_r,
+        sdl.SDL_SCANCODE_S => c.pinc_key_code_s,
+        sdl.SDL_SCANCODE_T => c.pinc_key_code_t,
+        sdl.SDL_SCANCODE_U => c.pinc_key_code_u,
+        sdl.SDL_SCANCODE_V => c.pinc_key_code_v,
+        sdl.SDL_SCANCODE_W => c.pinc_key_code_w,
+        sdl.SDL_SCANCODE_X => c.pinc_key_code_x,
+        sdl.SDL_SCANCODE_Y => c.pinc_key_code_y,
+        sdl.SDL_SCANCODE_Z => c.pinc_key_code_z,
+        sdl.SDL_SCANCODE_1 => c.pinc_key_code_1,
+        sdl.SDL_SCANCODE_2 => c.pinc_key_code_2,
+        sdl.SDL_SCANCODE_3 => c.pinc_key_code_3,
+        sdl.SDL_SCANCODE_4 => c.pinc_key_code_4,
+        sdl.SDL_SCANCODE_5 => c.pinc_key_code_5,
+        sdl.SDL_SCANCODE_6 => c.pinc_key_code_6,
+        sdl.SDL_SCANCODE_7 => c.pinc_key_code_7,
+        sdl.SDL_SCANCODE_8 => c.pinc_key_code_8,
+        sdl.SDL_SCANCODE_9 => c.pinc_key_code_9,
+        sdl.SDL_SCANCODE_0 => c.pinc_key_code_0,
+        sdl.SDL_SCANCODE_RETURN => c.pinc_key_code_enter,
+        sdl.SDL_SCANCODE_ESCAPE => c.pinc_key_code_escape,
+        sdl.SDL_SCANCODE_BACKSPACE => c.pinc_key_code_backspace,
+        sdl.SDL_SCANCODE_TAB => c.pinc_key_code_tab,
+        sdl.SDL_SCANCODE_SPACE => c.pinc_key_code_space,
+        sdl.SDL_SCANCODE_MINUS => c.pinc_key_code_dash,
+        sdl.SDL_SCANCODE_EQUALS => c.pinc_key_code_equals,
+        sdl.SDL_SCANCODE_LEFTBRACKET => c.pinc_key_code_left_bracket,
+        sdl.SDL_SCANCODE_RIGHTBRACKET => c.pinc_key_code_right_bracket,
+        sdl.SDL_SCANCODE_BACKSLASH => c.pinc_key_code_backslash,
+        //sdl.SDL_SCANCODE_NONUSHASH => c.pinc_key_code_, // what the heck is this
+        sdl.SDL_SCANCODE_SEMICOLON => c.pinc_key_code_semicolon,
+        sdl.SDL_SCANCODE_APOSTROPHE => c.pinc_key_code_apostrophe,
+        sdl.SDL_SCANCODE_GRAVE => c.pinc_key_code_backtick,
+        sdl.SDL_SCANCODE_COMMA => c.pinc_key_code_comma,
+        sdl.SDL_SCANCODE_PERIOD => c.pinc_key_code_dot,
+        sdl.SDL_SCANCODE_SLASH => c.pinc_key_code_slash,
+        sdl.SDL_SCANCODE_CAPSLOCK => c.pinc_key_code_caps_lock,
+        sdl.SDL_SCANCODE_F1 => c.pinc_key_code_f1,
+        sdl.SDL_SCANCODE_F2 => c.pinc_key_code_f2,
+        sdl.SDL_SCANCODE_F3 => c.pinc_key_code_f3,
+        sdl.SDL_SCANCODE_F4 => c.pinc_key_code_f4,
+        sdl.SDL_SCANCODE_F5 => c.pinc_key_code_f5,
+        sdl.SDL_SCANCODE_F6 => c.pinc_key_code_f6,
+        sdl.SDL_SCANCODE_F7 => c.pinc_key_code_f7,
+        sdl.SDL_SCANCODE_F8 => c.pinc_key_code_f8,
+        sdl.SDL_SCANCODE_F9 => c.pinc_key_code_f9,
+        sdl.SDL_SCANCODE_F10 => c.pinc_key_code_f10,
+        sdl.SDL_SCANCODE_F11 => c.pinc_key_code_f11,
+        sdl.SDL_SCANCODE_F12 => c.pinc_key_code_f12,
+        sdl.SDL_SCANCODE_PRINTSCREEN => c.pinc_key_code_print_screen,
+        sdl.SDL_SCANCODE_SCROLLLOCK => c.pinc_key_code_scroll_lock,
+        sdl.SDL_SCANCODE_PAUSE => c.pinc_key_code_pause,
+        sdl.SDL_SCANCODE_INSERT => c.pinc_key_code_insert,
+        sdl.SDL_SCANCODE_HOME => c.pinc_key_code_home,
+        sdl.SDL_SCANCODE_PAGEUP => c.pinc_key_code_page_up,
+        sdl.SDL_SCANCODE_DELETE => c.pinc_key_code_delete,
+        sdl.SDL_SCANCODE_END => c.pinc_key_code_end,
+        sdl.SDL_SCANCODE_PAGEDOWN => c.pinc_key_code_page_down,
+        sdl.SDL_SCANCODE_RIGHT => c.pinc_key_code_right,
+        sdl.SDL_SCANCODE_LEFT => c.pinc_key_code_left,
+        sdl.SDL_SCANCODE_DOWN => c.pinc_key_code_down,
+        sdl.SDL_SCANCODE_UP => c.pinc_key_code_up,
+        // sdl.SDL_SCANCODE_NUMLOCKCLEAR => c.pinc_key_code_,// what is this like what
+        sdl.SDL_SCANCODE_KP_DIVIDE => c.pinc_key_code_numpad_slash,
+        sdl.SDL_SCANCODE_KP_MULTIPLY => c.pinc_key_code_numpad_asterisk,
+        sdl.SDL_SCANCODE_KP_MINUS => c.pinc_key_code_numpad_dash,
+        sdl.SDL_SCANCODE_KP_PLUS => c.pinc_key_code_numpad_plus,
+        sdl.SDL_SCANCODE_KP_ENTER => c.pinc_key_code_numpad_enter,
+        sdl.SDL_SCANCODE_KP_1 => c.pinc_key_code_numpad_1,
+        sdl.SDL_SCANCODE_KP_2 => c.pinc_key_code_numpad_2,
+        sdl.SDL_SCANCODE_KP_3 => c.pinc_key_code_numpad_3,
+        sdl.SDL_SCANCODE_KP_4 => c.pinc_key_code_numpad_4,
+        sdl.SDL_SCANCODE_KP_5 => c.pinc_key_code_numpad_5,
+        sdl.SDL_SCANCODE_KP_6 => c.pinc_key_code_numpad_6,
+        sdl.SDL_SCANCODE_KP_7 => c.pinc_key_code_numpad_7,
+        sdl.SDL_SCANCODE_KP_8 => c.pinc_key_code_numpad_8,
+        sdl.SDL_SCANCODE_KP_9 => c.pinc_key_code_numpad_9,
+        sdl.SDL_SCANCODE_KP_0 => c.pinc_key_code_numpad_0,
+        sdl.SDL_SCANCODE_KP_PERIOD => c.pinc_key_code_numpad_dot,
+        // sdl.SDL_SCANCODE_NONUSBACKSLASH => c.pinc_key_code_a,// what is this
+        // sdl.SDL_SCANCODE_APPLICATION => c.pinc_key_code_a, // what the heck is the application button
+        // sdl.SDL_SCANCODE_POWER => c.pinc_key_code_a, //power button?
+        sdl.SDL_SCANCODE_KP_EQUALS => c.pinc_key_code_numpad_equal,
+        sdl.SDL_SCANCODE_F13 => c.pinc_key_code_f13,
+        sdl.SDL_SCANCODE_F14 => c.pinc_key_code_f14,
+        sdl.SDL_SCANCODE_F15 => c.pinc_key_code_f15,
+        sdl.SDL_SCANCODE_F16 => c.pinc_key_code_f16,
+        sdl.SDL_SCANCODE_F17 => c.pinc_key_code_f17,
+        sdl.SDL_SCANCODE_F18 => c.pinc_key_code_f18,
+        sdl.SDL_SCANCODE_F19 => c.pinc_key_code_f19,
+        sdl.SDL_SCANCODE_F20 => c.pinc_key_code_f20,
+        sdl.SDL_SCANCODE_F21 => c.pinc_key_code_f21,
+        sdl.SDL_SCANCODE_F22 => c.pinc_key_code_f22,
+        sdl.SDL_SCANCODE_F23 => c.pinc_key_code_f23,
+        sdl.SDL_SCANCODE_F24 => c.pinc_key_code_f24,
+        // sdl.SDL_SCANCODE_EXECUTE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_HELP => c.pinc_key_code_a,
+        sdl.SDL_SCANCODE_MENU => c.pinc_key_code_menu,
+        // sdl.SDL_SCANCODE_SELECT => c.pinc_key_code_sele,
+        // sdl.SDL_SCANCODE_STOP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AGAIN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_UNDO => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CUT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_COPY => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_PASTE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_FIND => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_MUTE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_VOLUMEUP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_VOLUMEDOWN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_COMMA => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_EQUALSAS400 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL1 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL2 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL3 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL4 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL5 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL6 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL7 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL8 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_INTERNATIONAL9 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG1 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG2 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG3 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG4 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG5 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG6 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG7 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG8 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_LANG9 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_ALTERASE => c.pinc_key_code_a,
+        sdl.SDL_SCANCODE_SYSREQ => c.pinc_key_code_print_screen,
+        // I didn't even know half of these keys existed
+        // sdl.SDL_SCANCODE_CANCEL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CLEAR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_PRIOR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_RETURN2 => c.pinc_key_code_a, // A second return key?
+        // sdl.SDL_SCANCODE_SEPARATOR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_OUT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_OPER => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CLEARAGAIN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CRSEL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_EXSEL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_00 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_000 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_THOUSANDSSEPARATOR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_DECIMALSEPARATOR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CURRENCYUNIT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CURRENCYSUBUNIT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_LEFTPAREN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_RIGHTPAREN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_LEFTBRACE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_RIGHTBRACE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_TAB => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_BACKSPACE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_A => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_B => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_C => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_D => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_E => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_F => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_XOR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_POWER => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_PERCENT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_LESS => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_GREATER => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_AMPERSAND => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_DBLAMPERSAND => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_VERTICALBAR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_DBLVERTICALBAR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_COLON => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_HASH => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_SPACE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_AT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_EXCLAM => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMSTORE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMRECALL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMCLEAR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMADD => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMSUBTRACT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMMULTIPLY => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_MEMDIVIDE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_PLUSMINUS => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_CLEAR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_CLEARENTRY => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_BINARY => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_OCTAL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_DECIMAL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KP_HEXADECIMAL => c.pinc_key_code_a,
+        sdl.SDL_SCANCODE_LCTRL => c.pinc_key_code_left_control,
+        sdl.SDL_SCANCODE_LSHIFT => c.pinc_key_code_left_shift,
+        sdl.SDL_SCANCODE_LALT => c.pinc_key_code_left_alt,
+        // sdl.SDL_SCANCODE_LGUI => c.pinc_key_code_a, //what the heck is the gui function?
+        sdl.SDL_SCANCODE_RCTRL => c.pinc_key_code_right_control,
+        sdl.SDL_SCANCODE_RSHIFT => c.pinc_key_code_right_shift,
+        sdl.SDL_SCANCODE_RALT => c.pinc_key_code_right_alt,
+        //sdl.SDL_SCANCODE_RGUI => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_MODE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIONEXT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIOPREV => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIOSTOP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIOPLAY => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIOMUTE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_MEDIASELECT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_WWW => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_MAIL => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_CALCULATOR => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_COMPUTER => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_SEARCH => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_HOME => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_BACK => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_FORWARD => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_STOP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_REFRESH => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AC_BOOKMARKS => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_BRIGHTNESSDOWN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_BRIGHTNESSUP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_DISPLAYSWITCH => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KBDILLUMTOGGLE => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KBDILLUMDOWN => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_KBDILLUMUP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_EJECT => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_SLEEP => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_APP1 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_APP2 => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIOREWIND => c.pinc_key_code_a,
+        // sdl.SDL_SCANCODE_AUDIOFASTFORWARD => c.pinc_key_code_a,
+        else => c.pinc_key_code_unknown,
+    };
 }
 
 fn getWindowHandleFromSdlWindow(sdlWin: *sdl.SDL_Window) c.pinc_window_incomplete_handle_t {
