@@ -6,81 +6,81 @@ pub fn build(b: *std.Build) void {
 
     // Compile options
     
-    // Whether to prioritize the generic SDLs backend or the native backend
-    // (For now, default to SDL because the native backends are nowhere near finished)
-    const prioritizeSdl = b.option(bool, "pinc_sdl", "When set to true, Pinc will prioritize the SDL backend") orelse false;
-    
-    const options = b.addOptions();
-    options.addOption(bool, "prioritizeSdl", prioritizeSdl);
+    const run = b.option(bool, "run", "Whether to run or not. Defaults to false") orelse false;
 
-    const pincStatic = b.addStaticLibrary(.{
-        .root_source_file = b.path("src/zig/pinc.zig"),
-        .name = "pinc",
-        .optimize = optimize,
-        .target = target,
-        .link_libc = true,
-    });
-    pincStatic.root_module.addOptions("pincOptions", options);
-    pincStatic.addIncludePath(b.path("include"));
-    pincStatic.addIncludePath(b.path("ext"));
-    pincStatic.addIncludePath(b.path("src/c"));
-    pincStatic.addCSourceFiles(.{
-        .files = &[_][]const u8{
-            "pincx.c",
-            "pincwin32.c",
-        },
-        .root = b.path("src/c"),
-    });
+    // TODO: option to set the priority / order for each of the backends
+    // TODO: option to enable/disable certain backends
+    // TODO: options for the PINC_API and PINC_CALL options in the header, so the lib and header will actually match
 
-    const pincDynamic = b.addSharedLibrary(.{
-        .root_source_file = b.path("src/zig/pinc.zig"),
-        .name = "pinc",
-        .optimize = optimize,
-        .target = target,
-        .link_libc = true,
-    });
-    pincDynamic.root_module.addOptions("pincOptions", options);
-    pincDynamic.addIncludePath(b.path("include"));
-    pincDynamic.addIncludePath(b.path("ext"));
-    pincDynamic.addIncludePath(b.path("src/c"));
-    pincDynamic.addCSourceFiles(.{
-        .files = &[_][]const u8{
-            "pincx.c",
-            "pincwin32.c",
-        },
-        .root = b.path("src/c"),
-    });
+    // static library
+    const staticLib = blk: {
+        const lib = b.addStaticLibrary(.{
+            .root_source_file = b.path("src/pinc.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .name = "pinc",
+        });
+        lib.addIncludePath(b.path("include"));
+        lib.addIncludePath(b.path("ext"));
+        
+        const install = b.addInstallArtifact(lib, .{});
+        const installStep = b.step("static", "Build static library");
+        installStep.dependOn(&install.step);
+        
+        break :blk lib;
+    };
 
-    // This is the basic window example
-    const exe = b.addExecutable(.{
-        .optimize = optimize,
-        .target = target,
-        .name = "window",
-    });
-    exe.addIncludePath(b.path("include"));
-    exe.addCSourceFile(.{
-        .file = b.path("examples/window.c"),
-    });
-    exe.linkLibrary(pincStatic);
-    exe.step.dependOn(&pincStatic.step);
+    // shared library
+    const sharedLib = blk: {
+        const lib = b.addSharedLibrary(.{
+            .root_source_file = b.path("src/pinc.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .name = "pinc",
+        });
+        lib.addIncludePath(b.path("include"));
+        lib.addIncludePath(b.path("ext"));
 
-    const exeInstall = b.addInstallArtifact(exe, .{});
-    var exeStep = b.step("example", "Build the example");
-    exeStep.dependOn(&exeInstall.step);
+        const install = b.addInstallArtifact(lib, .{});
+        const installStep = b.step("dynamic", "build shared / dynamic library");
+        installStep.dependOn(&install.step);
 
-    const run = b.addRunArtifact(exe);
-    var runStep = b.step("run", "run the example");
-    runStep.dependOn(&run.step);
+        break :blk lib;
+    };
 
-    const staticInstall = b.addInstallArtifact(pincStatic, .{});
-    var staticStep = b.step("static", "Build Pinc as a static library (.a / .lib)");
-    staticStep.dependOn(&staticInstall.step);
+    // copy headers
+    {
+        const install = b.addInstallHeaderFile(b.path("include/pinc.h"), "pinc.h");
+        staticLib.step.dependOn(&install.step);
+        sharedLib.step.dependOn(&install.step);
+    }
 
-    const dynamicInstall = b.addInstallArtifact(pincDynamic, .{});
-    var dynamicStep = b.step("dynamic", "Build Pinc as a dynaic / shader library (.so / .dll)");
-    dynamicStep.dependOn(&dynamicInstall.step);
+    // window example
+    {
+        const exe = b.addExecutable(.{
+            .target = target,
+            .optimize = optimize,
+            .name = "window",
+        });
+        exe.addIncludePath(b.path("include"));
+        exe.addIncludePath(b.path("ext"));
+        exe.addCSourceFile(.{
+            .file = b.path("examples/window.c"),
+        });
+        exe.linkLibrary(staticLib);
+        exe.step.dependOn(&staticLib.step);
 
-    const headerInstall = b.addInstallHeaderFile(b.path("include/pinc.h"), "pinc.h");
-    staticStep.dependOn(&headerInstall.step);
-    dynamicStep.dependOn(&headerInstall.step);
+        if(run) {
+            const runArtifact = b.addRunArtifact(exe);
+            var runStep = b.step("window", "window example");
+            runStep.dependOn(&runArtifact.step);
+        } else {
+            const install = b.addInstallArtifact(exe, .{});
+            var installStep = b.step("window", "window example");
+            installStep.dependOn(&install.step);
+        }
+    }
+    // TODO: maximal window example
 }

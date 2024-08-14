@@ -1,5 +1,4 @@
 // A minimal example of using Pinc to open a window and fill it with colors.
-// However, due to how Pinc works, this one has to handle the possibility of a grayscale framebuffer unlike the maximal example.
 
 #include <pinc.h>
 #include <stdio.h>
@@ -18,6 +17,9 @@ float color_to_grayscale(Color col) {
     return col.red * 0.299 + col.green * 0.587 + col.blue * 0.144;
 }
 
+// forward declare
+int collect_errors(void);
+
 /// @brief You know what main is. At least, I hope you know what main is...
 int main(int argc, char** argv) {
     pinc_incomplete_init();
@@ -34,8 +36,8 @@ int main(int argc, char** argv) {
         return 255;
     }
     // List of colors for later
-    int num_colors = 3;
-    const Color colors[3] = {
+    int num_colors = 4;
+    const Color colors[4] = {
         {0, 0, 0},
         {1, 0, 0},
         {0, 1, 0},
@@ -117,9 +119,9 @@ int collect_errors(void) {
         }
         buffer[len] = 0; //Pinc does not give us a null byte, but printf needs it.
         if(fatal) {
-            printf("Fatal pinc error: %s\n", &buffer);
+            printf("Fatal pinc error: %s\n", buffer);
         } else {
-            printf("pinc error: %s\n", &buffer);
+            printf("pinc error: %s\n", buffer);
         }
         pinc_error_pop();
     }
