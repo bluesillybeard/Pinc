@@ -1,4 +1,5 @@
 // A demonstration of using Pinc to open a window and fill it with colors.
+// This is like the window example, however it makes use of many optional features.
 
 #include <pinc.h>
 #include <stdio.h>
