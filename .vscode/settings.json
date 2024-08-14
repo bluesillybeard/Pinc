@@ -26,6 +26,11 @@
         "stdlib.h": "c",
         "xinput2load.h": "c",
         "windows.h": "c",
-        "wingdi.h": "c"
+        "wingdi.h": "c",
+        "chrono": "c",
+        "random": "c",
+        "limits": "c",
+        "semaphore": "c",
+        "algorithm": "c"
     }
 }
