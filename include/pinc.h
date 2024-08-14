@@ -1,738 +1,368 @@
-#pragma once
-#include <stdint.h>
-#include <stdbool.h>
+// pinc.h - Pinc's entire API.
+// Pinc is designed to be extremely simple such that the entire API fits in a single easy to understand header
+// Note that, at least for now, this header is entirely in regular C99.
 
-// general functions and types
+// You'll notice, this header has no includes. Hooray for minimal dependencies!
+// There are downsides to only using pure C with nothing else:
+// - the sizes of types is completely and utterly undefined. An int could be 11 bits for all we know!
+// - potential ABI mismatches (particularily on Linux where clang / gcc / whatever compiler might have subtle ABI differences)
 
-// Prefix notes:
-// The prefix is assigned depending on where it's actually implemented in pinc.
-// pinc_graphics_ -> exported from graphics.zig
-// pinc_util_ -> exported from util.zig
-// pinc_event -> exported from event.zig
-// pinc_ -> A function that is exported from the backend zig file
-// pinci_ -> exported from internal.zig (not in any public headers)
-// x11_ -> exported from x11.zig (not in any public headers)
-// win32_ -> exported from win32.zig (not in any public headers)
+// In general, here are the rules / properties of Pinc's api:
+// - no unions or bit fields, as they tend to cause ABI problems
+// - we assume floats are in the IEE754 format. There are some whack platforms where floats do not follow the IEE654 standard. Thankfully, Pinc does not support any of those
+// - Pinc functions will never return a pointer, and they will never take a pointer.
+//     - This is to make bindings to other languages as freakishly straightforward as possible.
+//     - Lists are returned as iterators, and entered using a stream type system. Worse for performance, but it's probably negligible
+//     - In the future, we might support faster versions of the stream-like functions for languages that can effectively take advantage of that.
+// - no structs either, particularily for languages like python where a 'struct' doesn't actually exist
+// - using only void, int, and float seems limiting... because it is
 
-typedef enum {
-    /// @brief Automatically choose a windowing API
-    pinc_window_api_automatic,
-    /// @brief X window system Xlib is loaded dynamically at runtime, to avoid a compile time dependency. The only supported backend on Linux, as Wayland has not been implemented.
-    pinc_window_api_x,
-    /// @brief Win32 backend, for windows NT. Windows 95 also has a minified version of Win32, which may be supported eventually.
-    pinc_window_api_win32
-} pinc_window_api_enum;
+// error policy:
+// - incorrect usage of Pinc's API will trigger an assert in debug builds (-Doptimize=Debug or -Doptimize=ReleaseSafe)
+// - errors caused by Pinc will also trigger asserts,
+//   but they will be clear about the fact that it's an error due to Pinc rather than the program.
+// - errors that are not fatal will trigger an error that can be collected using pinc_error_* functions
+// - errors that are caused by external factors and are fatal will trigger errors that can be collected using pinc_error_* functions.
+//   Fatal errors will cause pinc to be in an invalid state, and any non-error collecting function call from then on will trigger an assert.
+// - NOTE: you should really compile pinc with -Doptimize=ReleaseSafe. Only use ReleaseFast if you *really* need that bit of extra speed.
 
-typedef enum {
-    /// @brief Automatically choose a graphics API
-    pinc_graphics_api_automatic,
-    /// @brief OpenGL 2.1.
-    pinc_graphics_api_opengl_2_1,
-} pinc_graphics_api_enum;
+// The flow of your code should be like this:
+// - call pinc_incomplete_init()
+// - (optional) decide which window backend to use
+//     - use pinc_window_backend_is_supported to get if a backend is supported by Pinc
+//     - use pinc_init_set_window_backend to set your chosen backend. Note that this MUST be the first init variable set, if you are going to set it.
+// - (optional) decide which graphics backend to use
+//     - use pinc_graphics_backend_is_supported on each backend your program will support, from best to worst.
+//       The first one that returns true is the one you will use
+//     - call pinc_init_set_graphics_backend with your choice
+//     - This must be done before iterating available framebuffer formats
+// - (optional) choose a framebuffer format:
+//     - use pinc_framebuffer_format_get_num() and the pinc_framebuffer_format_get_* functions to determine which framebuffer format to use
+//     - call pinc_init_set_framebuffer_format(framebuffer_index) to select your framebuffer format
+//     - This whole framebuffer weirdness seems tedious but, due to how Pinc works, all framebuffers need to use the same format.
+//     - The problem of all framebuffers requiring the same format is actually inherited from OpenGL 2.1.
+// - call pinc_complete_init()
+// - (optional) create objects:
+//     - windows - you know what a window is. It can be used as a texture, although that's generally a bad idea
+// - main loop
+//     - call pinc_step
+//         - this will collect events, update window properties, clear arena allocators, etc.
+//     - handle events
+//     - draw stuff (pinc_graphics_*)
+//     - present framebuffers (pinc_window_present_framebuffer)
 
-/// @brief Initializes Pinc. This loads required system libraries, and gets everything ready for using functionality.
-/// @return true if success, false otherwise.
-extern bool pinc_init(pinc_window_api_enum window_api, pinc_graphics_api_enum graphics_api);
+/// @section initialization
+// These are roughly in the order they should be called in a normal application
 
-/// @brief Cleans up Pinc. This does not automatically destroy resources, however the OS will likely do that.
-/// The only exception is X11, as some WMs might not behave correctly to sudden exits.
-extern void pinc_destroy(void);
+/// @brief preps pinc for initialization. This will ALWAYS be the first pinc function called, outside of utility functions.
+/// Calling non-utility functions before this is undefined behavior, and will trigger asserts in debug mode.
+void pinc_incomplete_init(void);
 
-typedef enum {
-    /// @brief No error
-    pinc_error_none = 0,
-    /// @brief something went wrong, no idea what though
-    pinc_error_some,
-    /// @brief something went wrong at init.
-    pinc_error_init,
-    /// @brief The API the program asked for is not supported on this system
-    pinc_error_unsupported_api,
-    /// @brief A pinc function was given a null handle
-    pinc_error_null_handle,
+enum pinc_window_backend {
+    /// @brief The backend is unknown / not in this enum
+    pinc_window_backend_any,
+    /// @brief Pinc is using X11
+    pinc_window_backend_x11,
+    /// @brief Pinc is using SDL2
+    pinc_window_backend_sdl2,
+};
+
+/// @brief Queries if a window backend is available.
+/// @param backend the backend to query
+/// @return 1 if the backend is supported, 0 if not.
+int pinc_window_backend_is_supported(int backend);
+
+/// @brief Sets the window backend to use
+/// Undefined if called after any function other than pinc_incomplete_init and pinc_window_backend_is_supported.
+/// @param backend the backend to use. Undefined if pinc_window_backend_is_supported(backend) == 0.
+void pinc_init_set_window_backend(int backend);
+
+enum pinc_graphics_backend {
+    /// @brief the graphics backend is unknown / not in this enum.
+    /// When chosen as the graphics backend, pinc will use the "best" one for the platform / device
+    pinc_graphics_backend_none,
+    /// @brief just a plain pixel grid. No hardware acceleration, just a grid of pixels and grinding through pixel data on the CPU.
+    pinc_graphics_backend_raw,
+    /// @brief OpenGL 2.1
+    pinc_graphics_backend_opengl_2_1,
+};
+
+/// @brief Queries if a graphics backend is available.
+/// @param backend the backend to query
+/// @return 1 if the backend is supported, 0 if not.
+int pinc_graphics_backend_is_supported(int backend);
+
+void pinc_init_set_graphics_backend(int backend);
+
+/// @brief returns the number of available framebuffer formats.
+int pinc_framebuffer_format_get_num(void);
+
+/// @brief this function does not trigger any errors, however it will return 0 if the input index is not a framebuffer. Undefined before pinc_init_set_graphics_api is called.
+/// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
+///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
+/// @return the number of channels in the given framebuffer format. this will be 1 for value, 2 for value + alpha, 3 for color, 4 for color + alpha.
+int pinc_framebuffer_format_get_channels(int framebuffer_index);
+
+/// @brief Returns the number of bits in a framebuffer's channel. This function does not trigger any errors, however an invalid input will cause it to return 0. Undefined before pinc_init_set_graphics_api is called.
+/// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
+///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
+/// @param channel the index of the channel within this framebuffer. Ranges from 0 to the output of pinc_framebuffer_format_get_channels(framebuffer_index)-1.
+/// @return the number of bits in this color channel.
+int pinc_framebuffer_format_get_bit_depth(int framebuffer_index, int channel);
+
+/// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
+///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
+/// @param channel the index of the channel within this framebuffer. Ranges from 0 to the output of pinc_framebuffer_format_get_channels(framebuffer_index)-1.
+/// @return the range in a framebufer's channel. Black is always at 0 (although HDR formats may allow negative values), and white (ignoring HDR brighter-than-white values) is the output of this function.
+int pinc_framebuffer_format_get_range(int framebuffer_index, int channel);
+
+/// @brief returns the number of bits in this framebuffer's depth buffer.
+/// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
+///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
+/// @return 0 if there is no depth buffer, otherwise the number of bits in the depth buffer. Usually 24, sometimes 32.
+int pinc_framebuffer_format_get_depth_buffer(int framebuffer_index);
+
+/// @brief Sets the framebuffer to use. If an invalid framebuffer is given, it will trigger a non-fatal error and a default framebuffer.
+/// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
+///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
+void pinc_init_set_framebuffer_format(int framebuffer_index);
+
+/// @brief Initializes Pinc fully. This can trigger fatal errors and non-fatal errors.
+/// After calling this, pinc_init_* functions will do nothing.
+void pinc_complete_init(void);
+
+/// @brief Call this once you are completely done with Pinc. Pinc will automatically clean up most things (windows, framebuffers, etc)
+/// Pinc will not initialize again. Pinc's lifetime should be inherently tied to your process. If you need to init pinc again, you'll have to spawn a separate process.
+/// In the future, reinitializing pinc after deinit might (or might not) be supported.
+void pinc_deinit(void);
+
+/// @section errors
+/// @brief Pinc errors are on a priority stack. Prioritizes fatal errors.
+ 
+/// @return the number of errors in the error stack
+int pinc_error_get_num(void);
+
+enum pinc_error_type {
+    /// @brief Error does not have a designated type.
+    pinc_error_any,
     /// @brief A memory allocation failed
     pinc_error_allocation,
-} pinc_error_enum;
-
-/// @brief Get the most recent error.
-extern pinc_error_enum pinc_error_get(void);
+    // Errors that aren't here and why:
+    // - wrong object type -> that is a programmer error, so it's an assert instead of an error
+    // - attempt to set something that is cemented -> programmer error, its an assert
+    // - calling pinc functions before its initialized -> programmer error = assert
+    // - Pinc developers made a mistake and forgot something -> an error with Pinc itself, that's an assert
+};
+
+int pinc_error_peek_type(void);
+
+// 1 if fatal, 0 if non-fatal
+int pinc_error_peek_fatal(void);
+
+int pinc_error_peek_message_length(void);
+
+char pinc_error_peek_message_byte(int index);
+
+void pinc_error_pop(void);
+
+/// @section platform
+
+/// @brief get the window API being used, must be called after pinc_complete_init()
+/// @return a value of enum pinc_window_api
+int pinc_window_backend_get(void);
+
+/// @section general management
+
+enum pinc_object_type {
+    /// @brief the object is empty / invalid
+    pinc_object_none,
+    pinc_object_window,
+};
+
+/// @param id the Id of a pinc object handle
+/// @return a value of enum pinc_object_type
+int pinc_object_get_type(int id);
+
+/// @param id the ID of a pinc object
+/// @return 1 if the object is complete, 0 if it's not complete.
+int pinc_object_get_complete(int id);
+
+/// @section window management
+
+int pinc_window_incomplete_create(void);
+
+void pinc_window_complete(int window);
+
+// window properties:
+// ALL window properties have defaults so users can get up and running ASAP. However, many of those defaults cannot be determined until after some point.
+// r -> can be read at any time. It has a default [default is in square brackets]
+// rc -> can only be read after the default has been determined, so it needs a has_[property] function
+// w -> can be set at any time
+// r means it just has a get function, but rc properties have both a get and a has.
+// - int width (rcw)
+//     - This is the size of the actual pixel buffer
+//     - default is determined on completion
+// - int height (rcw)
+//     - This is the size of the actual pixel buffer
+//     - default is determined on completion
+// - float scale factor (rc)
+//     - this is the system scale. For example, if the user wants everything to be 1.5x larger on screen, this is 1.5
+//     - This is on the window so the user can, in theory, set a different scale for each window.
+//     - This can be very dificult to obtain before a window is open on the desktop, and even then the system scale may not be set.
+//     - If not set, you can probably assume 1.0
+// - bool resizable (rw) [true]
+// - bool minimized (rw) [false]
+//     - when minimized, a window is in the system tray / app switcher / whatever, but is not open on the desktop
+// - bool maximized (rw) [false]
+//     - when maximized, the window's size is set to the largest it can get without covering elements of the desktop environment
+// - bool fullscreen (rw) [false]
+// - bool focused (rw) [false]
+// - bool hidden (rw) [false]
+//     - when hidden, a window cannot be seen anywhere to the user (at least not directly), but is still secretly open.
+
+/// @brief set the width of a window, in pixels
+/// @param window the window whose width to set. Asserts the object is valid, and is a window
+/// @param width the width to set.
+void pinc_window_set_width(int window, int width);
+
+/// @brief get the width of a window, in pixels
+/// @param window the window whose width to get. Asserts the object is valid, is a window, and has its width set (see pinc_window_has_width)
+/// @return the width of the window
+int pinc_window_get_width(int window);
+
+/// @brief get if a window has its width defined. A windows width will become defined either when completed, or when set using pinc_window_set_width
+/// @param window the window. Asserts the object is valid, and is a window
+/// @return 1 if the windows width is set, 0 if not.
+int pinc_window_has_width(int window);
+
+/// @brief set the height of a window, in pixels
+/// @param window the window whose height to set. Asserts the object is valid, and is a window
+/// @param height the heignt to set.
+void pinc_window_set_height(int window, int height);
+
+/// @brief get the height of a window, in pixels
+/// @param window the window whose height to get. Asserts the object is valid, is a window, and has its height set (see pinc_window_has_height)
+/// @return the height of the window
+int pinc_window_get_height(int window);
+
+/// @brief get if a window has its height defined. A windows height will become defined either when completed, or when set using pinc_window_set_height
+/// @param window the window. Asserts the object is valid, and is a window
+/// @return 1 if the windows height is set, 0 if not.
+int pinc_window_has_height(int window);
+
+/// @brief get the scale factor of a window. This is set by the user when they want to "zoom in" - a value of 1.5 should make everything appear 1.5x larger.
+/// @param window the window. Asserts the object is valid, is a window, and has its scale factor set (see pinc_window_has_scale_factor)
+/// @return the scale factor of this window.
+float pinc_window_get_scale_factor(int window);
+
+/// @brief get if a window has its scale factor defined. Whether this is true depends on the backend, whether the scale is set, and if the window is complete.
+///        In general, it is safe to assume 1 unless it is set otherwise.
+/// @param window the window. Asserts the object is valid, and is a window
+/// @return 1 if the windows scale factor is set, 0 if not.
+int pinc_window_has_scale_factor(int window);
+
+/// @brief set if a window is resizable or not
+/// @param window the window. Asserts the object is valid, is a window, has its width defined (see pinc_window_has_width), and has its height defined (see pinc_window_has_height)
+/// @param resizable 1 if the window is resizable, 0 if not.
+void pinc_window_set_resizable(int window, int resizable);
+
+/// @brief get if a window is resizable or not
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @return 1 if the window is resizable, 0 if not.
+int pinc_window_get_resizable(int window);
+
+/// @brief set if a window is minimized or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @param minimized 1 if the window is minimized, 0 if not
+void pinc_window_set_minimized(int window, int minimized);
+
+/// @brief get if a window is minimized or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @return 1 if the window is minimized, 0 if not
+int pinc_window_get_minimized(int window);
+
+/// @brief set if a window is maximized or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @param maximized 1 if the window is maximized, 0 if not
+void pinc_window_set_maximized(int window, int maximized);
+
+/// @brief get if a window is maximized or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @return 1 if the window is maximized, 0 if not
+int pinc_window_get_maximized(int window);
+
+/// @brief set if a window is fullscreen or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @param fullscreen 1 if the window is fullscreen, 0 if not
+void pinc_window_set_fullscreen(int window, int fullscreen);
+
+/// @brief get if a window is fullscreen or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @return 1 if the window is fullscreen, 0 if not
+int pinc_window_get_fullscreen(int window);
+
+/// @brief set if a window is focused or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @param focused 1 if the window is focused, 0 if not
+void pinc_window_set_focused(int window, int focused);
+
+/// @brief get if a window is focused or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @return 1 if the window is focused, 0 if not
+int pinc_window_get_focused(int window);
+
+/// @brief set if a window is hidden or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @param hidden 1 if the window is hidden, 0 if not
+void pinc_window_set_hidden(int window, int hidden);
+
+/// @brief get if a window is hidden or not.
+/// @param window the window. Asserts the object is valid, and is a window.
+/// @return 1 if the window is hidden, 0 if not
+int pinc_window_get_hidden(int window);
+
+// TODO: doc
+void pinc_window_present_framebuffer(int window, int vsync);
+
+/// @section main loop & user IO / events
+
+// TODO: doc
+void pinc_step();
+
+// TODO: doc
+int pinc_window_event_closed(int window);
+
+// TODO: the rest of the events / event-like things:
+// - resize - size can already be retrieved, just need an event for it
+// - focus
+// - unfocus
+// - damaged / exposed
+// - key_down
+// - key_up
+// - key_repeat
+// - text - just have the entire text over this frame in a buffer
+// - cursor_move
+// - cursor_enter
+// - cursor_exit
+// - cursor_button_down
+// - cursor_button_up
+// - scroll
+
+/// @section graphics
+
+// TODO: doc
+void pinc_graphics_set_fill_color(int channel, int value);
+
+// TODO: doc
+void pinc_graphics_set_fill_depth(int value);
+
+// TODO: doc
+enum pinc_graphics_fill_flag {
+    pinc_graphics_fill_flag_color = 1,
+    pinc_graphics_fill_flag_depth = 2,
+};
+
+// TODO: doc
+void pinc_graphics_fill(int framebuffer, int flags);
 
-/// @brief Get a message for the most recent error.
-/// @return null terminated ascii string. Will never be null, but may have a length of zero.
-extern const char* pinc_error_string(void);
 
-/// @brief Returns the window api used by Pinc. Returns automatic if the native API is unknown - only occurs when using another library for the backend (like SDL)
-extern pinc_window_api_enum pinc_get_window_api(void);
-
-/// @brief A generic handle to a Pinc object. An id of 0 is equivalent to a null handle.
-typedef uint32_t pinc_handle;
-
-// Window and framebuffer types and functions
-
-/// @brief A handle to a window that hasn't been finalized yet. All incomplete windows are also incomplete framebuffers, as a window contains a framebuffer.
-typedef pinc_handle pinc_window_incomplete_handle_t;
-
-/// @brief A handle to a window. All windows are also framebuffers.
-typedef pinc_handle pinc_window_handle_t;
-
-/// @brief An incomplete handle to something that can be drawn to. Includes incomplete windows.
-typedef pinc_handle pinc_framebuffer_incomplete_handle_t;
-
-/// @brief A handle to something that can be drawn to. Includes windows.
-typedef pinc_handle pinc_framebuffer_handle_t;
-
-/// @brief Creates a window. Only params of this function are required, all other window properties have default values.
-/// @param title A null-terminated UTF8 string for the title of the window
-/// @return a handle to the window - it is not done yet, call pinc_complete_window
-extern pinc_window_incomplete_handle_t pinc_window_incomplete_create(char* title);
-
-/// @brief Sets the size of a window in pixels. Note that the underlying system has ultimate control over the window size and this call may be ignored.
-///     It should be noted that this sets the size of the window's framebuffer, decorations are not included here.
-/// @param window the window to set the size of
-/// @param width the width of the window. Enter 0 for an automatic value.
-/// @param height the height of the window. Enter 0 for an automatic value.
-/// @return false if there was an error
-extern bool pinc_window_set_size(pinc_window_incomplete_handle_t window, uint16_t width, uint16_t height);
-
-extern uint16_t pinc_window_get_width(pinc_window_incomplete_handle_t window);
-
-extern uint16_t pinc_window_get_height(pinc_window_incomplete_handle_t window);
-
-/// @brief Gets the scale of a window, in pixels per screen unit. A screen unit is defined separately from pixels on many platforms, such as MacOS.
-/// @param window a window, complete or not
-/// @return the scale factor of the given window, in pixels per screen unit.
-extern float pinc_window_get_scale(pinc_window_incomplete_handle_t window);
-
-/// @brief Gets the zoom factor of a window. Often, as an accessibility setting, users can scale things.
-///        For example, a user with a high resolution but small screen may set the scale to 2, so everything is twice as large.
-/// @param window a window, complete or not 
-/// @return zoom level
-extern float pinc_window_get_zoom(pinc_window_incomplete_handle_t window);
-
-/// @brief Sets a window icon. Note that some platforms do not support this function for some abominable reason. The default icon is Pinc's logo.
-/// @param window a window, incomplete or not
-/// @param data Pixel data. Like in GLFW, the image data is 8 bits per channel little-endian RGBA.
-///             The pixels are arranged starting at the top left, each row defined as left to right, each row stacked top to bottom.
-/// @param size the size of each side the icon. Exactly 256 pixels is recomended.
-extern void pinc_window_set_icon(pinc_window_incomplete_handle_t window, uint8_t* data, uint32_t size);
-
-/// @brief Sets a window to be iconified / minimized
-/// @param window a window, complete or not
-/// @param minimized whether the window should be minimized or not. Default is false
-extern void pinc_window_set_minimized(pinc_window_incomplete_handle_t window, bool minimized);    
-
-extern bool pinc_window_get_minimized(pinc_window_incomplete_handle_t window);
-
-/// @brief Sets if a window is resizable or not
-/// @param window a window
-/// @param resizable if the given window is resizable or not. Default is true.
-extern void pinc_window_set_resizable(pinc_window_incomplete_handle_t window, bool resizable);
-
-extern bool pinc_window_get_resizable(pinc_window_incomplete_handle_t window);
-
-/// @brief Sets a window to be maximized. Not to be confused with fullscreen.
-/// @param window a window, complete or not
-/// @param maximized wheter the window is maximized or not. Default is false.
-extern void pinc_window_set_maximized(pinc_window_incomplete_handle_t window, bool maximized);
-
-extern bool pinc_window_get_maximized(pinc_window_incomplete_handle_t window);
-
-/// @brief Sets a window to use fullscreen or not. Default is false.
-/// @param window the window to set the parameter of. This accepts both complete and incomplete windows.
-/// @param fullscreen whether the window os fullscreen or not. Default is false.
-/// @param resize Whether the window is allowed to resize when set to fullscreen. In 99% of cases, this should be true
-///               as some systems behave badly when the window resolution does not match the screen resolution.
-extern void pinc_window_set_fullscreen(pinc_window_incomplete_handle_t window, bool fullscreen, bool resize);
-
-/// @brief Gets if a window is fullscreen or not
-/// @param window window, complete or not.
-/// @return whether the window is fullscreen or not.
-extern bool pinc_window_get_fullscreen(pinc_window_incomplete_handle_t window);
-
-/// @brief Sets a window to be visible or hidden.
-/// @param window The window to set the parameter of. This accepts both complete and incomplete windows.
-/// @param visible whether the window is visible or not. The default is true.
-extern void pinc_window_set_visible(pinc_window_incomplete_handle_t window, bool visible);
-
-/// @brief Gets if a window is visible
-/// @param window a window, complete or not.
-/// @return true if the given window is visible
-extern bool pinc_window_get_visible(pinc_window_incomplete_handle_t window);
-
-/// @brief Sets a window to have transparency or not. If enabled and supported, the framebuffer's alpha value will be used to blend between this window and anything behind it.
-/// @param window the window to set the parameter of. Accepts both complete and incomplete windows.
-/// @param blend whether to blend or not. The default is false.
-extern void pinc_window_set_transparency(pinc_window_incomplete_handle_t window, bool blend);
-
-/// @brief Gets if a window supports transparency
-/// @param window a window
-/// @return whether the given window's alpha channel will be used to blend with anything behind it.
-extern bool pinc_window_get_transparency(pinc_window_incomplete_handle_t window);
-
-// TODO: this weird thing where the app has to probe pinc for a good set of bits is bad.
-// Make the API better so it's not so weird
-
-/// @brief Attempts to set the number of bits for the red channel for the windows framebuffer. Returns false if the bit depth is unsupported.
-///        Note that some platforms may treat each channel differently, but they will always be roughly the same. (+- 1 bit, maybe 2 or 3 bits in certain edge cases)
-/// @param window the INCOMPLETE window.
-/// @param red_bits the number of bits for the red channel
-/// @return whether that bit depth is actually supported
-extern bool pinc_window_set_red_bits(pinc_window_incomplete_handle_t window, uint16_t red_bits);
-
-extern uint16_t pinc_window_get_red_bits(pinc_window_incomplete_handle_t window);
-
-/// @brief Attempts to set the number of bits for the green channel for the windows framebuffer. Returns false if the bit depth is unsupported.
-///        Note that some platforms may treat each channel differently, but they will always be roughly the same. (+- 1 bit, maybe 2 or 3 bits in certain edge cases)
-/// @param window the INCOMPLETE window.
-/// @param green_bits the number of bits for the green channel
-/// @return whether that bit depth is actually supported
-extern bool pinc_window_set_green_bits(pinc_window_incomplete_handle_t window, uint16_t green_bits);
-
-extern uint16_t pinc_window_get_green_bits(pinc_window_incomplete_handle_t window);
-
-/// @brief Attempts to set the number of bits for the blue channel for the windows framebuffer. Returns false if the bit depth is unsupported.
-///        Note that some platforms may treat each channel differently, but they will always be roughly the same. (+- 1 bit, maybe 2 or 3 bits in certain edge cases)
-/// @param window the INCOMPLETE window.
-/// @param blue_bits the number of bits for the blue channel
-/// @return whether that bit depth is actually supported
-extern bool pinc_window_set_blue_bits(pinc_window_incomplete_handle_t window, uint16_t blue_bits);
-
-extern uint16_t pinc_window_get_blue_bits(pinc_window_incomplete_handle_t window);
-
-/// @brief Attempts to set the number of bits for the alpha channel for the windows framebuffer. Returns false if the bit depth is unsupported.
-///        Note that some platforms may treat each channel differently, but they will always be roughly the same. (+- 1 bit, maybe 2 or 3 bits in certain edge cases)
-/// @param window the INCOMPLETE window.
-/// @param alpha_bits the number of bits for the alpha channel
-/// @return whether that bit depth is actually supported
-extern bool pinc_window_set_alpha_bits(pinc_window_incomplete_handle_t window, uint16_t alpha_bits);
-
-extern uint16_t pinc_window_get_alpha_bits(pinc_window_incomplete_handle_t window);
-
-/// @brief Attempts to set the number of bits for the depth buffer for the windows framebuffer. Returns false if the bit depth is unsupported.
-/// @param window the INCOMPLETE window.
-/// @param depth_bits the number of bits for the depbht buffer
-/// @return whether that bit depth is actually supported
-extern bool pinc_window_set_depth_bits(pinc_window_incomplete_handle_t window, uint16_t depth_bits);
-
-extern uint16_t pinc_window_get_depth_bits(pinc_window_incomplete_handle_t window);
-
-/// @brief Attempts to set the number of bits for the stencil buffer for the windows framebuffer. Returns false if the bit depth is unsupported.
-/// @param window the INCOMPLETE window.
-/// @param stencil_bits the number of bits for the stencil buffer
-/// @return whether that bit depth is actually supported
-extern bool pinc_window_set_stencil_bits(pinc_window_incomplete_handle_t window, uint16_t depth_bits);
-
-extern uint16_t pinc_window_get_stencil_bits(pinc_window_incomplete_handle_t window);
-
-/// @brief Closes and frees a window.
-/// @param window the window to free. Accepts both complete and incomplete windows.
-extern void pinc_window_destroy(pinc_window_incomplete_handle_t window);
-
-/// @brief Completes a window
-/// @param incomplete the incomplete window.
-/// @return the newly completed window - the handle is guaranteed to be the same, however this will be 0 if an error occured.
-extern pinc_window_handle_t pinc_window_complete(pinc_window_incomplete_handle_t incomplete);
-
-/// @brief Gets if a window is the focused window or not
-/// @param window a window
-/// @return if the given window is the current focused window.
-extern bool pinc_window_get_focused(pinc_window_handle_t window);
-
-/// @brief Notifies the user that this window is "ready".
-/// @param window a window
-extern void pinc_window_request_attention(pinc_window_handle_t window);
-
-// Types and functions for events
-
-/// @brief Event type enum. Enum values that are lower will (generally) appear first in the event buffer. In the source file, they are separated into sections.
-typedef enum {
-    /// @brief There is no event in the buffer.
-    pinc_event_none,
-    // Section for top priority
-
-    /// @brief triggered when a window is resized. On windows, this is only triggered once per resize, but on other platforms this may be called every frame as the window is resized.
-    pinc_event_window_resize,
-    /// @brief triggered when a window gains focus. Window focus events only occur once per frame
-    pinc_event_window_focus,
-    /// @brief triggered when a window looses focus. Window focus events only occur once per frame
-    pinc_event_window_unfocus,
-    // section for second priority
-
-    /// @brief triggered when a window needs to be redrawn. Note that many systems store the window surface internally, and thus only call this when resizing the window.
-    ///        Only triggered once per window per call to poll_events or wait_event at most.
-    pinc_event_window_damaged,
-    // section for tertiary priority
-
-    /// @brief triggered when a key is pressed down
-    pinc_event_window_key_down,
-    /// @brief triggered when a key is released up
-    pinc_event_window_key_up,
-    /// @brief triggered when a key repeats
-    pinc_event_window_key_repeat,
-    /// @brief triggered when the system's text input enters a unicode character.
-    pinc_event_window_text,
-    // section for 4th priority
-
-    /// @brief triggered when the mouse cursor moves.
-    ///        Only triggered once per window per call to poll_events or wait_event at most.
-    pinc_event_window_cursor_move,
-    /// @brief triggered when the mouse cursor enters a window
-    ///        Only triggered once per window per call to poll_events or wait_event at most.
-    pinc_event_window_cursor_enter,
-    /// @brief triggered when the mouse cursor exits a window
-    ///        Only triggered once per window per call to poll_events or wait_event at most.
-    pinc_event_window_cursor_exit,
-    /// @brief triggered when a mouse button is pressed down
-    pinc_event_window_cursor_button_down,
-    /// @brief triggered when a mouse button is released up
-    pinc_event_window_cursor_button_up,
-    /// @brief triggered when scrolling. Only triggered once per call to poll_events or wait_event.
-    pinc_event_window_scroll,
-    // section for lowest priority.
-
-    /// @brief triggered when a window is told to close. This is usually the X button in the corner. This event is always placed last in the event buffer.
-    ///        Only triggered once per window per call to poll_events or wait_event at most.
-    pinc_event_window_close,
-} pinc_event_type_enum;
-
-// General event functions
-
-/// @brief Pulls events for all windows into an internal buffer. Does not block. This merges all events for the entire frame.
-/// Events that were not processed from the last call are incorperated into the new buffer, and properly sorted accordingly.
-extern void pinc_event_poll(void);
-
-/// @brief Moves to the next event.
-extern void pinc_event_advance(void);
-
-/// @brief Waits for events. Does not block if the event buffer contains events to be processed.
-///        Note that using this function still requires calling advance event. The timeout is in seconds, use Infinity, NaN, or 0 for an infinite timeout.
-///        This is logically equivalent calling poll_events and event_type in a loop until event_type != none, implemented more efficiently.
-extern void pinc_event_wait(float timeout);
-
-/// @brief Gets the type of the current event
-extern pinc_event_type_enum pinc_event_type(void);
-
-// alternates between type and function for each type of event.
-
-/// @brief Data for window close event
-typedef struct {
-    /// @brief The window that was told to close.
-    pinc_window_handle_t window;
-} pinc_event_window_close_t;
-
-/// @brief Gets the current window close event. Undefined if the current event is not a window close event. 
-extern pinc_event_window_close_t pinc_event_window_close_data(void);
-
-/// @brief Data for window resize event
-typedef struct {
-    /// @brief the window that was resized
-    pinc_window_handle_t window;
-    /// @brief The new width of the window, in pixels
-    uint32_t width;
-    /// @brief The new height of the window, in pixels
-    uint32_t height;
-} pinc_event_window_resize_t;
-
-/// @brief Gets the current window resize event. Undefined if the current event is not a window resize event. 
-extern pinc_event_window_resize_t pinc_event_window_resize_data(void);
-
-/// @brief Focus event data
-typedef struct {
-    pinc_window_handle_t window;
-} pinc_event_window_focus_t;
-
-/// @brief Gets the current pinc_event_window_focus_t. Undefined if the current event is not a pinc_event_window_focus_t. 
-extern pinc_event_window_focus_t pinc_event_window_focus_data(void);
-
-/// @brief Unfocus event data
-typedef struct {
-    pinc_window_handle_t window;
-} pinc_event_window_unfocus_t;
-
-/// @brief Gets the current pinc_event_window_unfocus_t. Undefined if the current event is not a pinc_event_window_unfocus_t. 
-extern pinc_event_window_unfocus_t pinc_event_window_unfocus_data(void);
-
-/// @brief Data for window damage event
-typedef struct {
-    /// @brief The window that should be redrawn
-    pinc_window_handle_t window;
-} pinc_event_window_damaged_t;
-
-/// @brief Gets the current window damaged event. Undefined if the current event is not a window damaged event. 
-extern pinc_event_window_damaged_t pinc_event_window_damaged_data(void);
-
-/// @brief Enumeration of Pinc key codes. They are basically just copied from GLFW, which means they (more or less) map to ASCII codes.
-typedef enum {
-    pinc_key_code_unknown = -1,
-    pinc_key_code_space = 32,
-    pinc_key_code_apostrophe = 39,
-    pinc_key_code_comma = 44,
-    pinc_key_code_dash,
-    pinc_key_code_dot,
-    pinc_key_code_slash,
-    pinc_key_code_0,
-    pinc_key_code_1,
-    pinc_key_code_2,
-    pinc_key_code_3,
-    pinc_key_code_4,
-    pinc_key_code_5,
-    pinc_key_code_6,
-    pinc_key_code_7,
-    pinc_key_code_8,
-    pinc_key_code_9,
-    pinc_key_code_semicolon = 59,
-    pinc_key_code_equals = 61,
-    pinc_key_code_a = 65,
-    pinc_key_code_b,
-    pinc_key_code_c,
-    pinc_key_code_d,
-    pinc_key_code_e,
-    pinc_key_code_f,
-    pinc_key_code_g,
-    pinc_key_code_h,
-    pinc_key_code_i,
-    pinc_key_code_j,
-    pinc_key_code_k,
-    pinc_key_code_l,
-    pinc_key_code_m,
-    pinc_key_code_n,
-    pinc_key_code_o,
-    pinc_key_code_p,
-    pinc_key_code_q,
-    pinc_key_code_r,
-    pinc_key_code_s,
-    pinc_key_code_t,
-    pinc_key_code_u,
-    pinc_key_code_v,
-    pinc_key_code_w,
-    pinc_key_code_x,
-    pinc_key_code_y,
-    pinc_key_code_z,
-    pinc_key_code_left_bracket,
-    pinc_key_code_backslash,
-    pinc_key_code_right_bracket,
-    /// @brief The ` character. The ~` button on US keyboards.
-    pinc_key_code_backtick = 96, 
-    // TODO: what are GLFW_WORLD_1 and GLFW_WORLD_2
-    pinc_key_code_escape = 256,
-    pinc_key_code_enter,
-    pinc_key_code_tab,
-    pinc_key_code_backspace,
-    pinc_key_code_insert,
-    pinc_key_code_delete,
-    pinc_key_code_right,
-    pinc_key_code_left,
-    pinc_key_code_down,
-    pinc_key_code_up,
-    pinc_key_code_page_up,
-    pinc_key_code_page_down,
-    pinc_key_code_home,
-    pinc_key_code_end,
-    pinc_key_code_caps_lock,
-    pinc_key_code_scroll_lock,
-    pinc_key_code_num_lock,
-    pinc_key_code_print_screen,
-    pinc_key_code_pause,
-    pinc_key_code_f1 = 290,
-    pinc_key_code_f2,
-    pinc_key_code_f3,
-    pinc_key_code_f4,
-    pinc_key_code_f5,
-    pinc_key_code_f6,
-    pinc_key_code_f7,
-    pinc_key_code_f8,
-    pinc_key_code_f9,
-    pinc_key_code_f10,
-    pinc_key_code_f11,
-    pinc_key_code_f12,
-    pinc_key_code_f13,
-    pinc_key_code_f14,
-    pinc_key_code_f15,
-    pinc_key_code_f16,
-    pinc_key_code_f17,
-    pinc_key_code_f18,
-    pinc_key_code_f19,
-    pinc_key_code_f20,
-    pinc_key_code_f21,
-    pinc_key_code_f22,
-    pinc_key_code_f23,
-    pinc_key_code_f24,
-    // Note: I don't think any actual systems have support for function keys beyond 24.
-    pinc_key_code_f25,
-    pinc_key_code_f26,
-    pinc_key_code_f27,
-    pinc_key_code_f28,
-    pinc_key_code_f29,
-    pinc_key_code_f30,
-    pinc_key_code_numpad_0,
-    pinc_key_code_numpad_1,
-    pinc_key_code_numpad_2,
-    pinc_key_code_numpad_3,
-    pinc_key_code_numpad_4,
-    pinc_key_code_numpad_5,
-    pinc_key_code_numpad_6,
-    pinc_key_code_numpad_7,
-    pinc_key_code_numpad_8,
-    pinc_key_code_numpad_9,
-    pinc_key_code_numpad_dot,
-    pinc_key_code_numpad_slash,
-    pinc_key_code_numpad_asterisk,
-    pinc_key_code_numpad_dash,
-    pinc_key_code_numpad_plus,
-    pinc_key_code_numpad_enter,
-    pinc_key_code_numpad_equal,
-    pinc_key_code_left_shift,
-    pinc_key_code_left_control,
-    pinc_key_code_left_alt,
-    /// @brief On many keyboards, this is a windows icon and is generally called "the windows button"
-    pinc_key_code_left_super,
-    pinc_key_code_right_shift,
-    pinc_key_code_right_control,
-    pinc_key_code_right_alt,
-    /// @brief On many keyboards, this is a windows icon and is generally called "the windows button". Most keyboards only have the one on the left, not this one.
-    pinc_key_code_right_super,
-    /// @brief On many keyboards, this is the button next to right control
-    pinc_key_code_menu,
-    // Don't you just love C?
-    pinc_key_code_count,
-} pinc_key_code_enum;
-
-/// @brief Key modifiers are a bitfield, however those may have strange ABI differences so it's represented the "raw" way
-typedef uint32_t pinc_key_modifiers_t;
-#define pinc_modifier_shift_bit 1<<0
-#define pinc_modifier_control_bit 1<<1
-#define pinc_modifier_alt_bit 1<<2
-#define pinc_modifier_super_bit 1<<3
-#define pinc_modifier_caps_lock_bit 1<<4
-#define pinc_modifier_num_lock_bit 1<<5
-
-/// @brief Data for window key down event
-typedef struct {
-    /// @brief The window that the key was pressed on
-    pinc_window_handle_t window;
-    /// @brief Cross platform key code
-    pinc_key_code_enum key;
-    /// @brief Platform specific key code. This depends on the users keyboard layout, language, and platform.
-    uint32_t token;
-    pinc_key_modifiers_t modifiers;
-} pinc_event_window_key_down_t;
-
-/// @brief Gets the current window key down event. Undefined if the current event is not a window key down event.
-extern pinc_event_window_key_down_t pinc_event_window_key_down_data(void);
-
-/// @brief Data for window key up event
-typedef struct {
-    /// @brief The window that the key was released on
-    pinc_window_handle_t window;
-    /// @brief Cross platform key code
-    pinc_key_code_enum key;
-    /// @brief Platform specific key code. This depends on the users keyboard layout, language, and platform.
-    uint32_t token;
-    pinc_key_modifiers_t modifiers;
-} pinc_event_window_key_up_t;
-
-/// @brief Gets the current window key up event. Undefined if the current event is not a windowkey up event.
-extern pinc_event_window_key_up_t pinc_event_window_key_up_data(void);
-
-
-/// @brief Data for window key repeat event
-typedef struct {
-    /// @brief The window that the key was repeated on
-    pinc_window_handle_t window;
-    /// @brief Cross platform key code
-    pinc_key_code_enum key;
-    /// @brief Platform specific key code. This depends on the users keyboard layout, language, and platform.
-    uint32_t token;
-    pinc_key_modifiers_t modifiers;
-} pinc_event_window_key_repeat_t;
-
-/// @brief Gets the current window key repeat event. Undefined if the current event is not a window key repeat event.
-extern pinc_event_window_key_repeat_t pinc_event_window_key_repeat_data(void);
-
-/// @brief Data for window text event
-typedef struct {
-    /// @brief The window that was typed into
-    pinc_window_handle_t window;
-    /// @brief Unicode codepoint that was entered.
-    uint32_t codepoint;
-} pinc_event_window_text_t;
-
-/// @brief Gets the current window key text event. Undefined if the current event is not a window key text event.
-extern pinc_event_window_text_t pinc_event_window_text_data(void);
-
-typedef struct {
-    pinc_window_handle_t window;
-    /// @brief X coordinate in screen coordinates
-    float x_screen;
-    /// @brief Y coordinate in screen coordinates
-    float y_screen;
-    /// @brief Change of the X coordinate in screen coordinates since last event poll
-    float delta_x_screen;
-    /// @brief Change of the Y coordinate in screen coordinates since last event poll
-    float delta_y_screen;
-    /// @brief X coordinate in pixels
-    int32_t x_pixels;
-    /// @brief Y coordinate in pixels
-    int32_t y_pixels;
-    /// @brief Change of the X coordinate in pixels since last event poll
-    int32_t delta_x_pixels;
-    /// @brief Change of the Y coordinate in pixels since last event poll
-    int32_t delta_y_pixels;
-} pinc_event_window_cursor_move_t;
-
-/// @brief Gets the current window cursor move event. Undefined if the current event is not a window cursor move event.
-extern pinc_event_window_cursor_move_t pinc_event_window_cursor_move_data(void);
-
-/// @brief Data for pinc_event_window_cursor_enter
-typedef struct {
-    /// @brief The window that the cursor entered
-    pinc_window_handle_t window;
-} pinc_event_window_cursor_enter_t;
-
-/// @brief Gets the current pinc_event_window_cursor_enter. Undefined if the current event is not pinc_event_window_cursor_enter
-extern pinc_event_window_cursor_enter_t pinc_event_window_cursor_enter_data(void);
-
-/// @brief Data for pinc_event_window_cursor_exit
-typedef struct {
-    /// @brief The window that the cursor exited
-    pinc_window_handle_t window;
-} pinc_event_window_cursor_exit_t;
-
-/// @brief Gets the current pinc_event_window_cursor_exit. Undefined if the current event is not pinc_event_window_cursor_exit
-extern pinc_event_window_cursor_exit_t pinc_event_window_cursor_exit_data(void);
-
-/// @brief Mouse buttons enum
-typedef enum {
-    pinc_cursor_button_left,
-    pinc_cursor_button_right,
-    pinc_cursor_button_middle,
-    pinc_cursor_button_4,
-    pinc_cursor_button_5,
-    pinc_cursor_button_6,
-    pinc_cursor_button_7,
-    pinc_cursor_button_8,
-} pinc_cursor_button_enum;
-
-/// @brief Data for pinc_event_window_cursor_button_down
-typedef struct {
-    pinc_window_handle_t window;
-    pinc_cursor_button_enum button;
-
-} pinc_event_window_cursor_button_down_t;
-
-/// @brief Gets the current pinc_event_window_cursor_button_down. Undefined if the current event is not pinc_event_window_cursor_button_down
-extern pinc_event_window_cursor_button_down_t pinc_event_window_cursor_button_down_data(void);
-
-/// @brief Data for pinc_event_window_cursor_button_up
-typedef struct {
-    pinc_window_handle_t window;
-    pinc_cursor_button_enum button;
-
-} pinc_event_window_cursor_button_up_t;
-
-/// @brief Gets the current pinc_event_window_cursor_button_up. Undefined if the current event is not pinc_event_window_cursor_button_up
-extern pinc_event_window_cursor_button_up_t pinc_event_window_cursor_button_up_data(void);
-
-typedef struct {
-    pinc_window_handle_t window;
-    float delta_x;
-    float delta_y;
-} pinc_event_window_scroll_t;
-
-/// @brief Gets the current pinc_event_window_scroll. Undefined if the current event is not pinc_event_window_scroll
-extern pinc_event_window_scroll_t pinc_event_window_scroll_data(void);
-
-// Additional keyboard types and functions
-
-/// @brief Get the name of a platform specific key code. This depends on the users keyboard layout, language, and platform.
-/// @return The name of the key token. This returns null if the token does not have a name
-extern const char* pinc_key_token_name(uint32_t token);
-
-// Additional cursor types and functions
-
-typedef enum {
-    /// @brief Normal cursor movement and visibility
-    pinc_cursor_mode_normal,
-    /// @brief Cursor is hidden and locked to a window. The position is undefined in this state, use movement deltas only
-    pinc_cursor_mode_locked,
-    /// @brief Cursor is hidden but free
-    pinc_cursor_mode_hidden,
-    /// @brief Cursor is still visible but captured. The position is undefined in this state, use movement deltas only
-    pinc_cursor_mode_captured,
-} pinc_cursor_mode_enum;
-
-/// @brief Sets the cursor mode
-/// @param mode The mode to set to
-/// @param window The window to use for the mode. This is ignored when setting to normal mode.
-extern void pinc_set_cursor_mode(pinc_cursor_mode_enum mode, pinc_window_handle_t window);
-
-typedef enum {
-    /// @brief The normal arrow cursor
-    pinc_cursor_theme_image_arrow,
-    /// @brief the I beam cursor for text inputs
-    pinc_cursor_theme_image_I,
-    pinc_cursor_theme_image_crosshair,
-    /// @brief The pointing hand cursor
-    pinc_cursor_theme_image_pointing,
-    /// @brief Resize up / down
-    pinc_cursor_theme_image_resize_1,
-    /// @brief Resize left / right
-    pinc_cursor_theme_image_resize_2,
-    /// @brief Resize diagonally from the bottom left or top right
-    pinc_cursor_theme_image_resize_3,
-    /// @brief Resize diagonally from the top left or bottom right
-    pinc_cursor_theme_image_resize_4,
-    /// @brief Generic resize cursor. Generally represented by all of the resize images merged together.
-    pinc_cursor_theme_image_resize,
-    /// @brief Cursor for something being disallowed or disabled.
-    pinc_cursor_theme_image_no,
-} pinc_cursor_theme_image_enum;
-
-extern void pinc_set_cursor_theme_image(pinc_cursor_theme_image_enum image, pinc_window_handle_t window);
-
-/// @brief Sets the cursor image to a texture
-/// @param window the window to set the cursor of
-/// @param data cursor image, as described in set_icon
-/// @param size the size of the image, in pixels. Generally 256 is a good value.
-extern void pinc_set_cursor_image(pinc_window_handle_t window, uint8_t* data, uint32_t size);
-
-// general IO functions
-
-/// @brief Gets the clipboard string
-/// @return the clipboard string. Its lifetime is at least as long as until the next call to Pinc, do not hold on to the returned pointer beyond your next function call to pinc.
-extern char* pinc_get_clipboard_string(void);
-
-// Pinc functions that allow Pinc to be used like GLFW - in other words, use the graphics API directly
-// They may be used alongside the ordinary pinc graphics API, however that is probably a bad idea.
-// I suggest either going all the way and only using the non-opengl pinc functions, or just only using opengl.
-
-/// @brief Set the OpenGL context to a framebuffer or window.
-///        There is one OpenGL context for the entire application, unlike GLFW where the context is per window.
-/// @param window The framebuffer whose framebuffer to draw to. Must be complete.
-/// @return false if something went wrong (notably, some backends don't create the OpenGL context until this is called), otherwise true.
-extern bool pinc_graphics_opengl_set_framebuffer(pinc_framebuffer_handle_t framebuffer);
-
-/// @brief Returns the pointer of an OpenGL function.
-/// @param procname the name of the opengl function.
-/// @return a raw nullable pointer to that function.
-extern void* pinc_graphics_opengl_get_proc(const char* procname);
-
-// pinc graphics functions
-
-/// @brief Clears a given framebuffer to an RGB color. The color values range from 0 to 1.
-/// @param framebuffer The framebuffer to clear. Must be complete.
-extern void pinc_graphics_clear_color(pinc_framebuffer_handle_t framebuffer, float r, float g, float b, float a);
-
-/// @brief Presents a window framebuffer
-/// @param window the window to swap the
-/// @param vsync Whether to wait for vertical sync. Depending on the graphics driver & system, this may behave differently or be ignored.
-extern void pinc_graphics_present_window(pinc_window_handle_t window, bool vsync);
-
-// General utility functions
-
-/// @brief Get the name of a key
-/// @return The name of the key. This returns null if the code is invalid.
-extern const char* pinc_util_key_name(pinc_key_code_enum code);
-
-/// Converts a unicode point to a UTF8 sequence. Returns false in the case of an error (most often an invalid unicode point)
-/// Dest must have at least 5 available bytes, 4 for the codepoint and 1 for a null byte. The codepoint may be 1 to 4 bytes in length
-extern bool pinc_util_unicode_to_uft8(uint32_t unicode, char* dest);
