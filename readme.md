@@ -120,11 +120,12 @@ None of these are going to be implemented any time soon - if ever.
 - Xcb
     - Not worth the effort. Xlib works fine for X11.
 
-## Missing features (LOOKING FOR CONTRIBUTORS)
+## Missing features (LOOKING FOR CONTRIBUTORS / API DESIGN IDEAS)
 - window position
     - wayland be like:
 - lots of events aren't implemented yet
 - ability get data from specific backends
+    - X display, X windows, SDL2 opengl context, Win32 window handle, etc etc etc
 - backend-specific settings
 - ability to use backend objects to create Pinc objects
 - general input methods
@@ -162,10 +163,22 @@ None of these are going to be implemented any time soon - if ever.
     - Macos aarch64
     - Macos x86_64
     - Linux x86_64 (I have hardware)
-    - Linux x86 (I have hardware)
-    - Linux aarch64
+    - Linux x86 (I have hardware, it's literally been sitting in storage for like 20 or 25 years though)
+    - Linux aarch64 (I might be able to get that surface RT to work...)
     - Linux armv7a
     - Linux riscv64
     - Linux powerpc64le
 - add functions that take advantage of pointers for performance
     - particularily for 3D rendering with large meshes
+- Replace the global state "OpenGl-y" graphics functions to use a graphics context object
+    - Maybe each graphics context could even use a different graphics backend? Probably not...
+- the graphics API as a whole is missing things
+    - framebuffer objects
+    - general drawing functions:
+        - rectangle, triangle, circle, both solid and outlined
+        - rotated rectangle, ellipse, arbitrary quad
+    - anti-aliasing
+    - meshes
+    - shaders
+- empty / "null" / mock window backend
+- empty / "null" / mock graphics backend

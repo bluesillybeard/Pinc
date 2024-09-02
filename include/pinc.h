@@ -19,8 +19,7 @@
 
 // error policy:
 // - incorrect usage of Pinc's API will trigger an assert in debug builds (-Doptimize=Debug or -Doptimize=ReleaseSafe)
-// - errors caused by Pinc will also trigger asserts,
-//   but they will be clear about the fact that it's an error due to Pinc rather than the program.
+// - errors caused by Pinc will also trigger asserts - when in doubt, make an issue / discussion / discord message with the error.
 // - errors that are not fatal will trigger an error that can be collected using pinc_error_* functions
 // - errors that are caused by external factors and are fatal will trigger errors that can be collected using pinc_error_* functions.
 //   Fatal errors will cause pinc to be in an invalid state, and any non-error collecting function call from then on will trigger an assert.
@@ -43,7 +42,7 @@
 //     - The problem of all framebuffers requiring the same format is actually inherited from OpenGL 2.1.
 // - call pinc_complete_init()
 // - (optional) create objects:
-//     - windows - you know what a window is. It can be used as a texture, although that's generally a bad idea
+//     - windows - you know what a window is.
 // - main loop
 //     - call pinc_step
 //         - this will collect events, update window properties, clear arena allocators, etc.
@@ -64,31 +63,17 @@
 #define PINC_CALL
 #endif
 
-/// @section initialization
-// These are roughly in the order they should be called in a normal application
+/// @section types (Notice there are no structs here.)
 
-/// @brief preps pinc for initialization. This will ALWAYS be the first pinc function called, outside of utility functions.
-/// Calling non-utility functions before this is undefined behavior, and will trigger asserts in debug mode.
-PINC_API void PINC_CALL pinc_incomplete_init(void);
-
+// Types and enums
 enum pinc_window_backend {
     /// @brief The backend is unknown / not in this enum
     pinc_window_backend_any,
     /// @brief Pinc is using SDL2
     pinc_window_backend_sdl2,
-    // New backends implemented at added at the end here.
+    // New backends implemented are added at the end here.
     
 };
-
-/// @brief Queries if a window backend is available.
-/// @param backend the backend to query
-/// @return 1 if the backend is supported, 0 if not.
-PINC_API int PINC_CALL pinc_window_backend_is_supported(int backend);
-
-/// @brief Sets the window backend to use
-/// Undefined if called after any function other than pinc_incomplete_init and pinc_window_backend_is_supported.
-/// @param backend the backend to use. Undefined if pinc_window_backend_is_supported(backend) == 0.
-PINC_API void PINC_CALL pinc_init_set_window_backend(int backend);
 
 enum pinc_graphics_backend {
     /// @brief the graphics backend is unknown / not in this enum.
@@ -99,6 +84,47 @@ enum pinc_graphics_backend {
     /// @brief just a plain pixel grid. No hardware acceleration, just a grid of pixels and grinding through pixel data on the CPU.
     pinc_graphics_backend_raw,
 };
+
+enum pinc_error_type {
+    /// @brief Error does not have a designated type.
+    pinc_error_any,
+    /// @brief A memory allocation failed
+    pinc_error_allocation,
+    // Errors that aren't here and why:
+    // - wrong object type -> that is a programmer error, so it's an assert instead of an error
+    // - attempt to get something that is cemented -> programmer error, its an assert
+    // - calling pinc functions before its initialized -> programmer error = assert
+    // - Pinc developers made a mistake and forgot something -> an error with Pinc itself, that's an assert
+};
+
+enum pinc_object_type {
+    /// @brief the object is empty / invalid
+    pinc_object_none,
+    pinc_object_window,
+};
+
+// TODO: doc
+enum pinc_graphics_fill_flag {
+    pinc_graphics_fill_flag_color = 1,
+    pinc_graphics_fill_flag_depth = 2,
+};
+
+/// @section initialization
+// These are roughly in the order they should be called in a normal application
+
+/// @brief preps pinc for initialization. This will ALWAYS be the first pinc function called, outside of utility functions.
+/// Calling non-utility functions before this is undefined behavior, and will trigger asserts in debug mode.
+PINC_API void PINC_CALL pinc_incomplete_init(void);
+
+/// @brief Queries if a window backend is available.
+/// @param backend the backend to query
+/// @return 1 if the backend is supported, 0 if not.
+PINC_API int PINC_CALL pinc_window_backend_is_supported(int backend);
+
+/// @brief Sets the window backend to use. Once called, this cannot be called again as Pinc will fully initialize the backend.
+/// Undefined if called after any function other than pinc_incomplete_init and pinc_window_backend_is_supported.
+/// @param backend the backend to use. Undefined if pinc_window_backend_is_supported(backend) == 0.
+PINC_API void PINC_CALL pinc_init_set_window_backend(int backend);
 
 /// @brief Queries if a graphics backend is available.
 /// @param backend the backend to query
@@ -155,18 +181,6 @@ PINC_API void PINC_CALL pinc_deinit(void);
 /// @return the number of errors in the error stack
 PINC_API int PINC_CALL pinc_error_get_num(void);
 
-enum pinc_error_type {
-    /// @brief Error does not have a designated type.
-    pinc_error_any,
-    /// @brief A memory allocation failed
-    pinc_error_allocation,
-    // Errors that aren't here and why:
-    // - wrong object type -> that is a programmer error, so it's an assert instead of an error
-    // - attempt to set something that is cemented -> programmer error, its an assert
-    // - calling pinc functions before its initialized -> programmer error = assert
-    // - Pinc developers made a mistake and forgot something -> an error with Pinc itself, that's an assert
-};
-
 PINC_API int PINC_CALL pinc_error_peek_type(void);
 
 // 1 if fatal, 0 if non-fatal
@@ -185,12 +199,6 @@ PINC_API void PINC_CALL pinc_error_pop(void);
 PINC_API int PINC_CALL pinc_window_backend_get(void);
 
 /// @section general management
-
-enum pinc_object_type {
-    /// @brief the object is empty / invalid
-    pinc_object_none,
-    pinc_object_window,
-};
 
 /// @param id the Id of a pinc object handle
 /// @return a value of enum pinc_object_type
@@ -339,7 +347,7 @@ PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 
 /// @section main loop & user IO / events
 
-// TODO: doc
+/// @brief Collects user input and flushes internal buffers
 PINC_API void PINC_CALL pinc_step();
 
 // TODO: doc
@@ -367,13 +375,7 @@ PINC_API int PINC_CALL pinc_window_event_closed(int window);
 PINC_API void PINC_CALL pinc_graphics_set_fill_color(int channel, int value);
 
 // TODO: doc
-PINC_API void PINC_CALL pinc_graphics_set_fill_depth(int value);
-
-// TODO: doc
-enum pinc_graphics_fill_flag {
-    pinc_graphics_fill_flag_color = 1,
-    pinc_graphics_fill_flag_depth = 2,
-};
+PINC_API void PINC_CALL pinc_graphics_set_fill_depth(float value);
 
 // TODO: doc
 PINC_API void PINC_CALL pinc_graphics_fill(int framebuffer, int flags);

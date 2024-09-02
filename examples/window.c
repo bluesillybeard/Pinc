@@ -82,11 +82,11 @@ int main(int argc, char** argv) {
                 break;
             case 3:
                 pinc_graphics_set_fill_color(0, colors[color].red * channel_ranges[0]);
-                pinc_graphics_set_fill_color(0, colors[color].green * channel_ranges[1]);
-                pinc_graphics_set_fill_color(0, colors[color].blue * channel_ranges[2]);
+                pinc_graphics_set_fill_color(1, colors[color].green * channel_ranges[1]);
+                pinc_graphics_set_fill_color(2, colors[color].blue * channel_ranges[2]);
                 // fall through
             case 4:
-                pinc_graphics_set_fill_color(4, 1 >> 30);
+                pinc_graphics_set_fill_color(3, 1 >> 30);
                 break;
             default:
                 // This should never happen
