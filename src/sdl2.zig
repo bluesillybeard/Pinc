@@ -1,4 +1,105 @@
+const std = @import("std");
+const builtin = @import("builtin");
 const pinc = @import("pinc.zig");
+// SDL is very ergonomic even when translate-c'd without an actual binding
+const sdl = @cImport({
+    @cInclude("SDL2/SDL.h");
+});
+
+// struct to assist with loading SDL at runtime
+const libsdl = struct {
+    // The names of these declarations are important!
+    // For every SDL function:
+    // `_[our function name] = "[sdl function name]";` - this is used to get the relation of our name to the SDL name
+    // `[our function name]: *typeof(sdl.[sdl function name]) = undefined;` - this is to store the actual function pointer
+    // This is to avoid boilerplate code, making use of Zig's comptime abilities
+    pub const _init = "SDL_Init";
+    pub var init: *@TypeOf(sdl.SDL_Init) = undefined;
+    pub const _quit = "SDL_Quit";
+    pub var quit: *@TypeOf(sdl.SDL_Quit) = undefined;
+    pub const _createWindow = "SDL_CreateWindow";
+    pub var createWindow: *@TypeOf(sdl.SDL_CreateWindow) = undefined;
+    pub const _destroyWindow = "SDL_DestroyWindow";
+    pub var destroyWindow: *@TypeOf(sdl.SDL_DestroyWindow) = undefined;
+    pub const _setWindowSize = "SDL_SetWindowSize";
+    pub var setWindowSize: *@TypeOf(sdl.SDL_SetWindowSize) = undefined;
+    pub const _getWindowSize = "SDL_GetWindowSize";
+    pub var getWindowSize: *@TypeOf(sdl.SDL_GetWindowSize) = undefined;
+    pub const _glCreateContext = "SDL_GL_CreateContext";
+    pub var glCreateContext: *@TypeOf(sdl.SDL_GL_CreateContext) = undefined;
+    pub const _glMakeCurrent = "SDL_GL_MakeCurrent";
+    pub var glMakeCurrent: *@TypeOf(sdl.SDL_GL_MakeCurrent) = undefined;
+    pub const _glGetProcAddress = "SDL_GL_GetProcAddress";
+    pub var glGetProcAddress: *@TypeOf(sdl.SDL_GL_GetProcAddress) = undefined;
+    pub const _glSetSwapInterval = "SDL_GL_SetSwapInterval";
+    pub var glSetSwapInterval: *@TypeOf(sdl.SDL_GL_SetSwapInterval) = undefined;
+    pub const _glSwapWindow = "SDL_GL_SwapWindow";
+    pub var glSwapWindow: *@TypeOf(sdl.SDL_GL_SwapWindow) = undefined;
+    pub const _pollEvent = "SDL_PollEvent";
+    pub var pollEvent: *@TypeOf(sdl.SDL_PollEvent) = undefined;
+    pub const _getWindowFromID = "SDL_GetWindowFromID";
+    pub var getWindowFromID: *@TypeOf(sdl.SDL_GetWindowFromID) = undefined;
+    pub const _waitEvent = "SDL_WaitEvent";
+    pub var waitEvent: *@TypeOf(sdl.SDL_WaitEvent) = undefined;
+    pub const _waitEventTimeout = "SDL_WaitEventTimeout";
+    pub var waitEventTimeout: *@TypeOf(sdl.SDL_WaitEventTimeout) = undefined;
+    pub var lib: ?std.DynLib = null;
+    // returns false if loading failed for any reason
+    pub fn load() bool {
+        // protect from calling this function multiple times
+        if(lib != null) {
+            return true;
+        }
+        // list of SDL shared library files depending on the system
+        const sdl2libnames = comptime switch (builtin.os.tag) {
+            .linux, .freebsd, .netbsd, .openbsd, .dragonfly, .solaris, .illumos => [_][]const u8 {
+                // The basic
+                "libSDL2.so",
+                // when the version is part of the name - side note, why do distros do this? It makes linking with SDL2 SO MUCH HARDER than it needs to be
+                // At least have a "libsdl2.so" file available for applications that expect it to exist
+                "libSDL2-2.0.so.0",
+                // TODO: what are all the versions to look for?
+            },
+            .windows => [_][]const u8 {
+                "SDL2.dll"
+            },
+            // TODO: figure out if this is the correct name for darwin systems
+            .macos, .ios, .tvos, .watchos, .visionos => [_][]const u8 {
+                "libsdl2.dylib",
+            },
+            else => @compileError("Unsupported platform for loading SDL at runtime")
+        };
+        var locallib = blk: {
+            inline for (sdl2libnames) |libname| {
+                const libOrNone: ?std.DynLib = std.DynLib.open(libname) catch null;
+                if(libOrNone) |someLib| {
+                    pinc.logDebug("SDL2 backend: Loaded " ++ libname, .{});
+                    break :blk someLib;
+                } else {
+                    pinc.logDebug("SDL2 backend: Unable to load " ++ libname, .{});
+                }
+            }
+            // Never found an SDL2 binary
+            pinc.logDebug("SDL2 backend: No SDL2 binary found, disabling SDL2", .{});
+            return false;
+        };
+        // comptime magic to load all of the functions automatically
+        const decls = comptime std.meta.declarations(libsdl);
+        inline for(decls) |decl| {
+            if(comptime decl.name[0] == '_') {
+                const ourName = comptime decl.name[1..];
+                const fnName: [:0]const u8 = comptime @field(libsdl, decl.name);
+                @field(libsdl, ourName) = @ptrCast(locallib.lookup(*anyopaque, fnName) orelse {
+                    pinc.logDebug("SDL2 backend: unable to load proc " ++ fnName, .{});
+                    break undefined;
+                });
+            }
+        }
+        // only set lib if we were actually successful
+        lib = locallib;
+        return true;
+    }
+};
 
 pub const SDL2WindowBackend = struct {
     pub fn init(this: *SDL2WindowBackend) void {
@@ -11,7 +112,9 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn backendIsSupported() bool {
-        // TODO: actually check
+        // To see if this backend is available, try to load SDL2
+        if(!libsdl.load()) return false;
+        
         return true;
     }
 
@@ -29,17 +132,66 @@ pub const SDL2WindowBackend = struct {
 
     pub fn deinit(this: *SDL2WindowBackend) void {
         _ = this;
+        libsdl.lib.?.close();
+        libsdl.lib = null;
     }
 
     pub fn prepareGraphics(this: *SDL2WindowBackend, backend: pinc.GraphicsBackend) void {
+        // This is called immediately before changing the pinc state to set_graphics_backend
         _ = this;
-        _ = backend;
+        switch(backend) {
+            .opengl21 => {
+                if(libsdl.init(sdl.SDL_INIT_VIDEO) != 0) {
+                    pinc.pushError(true, pinc.ErrorType.any, "SDL2 Backend: Failed to initialize SDL2", .{});
+                }
+            },
+            .raw => {
+                // TODO: implement raw backend
+                unreachable;
+            },
+            else => unreachable,
+        }
     }
 
-    pub fn getFramebufferFormats(this: *SDL2WindowBackend) []const pinc.FramebufferFormat {
-        // TODO:
+    pub fn getFramebufferFormats(this: *SDL2WindowBackend, graphicsBackendEnum: pinc.GraphicsBackend, graphicsBackend: pinc.IGraphicsBackend) []const pinc.FramebufferFormat {
         _ = this;
-        unreachable;
+        _ = graphicsBackend;
+        switch(graphicsBackendEnum) {
+            .none => unreachable,
+            .opengl21 => {
+                // TODO: SDL makes it hard to get a solid list of supported framebuffer formats, assumed 8bpc for now.
+                // I have thought of a few possible ways to properly do this:
+                // - have a list of common framebuffer formats, try to make a window+context for each one, and keep track of which ones succeed
+                // - figure out which library SDL2 is using under the hood, and use its functions to get the list
+                //     - glX has this easy-peasy, Pinc's own framebuffer selection system was actually inspired by glX
+                //     - I think wgl has this?
+                //     - EGL probably has this
+                //     - No idea how cocoa does opengl lol
+                // - give up and just remove the SDL2 backend completely (not realistically an option for now)
+                // note: SDL2 is finished, they are not adding any more functions
+                const formats = pinc.allocator.?.alloc(pinc.FramebufferFormat, 1) catch unreachable;
+                formats[0] = pinc.FramebufferFormat{
+                    .id = 0,
+                    .channels = 4,
+                    .channelDepths = [4]u32{8, 8, 8, 8},
+                    // pretty much anything made in the last 15 years supports 24 bit depth buffers
+                    .depthBits = 24,
+                };
+                return formats;
+            },
+            .raw => {
+                // TODO: actually go through every supported SDL2 front-facing pixel format instead of assuming RGBA 8bpc
+                const formats = pinc.allocator.?.alloc(pinc.FramebufferFormat, 1) catch unreachable;
+                formats[0] = pinc.FramebufferFormat{
+                    .id = 0,
+                    .channels = 4,
+                    .channelDepths = [4]u32{8, 8, 8, 8},
+                    // In the raw backend, depth is f32 (for now)
+                    .depthBits = 32,
+                };
+                return formats;
+            },
+        }
     }
 
     pub fn prepareFramebuffer(this: *SDL2WindowBackend, framebuffer: pinc.FramebufferFormat) void {
@@ -56,6 +208,10 @@ pub const SDL2WindowBackend = struct {
     pub fn step(this: *SDL2WindowBackend) void {
         _ = this;
     }
+
+    // privates
+    // SDL_GLContext is already nullable
+    openglContext: sdl.SDL_GLContext,
 };
 
 pub const SDL2CompleteWindow = struct {
@@ -75,58 +231,6 @@ pub const SDL2CompleteWindow = struct {
 //     @cInclude("SDL2/SDL.h");
 //     @cInclude("SDL2/SDL_syswm.h");
 // });
-
-// // SDL function pointers (remember, we load things at runtime here)
-// const sdlf = struct {
-//     Init: *@TypeOf(sdl.SDL_Init),
-//     Quit: *@TypeOf(sdl.SDL_Quit),
-//     GetWindowWMInfo: *@TypeOf(sdl.SDL_GetWindowWMInfo),
-//     CreateWindow: *@TypeOf(sdl.SDL_CreateWindow),
-//     DestroyWindow: *@TypeOf(sdl.SDL_DestroyWindow),
-//     SetWindowSize: *@TypeOf(sdl.SDL_SetWindowSize),
-//     GetWindowSizeInPixels: *@TypeOf(sdl.SDL_GetWindowSizeInPixels),
-//     GL_CreateContext: *@TypeOf(sdl.SDL_GL_CreateContext),
-//     GL_MakeCurrent: *@TypeOf(sdl.SDL_GL_MakeCurrent),
-//     GL_GetProcAddress: *@TypeOf(sdl.SDL_GL_GetProcAddress),
-//     GL_SetSwapInterval: *@TypeOf(sdl.SDL_GL_SetSwapInterval),
-//     GL_SwapWindow: *@TypeOf(sdl.SDL_GL_SwapWindow),
-//     PollEvent: *@TypeOf(sdl.SDL_PollEvent),
-//     GetWindowFromID: *@TypeOf(sdl.SDL_GetWindowFromID),
-//     WaitEvent: *@TypeOf(sdl.SDL_WaitEvent),
-//     WaitEventTimeout: *@TypeOf(sdl.SDL_WaitEventTimeout),
-//     lib: std.DynLib,
-//     pub fn load() !sdlf {
-//         const sdl2libname = comptime switch (builtin.os.tag) {
-//             .linux, .freebsd, .netbsd, .openbsd, .dragonfly, .solaris, .illumos => "libSDL2.so",
-//             .windows => "SDL2.dll",
-//             // TODO: figure out if this is the correct name for darwin systems
-//             .macos, .ios, .tvos, .watchos, .visionos => "libSDL2.dylib",
-//             else => @compileError("Unsupported platform for loading SDL at runtime")
-//         };
-//         var lib = try std.DynLib.open(sdl2libname);
-//         return sdlf {
-//             .lib = lib,
-//             .Init = @ptrCast(lib.lookup(*anyopaque, "SDL_Init")),
-//             .Quit = @ptrCast(lib.lookup(*anyopaque, "SDL_Quit")),
-//             .GetWindowWMInfo = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowWMInfo")),
-//             .CreateWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_CreateWindow")),
-//             .DestroyWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_DestroyWindow")),
-//             .SetWindowSize = @ptrCast(lib.lookup(*anyopaque, "SDL_SetWindowSize")),
-//             // Apparently GetWindowSizeInPixels is a newer function that is not in some builds of SDL.
-//             // Thankfully, it is binary compatible with the regular GetWindowSize, so fallback to that.
-//             .GetWindowSizeInPixels = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowSizeInPixels") orelse lib.lookup(*anyopaque, "SDL_GetWindowSize")),
-//             .GL_CreateContext = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_CreateContext")),
-//             .GL_MakeCurrent = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_MakeCurrent")),
-//             .GL_GetProcAddress = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_GetProcAddress")),
-//             .GL_SetSwapInterval = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_SetSwapInterval")),
-//             .GL_SwapWindow = @ptrCast(lib.lookup(*anyopaque, "SDL_GL_SwapWindow")),
-//             .PollEvent = @ptrCast(lib.lookup(*anyopaque, "SDL_PollEvent")),
-//             .GetWindowFromID = @ptrCast(lib.lookup(*anyopaque, "SDL_GetWindowFromID")),
-//             .WaitEvent = @ptrCast(lib.lookup(*anyopaque, "SDL_WaitEvent")),
-//             .WaitEventTimeout = @ptrCast(lib.lookup(*anyopaque, "SDL_WaitEventTimeout")),
-//         };
-//     }
-// };
 
 // // static bits
 // var libsdl: sdlf = undefined;

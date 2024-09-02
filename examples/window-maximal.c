@@ -28,6 +28,9 @@ int main(int argc, char** argv) {
         if(pinc_window_backend_is_supported(backend)) {
             pinc_init_set_window_backend(backend);
             window_backend_found = 1;
+            if(collect_errors()) {
+                return 255;
+            }
             break;
         }
     }
@@ -49,6 +52,9 @@ int main(int argc, char** argv) {
         if(pinc_graphics_backend_is_supported(backend)) {
             pinc_init_set_graphics_backend(backend);
             graphics_backend_found = 1;
+            if(collect_errors()) {
+                return 255;
+            }
             break;
         }
     }
