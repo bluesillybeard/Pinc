@@ -5,7 +5,7 @@
             "label": "examples",
             "type": "shell",
             "command": "zig",
-            "args": ["build", "install"]
+            "args": ["build", "window"]
         }
     ]
 }

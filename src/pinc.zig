@@ -34,7 +34,6 @@ pub const GraphicsBackend = enum(c_int) {
 
 pub const ErrorType = enum(c_int) {
     any,
-    allocation,
 };
 
 pub const ObjectType = enum(c_int) {
@@ -199,8 +198,8 @@ pub const IWindowBackend = struct {
     }
 
     /// Implementer's note: caller owns returned data through pinc's global allocator
-    pub inline fn getFramebufferFormats(this: IWindowBackend) []const FramebufferFormat {
-        return this.vtable.getFramebufferFormats(this.obj);
+    pub inline fn getFramebufferFormats(this: IWindowBackend, graphicsBackendEnum: GraphicsBackend, graphicsBackend: IGraphicsBackend) []const FramebufferFormat {
+        return this.vtable.getFramebufferFormats(this.obj, graphicsBackendEnum, graphicsBackend);
     }
 
     pub inline fn prepareFramebuffer(this: IWindowBackend, framebuffer: FramebufferFormat) void {
@@ -221,7 +220,7 @@ pub const IWindowBackend = struct {
         isGraphicsBackendSupported: *const fn (obj: *anyopaque, backend: GraphicsBackend) bool,
         deinit: *const fn (obj: *anyopaque) void,
         prepareGraphics: *const fn (obj: *anyopaque, backend: GraphicsBackend) void,
-        getFramebufferFormats: *const fn (obj: *anyopaque) []const FramebufferFormat,
+        getFramebufferFormats: *const fn (obj: *anyopaque, graphicsBackendEnum: GraphicsBackend, graphicsBackend: IGraphicsBackend) []const FramebufferFormat,
         prepareFramebuffer: *const fn (obj: *anyopaque, framebuffer: FramebufferFormat) void,
         createWindow: *const fn (obj: *anyopaque, data: IncompleteWindow) ICompleteWindow,
         step: *const fn (obj: *anyopaque) void,
@@ -304,7 +303,7 @@ pub const PincError = struct {
         return PincError{
             .fatal = fatal,
             .type = _type,
-            .message = std.fmt.allocPrint(allocator.?, fmt, args),
+            .message = std.fmt.allocPrint(allocator.?, fmt, args) catch unreachable,
         };
     }
 
@@ -331,7 +330,7 @@ const backendTypes = blk: {
 
 const Allocator = std.heap.GeneralPurposeAllocator(.{});
 var allocatorObj = Allocator{};
-var allocator: ?std.mem.Allocator = null;
+pub var allocator: ?std.mem.Allocator = null;
 
 var errors: ?std.ArrayList(PincError) = null;
 
@@ -359,16 +358,19 @@ pub const State = union(StateTag) {
     set_graphics_backend: struct {
         windowBackend: IWindowBackend,
         graphicsBackend: IGraphicsBackend,
+        graphicsBackendEnum: GraphicsBackend,
         framebufferFormats: []const FramebufferFormat,
     },
     set_framebuffer_format: struct {
         windowBackend: IWindowBackend,
         graphicsBackend: IGraphicsBackend,
+        graphicsBackendEnum: GraphicsBackend,
         framebufferFormat: FramebufferFormat,
     },
     init: struct {
         windowBackend: IWindowBackend,
         graphicsBackend: IGraphicsBackend,
+        graphicsBackendEnum: GraphicsBackend,
         framebufferFormat: FramebufferFormat,
         objects: std.ArrayList(PincObject),
     },
@@ -389,7 +391,7 @@ pub var state = State{ .preinit = .{} };
 // general functions
 
 pub inline fn pushError(fatal: bool, _type: ErrorType, comptime fmt: []const u8, args: anytype) void {
-    errors.?.append(PincError.init(fatal, _type, fmt, args));
+    errors.?.append(PincError.init(fatal, _type, fmt, args)) catch unreachable;
 }
 
 pub inline fn allocObject() c_int {
@@ -409,6 +411,10 @@ pub inline fn refNewObject(out_id: *c_int) *PincObject {
     return refObject(out_id.*);
 }
 
+pub fn logDebug(comptime fmt: []const u8, args: anytype) void {
+    std.log.debug("Pinc: " ++ fmt, args);
+}
+
 // function exports
 // These should all be less than about 10 lines of code as they all should quickly call into other places
 
@@ -419,6 +425,7 @@ pub export fn pinc_incomplete_init() void {
     state = State{ .incomplete_init = .{
         .windowBackends = std.ArrayList(IWindowBackend).init(allocator.?),
     } };
+    errors = std.ArrayList(PincError).init(allocator.?);
     // more Zig comptime magic
     inline for (backendTypes) |Back| {
         if (Back.backendIsSupported()) {
@@ -494,18 +501,19 @@ pub export fn pinc_init_set_graphics_backend(backend: GraphicsBackend) void {
     }
     std.debug.assert(state.set_window_backend.windowBackend.isGraphicsBackendSupported(realBackend));
     switch (realBackend) {
-        .none => std.debug.assert(false),
+        .none => unreachable,
         // TODO: implement raw backend
-        .raw => std.debug.assert(false),
+        .raw => unreachable,
         .opengl21 => {
             // let the window backend know what backend we're using before creating it
             state.set_window_backend.windowBackend.prepareGraphics(realBackend);
+            const graphicsBackend = IGraphicsBackend.init(gl.Opengl21GraphicsBackend, allocator.?.create(gl.Opengl21GraphicsBackend) catch unreachable);
             state = State{
                 .set_graphics_backend = .{
                     .windowBackend = state.set_window_backend.windowBackend,
-                    // TODO: trigger allocation error instead of unreachable
-                    .graphicsBackend = IGraphicsBackend.init(gl.Opengl21GraphicsBackend, allocator.?.create(gl.Opengl21GraphicsBackend) catch unreachable),
-                    .framebufferFormats = state.set_window_backend.windowBackend.getFramebufferFormats(),
+                    .graphicsBackend = graphicsBackend,
+                    .graphicsBackendEnum = realBackend,
+                    .framebufferFormats = state.set_window_backend.windowBackend.getFramebufferFormats(realBackend, graphicsBackend),
                 },
             };
         },
@@ -585,6 +593,7 @@ pub export fn pinc_init_set_framebuffer_format(framebuffer_index: c_int) void {
     state = State{ .set_framebuffer_format = .{
         .framebufferFormat = format,
         .graphicsBackend = state.set_graphics_backend.graphicsBackend,
+        .graphicsBackendEnum = state.set_graphics_backend.graphicsBackendEnum,
         .windowBackend = state.set_graphics_backend.windowBackend,
     } };
 }
@@ -594,6 +603,15 @@ pub export fn pinc_complete_init() void {
         pinc_init_set_framebuffer_format(-1);
     }
     state.validateFor(.set_framebuffer_format);
+    state = State{
+        .init = .{
+            .windowBackend = state.set_framebuffer_format.windowBackend,
+            .graphicsBackend = state.set_framebuffer_format.graphicsBackend,
+            .graphicsBackendEnum = state.set_framebuffer_format.graphicsBackendEnum,
+            .framebufferFormat = state.set_framebuffer_format.framebufferFormat,
+            .objects = std.ArrayList(PincObject).init(allocator.?),
+        }
+    };
 }
 
 pub export fn pinc_deinit() void {
@@ -693,6 +711,7 @@ pub export fn pinc_object_get_complete(id: c_int) c_int {
 }
 
 pub export fn pinc_window_incomplete_create() c_int {
+    state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
     object.* = .{ .incompleteWindow = .{} };

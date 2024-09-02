@@ -88,8 +88,6 @@ enum pinc_graphics_backend {
 enum pinc_error_type {
     /// @brief Error does not have a designated type.
     pinc_error_any,
-    /// @brief A memory allocation failed
-    pinc_error_allocation,
     // Errors that aren't here and why:
     // - wrong object type -> that is a programmer error, so it's an assert instead of an error
     // - attempt to get something that is cemented -> programmer error, its an assert
@@ -123,6 +121,7 @@ PINC_API int PINC_CALL pinc_window_backend_is_supported(int backend);
 
 /// @brief Sets the window backend to use. Once called, this cannot be called again as Pinc will fully initialize the backend.
 /// Undefined if called after any function other than pinc_incomplete_init and pinc_window_backend_is_supported.
+/// May create fatal errors
 /// @param backend the backend to use. Undefined if pinc_window_backend_is_supported(backend) == 0.
 PINC_API void PINC_CALL pinc_init_set_window_backend(int backend);
 
@@ -131,6 +130,7 @@ PINC_API void PINC_CALL pinc_init_set_window_backend(int backend);
 /// @return 1 if the backend is supported, 0 if not.
 PINC_API int PINC_CALL pinc_graphics_backend_is_supported(int backend);
 
+/// May create fatal errors
 PINC_API void PINC_CALL pinc_init_set_graphics_backend(int backend);
 
 /// @brief returns the number of available framebuffer formats.
@@ -162,6 +162,7 @@ PINC_API int PINC_CALL pinc_framebuffer_format_get_range(int framebuffer_index, 
 PINC_API int PINC_CALL pinc_framebuffer_format_get_depth_buffer(int framebuffer_index);
 
 /// @brief Sets the framebuffer to use. If an invalid framebuffer is given, it will trigger a non-fatal error and a default framebuffer.
+/// May create fatal errors.
 /// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
 ///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
 PINC_API void PINC_CALL pinc_init_set_framebuffer_format(int framebuffer_index);
