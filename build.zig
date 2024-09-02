@@ -5,7 +5,7 @@ pub fn build(b: *std.Build) void {
     const optimize = b.standardOptimizeOption(.{});
 
     // Compile options
-    
+
     const run = b.option(bool, "run", "Whether to run or not. Defaults to false") orelse false;
 
     // TODO: option to set the priority / order for each of the backends
@@ -21,13 +21,15 @@ pub fn build(b: *std.Build) void {
             .link_libc = true,
             .name = "pinc",
         });
-        lib.addIncludePath(b.path("include"));
+        // The implementation of Pinc (which is all Zig, obviously) has a translated version of pinc.h so it does not need the header.
+        // lib.addIncludePath(b.path("include"));
+        // It does need the headers in ext because translating every header for every library Pinc uses would be an insane task.
         lib.addIncludePath(b.path("ext"));
-        
+
         const install = b.addInstallArtifact(lib, .{});
         const installStep = b.step("static", "Build static library");
         installStep.dependOn(&install.step);
-        
+
         break :blk lib;
     };
 
@@ -72,7 +74,7 @@ pub fn build(b: *std.Build) void {
         exe.linkLibrary(staticLib);
         exe.step.dependOn(&staticLib.step);
 
-        if(run) {
+        if (run) {
             const runArtifact = b.addRunArtifact(exe);
             var runStep = b.step("window", "window example");
             runStep.dependOn(&runArtifact.step);
