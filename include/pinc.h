@@ -10,10 +10,10 @@
 // In general, here are the rules / properties of Pinc's api:
 // - no unions or bit fields, as they tend to cause ABI problems
 // - we assume floats are in the IEE754 format. There are some whack platforms where floats do not follow the IEE654 standard. Thankfully, Pinc does not support any of those
-// - Pinc functions will never return a pointer, and they will never take a pointer.
+// - Any pinc functions that take or return pointers are optional
 //     - This is to make bindings to other languages as freakishly straightforward as possible.
-//     - Lists are returned as iterators, and entered using a stream type system. Worse for performance, but it's probably negligible
-//     - In the future, we might support faster versions of the stream-like functions for languages that can effectively take advantage of that.
+//     - Lists are returned by providing a length and a get function
+//     - lists are entered by setting the length and using the set function
 // - no structs either, particularily for languages like python where a 'struct' doesn't actually exist
 // - using only void, int, and float seems limiting... because it is
 
@@ -221,6 +221,8 @@ PINC_API void PINC_CALL pinc_window_complete(int window);
 // rc -> can only be read after the default has been determined, so it needs a has_[property] function
 // w -> can be set at any time
 // r means it just has a get function, but rc properties have both a get and a has.
+// - string title (rw)
+//     - default is "Pinc window [window object id]"
 // - int width (rcw)
 //     - This is the size of the actual pixel buffer
 //     - default is determined on completion
@@ -241,6 +243,22 @@ PINC_API void PINC_CALL pinc_window_complete(int window);
 // - bool focused (rw) [false]
 // - bool hidden (rw) [false]
 //     - when hidden, a window cannot be seen anywhere to the user (at least not directly), but is still secretly open.
+
+// TODO: doc
+// fills the new title with all underscores
+PINC_API void PINC_CALL pinc_window_set_title_length(int window, int len);
+
+// TODO: doc
+// utf-8 (if supported on platform, otherwise ascii)
+// the title is only required to actually be updated when the last item is set
+PINC_API void PINC_CALL pinc_window_set_title_item(int window, int index, char item);
+
+// TODO: doc
+PINC_API int PINC_CALL pinc_window_get_title_length(int window);
+
+// TODO: doc
+// utf-8 like in window_set_title_item
+PINC_API char PINC_CALL pinc_window_get_title_item(int window, int index);
 
 /// @brief set the width of a window, in pixels
 /// @param window the window whose width to set. Asserts the object is valid, and is a window
