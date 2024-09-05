@@ -90,7 +90,7 @@ It's worth noting the Pinc makes heavy use of asserts that will not trigger in R
 
 ## Planned window backends (NOT FINAL)
 - SDL 1
-- SDL 2
+- SDL 3
 - X11
 - win32
 - windows 9x
@@ -104,13 +104,14 @@ It's worth noting the Pinc makes heavy use of asserts that will not trigger in R
 ## Planned backends / platforms in the VERY FAR future
 None of these are going to be implemented any time soon - if ever.
 - Playstation 4/5
-- Xbox (Low Priority)
-    - It's basically just Windows, should be pretty easy actually
-- Nintendo switch (Low Priority)
+- Xbox
+    - It's basically just Windows (I think), should be pretty easy actually
+- Nintendo switch
     - There seems to be a lack of info on how this could be done.
 - N64 would be funny
 - Playstation would also be funny
-- DOS
+- Microsoft DOS
+    - an msdos backend doesn't even make sense, as I don't think it has a universal way to draw pixels on the screen
 - terminal text output
     - haha ascii art go BRRR
 
