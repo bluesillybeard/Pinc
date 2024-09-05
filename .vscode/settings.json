@@ -31,6 +31,7 @@
         "random": "c",
         "limits": "c",
         "semaphore": "c",
-        "algorithm": "c"
+        "algorithm": "c",
+        "cstring": "c"
     }
 }

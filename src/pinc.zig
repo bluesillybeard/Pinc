@@ -15,8 +15,7 @@ const gl = @import("opengl.zig");
 // - it makes adding new backends easy
 // - it allows the ability to add a custom user-implemented backend implementation at runtime (a feature we will add at some point)
 // - it allows the backend to be chosen at runtime
-//     - for example, on Linux there will be X11, Wayland, and SDL2 backends. (sdl is the only one implemented atm though)
-//     - Also, the raw / opengl graphics backends
+//     - Useful (for example) to prioritize SDL2 but fall back to the native option if the host doesn't have SDL2 installed
 
 // types from pinc.h, over here in Zig land.
 // SYNC: These need to be maintained.
@@ -66,6 +65,7 @@ pub const IncompleteWindow = struct {
     fullscreen: bool = false,
     focused: bool = false,
     hidden: bool = false,
+    title: [:0]u8,
 };
 
 pub const ICompleteWindow = struct {
@@ -82,8 +82,8 @@ pub const ICompleteWindow = struct {
 
         // Using the power of comptime, we can automagically set all of the vtable functions
         const vtinfo = @typeInfo(Vtable);
-        inline for (vtinfo.Struct.fields) |field| {
-            @field(vtable, field.name) = &@field(T, field.name);
+        inline for (vtinfo.@"struct".fields) |field| {
+            @field(vtable, field.name) = @ptrCast(&@field(T, field.name));
         }
         T.init(obj);
         return ICompleteWindow{
@@ -137,6 +137,17 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventClosed(this.obj);
     }
 
+    /// Returns a reference to this window's title. Memory is from the Pinc global allocator, and owned by the window
+    pub inline fn getTitle(this: ICompleteWindow) [:0]u8 {
+        return this.vtable.getTitle(this.obj);
+    }
+
+    /// Set the title for this window. The old title is freed, unless the given title is the same memory as the old title.
+    /// Even when changing the title by overriding the memory from getTitle, setTitle should still be called to notify the window of the change.
+    pub inline fn setTitle(this: ICompleteWindow, title: [:0]u8) void {
+        this.vtable.setTitle(this.obj, title);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (*anyopaque) void,
@@ -149,6 +160,8 @@ pub const ICompleteWindow = struct {
         getResizable: *const fn (*anyopaque) bool,
         presentFramebuffer: *const fn (*anyopaque, bool) void,
         eventClosed: *const fn (*anyopaque) bool,
+        getTitle: *const fn (*anyopaque) [:0]const u8,
+        setTitle: *const fn (*anyopaque, [:0]const u8) void,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -206,8 +219,8 @@ pub const IWindowBackend = struct {
         return this.vtable.prepareFramebuffer(this.obj, framebuffer);
     }
 
-    pub inline fn createWindow(this: IWindowBackend, data: IncompleteWindow) ICompleteWindow {
-        return this.vtable.createWindow(this.obj, data);
+    pub inline fn createWindow(this: IWindowBackend, data: IncompleteWindow, id: c_int) ?ICompleteWindow {
+        return this.vtable.createWindow(this.obj, data, id);
     }
 
     pub inline fn step(this: IWindowBackend) void {
@@ -222,7 +235,7 @@ pub const IWindowBackend = struct {
         prepareGraphics: *const fn (obj: *anyopaque, backend: GraphicsBackend) void,
         getFramebufferFormats: *const fn (obj: *anyopaque, graphicsBackendEnum: GraphicsBackend, graphicsBackend: IGraphicsBackend) []const FramebufferFormat,
         prepareFramebuffer: *const fn (obj: *anyopaque, framebuffer: FramebufferFormat) void,
-        createWindow: *const fn (obj: *anyopaque, data: IncompleteWindow) ICompleteWindow,
+        createWindow: *const fn (obj: *anyopaque, data: IncompleteWindow, id: c_int) ?ICompleteWindow,
         step: *const fn (obj: *anyopaque) void,
     };
 
@@ -384,6 +397,18 @@ pub const State = union(StateTag) {
         //if (stateTag != this) undefined;
         // TODO: for this state, validate if it is correct
     }
+
+    pub fn getFramebufferFormat(this: *const State) ?FramebufferFormat {
+        switch (this.*) {
+            .set_framebuffer_format => |st| {
+                return st.framebufferFormat;
+            },
+            .init => |st| {
+                return st.framebufferFormat;
+            },
+            else => return null,
+        }
+    }
 };
 
 pub var state = State{ .preinit = .{} };
@@ -531,26 +556,38 @@ pub export fn pinc_framebuffer_format_get_num() c_int {
 }
 
 pub export fn pinc_framebuffer_format_get_channels(framebuffer_index: c_int) c_int {
-    // TODO: -1 for default handle
+    if (framebuffer_index == -1) {
+        const fb = state.getFramebufferFormat() orelse unreachable;
+        return @intCast(fb.channels);
+    }
     state.validateFor(.set_graphics_backend);
     return @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channels);
 }
 
 pub export fn pinc_framebuffer_format_get_bit_depth(framebuffer_index: c_int, channel: c_int) c_int {
-    // TODO: -1 for default handle
+    if (framebuffer_index == -1) {
+        const fb = state.getFramebufferFormat() orelse unreachable;
+        return @intCast(fb.channelDepths[@intCast(channel)]);
+    }
     state.validateFor(.set_graphics_backend);
     return @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channelDepths[@intCast(channel)]);
 }
 
 pub export fn pinc_framebuffer_format_get_range(framebuffer_index: c_int, channel: c_int) c_int {
-    // TODO: -1 for default handle
+    if (framebuffer_index == -1) {
+        const fb = state.getFramebufferFormat() orelse unreachable;
+        return (@as(c_int, 1) >> @intCast(fb.channelDepths[@intCast(channel)])) - 1;
+    }
     state.validateFor(.set_graphics_backend);
     // This is quite the mighty line of code.
     return (@as(c_int, 1) >> @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channelDepths[@intCast(channel)])) - 1;
 }
 
 pub export fn pinc_framebuffer_format_get_depth_buffer(framebuffer_index: c_int) c_int {
-    // TODO: -1 for default handle
+    if (framebuffer_index == -1) {
+        const fb = state.getFramebufferFormat() orelse unreachable;
+        return @intCast(fb.depthBits);
+    }
     state.validateFor(.set_graphics_backend);
     return @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].depthBits);
 }
@@ -603,15 +640,13 @@ pub export fn pinc_complete_init() void {
         pinc_init_set_framebuffer_format(-1);
     }
     state.validateFor(.set_framebuffer_format);
-    state = State{
-        .init = .{
-            .windowBackend = state.set_framebuffer_format.windowBackend,
-            .graphicsBackend = state.set_framebuffer_format.graphicsBackend,
-            .graphicsBackendEnum = state.set_framebuffer_format.graphicsBackendEnum,
-            .framebufferFormat = state.set_framebuffer_format.framebufferFormat,
-            .objects = std.ArrayList(PincObject).init(allocator.?),
-        }
-    };
+    state = State{ .init = .{
+        .windowBackend = state.set_framebuffer_format.windowBackend,
+        .graphicsBackend = state.set_framebuffer_format.graphicsBackend,
+        .graphicsBackendEnum = state.set_framebuffer_format.graphicsBackendEnum,
+        .framebufferFormat = state.set_framebuffer_format.framebufferFormat,
+        .objects = std.ArrayList(PincObject).init(allocator.?),
+    } };
 }
 
 pub export fn pinc_deinit() void {
@@ -714,14 +749,104 @@ pub export fn pinc_window_incomplete_create() c_int {
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
-    object.* = .{ .incompleteWindow = .{} };
+    object.* = .{ .incompleteWindow = .{ .title = std.fmt.allocPrintZ(allocator.?, "Pinc window {}", .{id}) catch unreachable } };
     return id;
 }
 
 pub export fn pinc_window_complete(window: c_int) void {
     state.validateFor(.init);
     const object = refObject(window);
-    object.* = .{ .completeWindow = state.init.windowBackend.createWindow(object.incompleteWindow) };
+    const winOrNone = state.init.windowBackend.createWindow(object.incompleteWindow, window);
+    if (winOrNone) |win| {
+        // the new window is the owner of the title now - we are not allowed to free it
+        //allocator.?.free(object.incompleteWindow.title);
+        object.* = .{ .completeWindow = win };
+    }
+    // In case it failed, we leave the object as-is so it's possible for the program to catch the fatal error that should have been emitted,
+    // and maybe try to reuse the incomplete window object for something else (ex: window size too big, program shrinks it and tries again)
+    // Admittedly that will probably never actually be used in practice
+}
+
+pub fn pinc_window_set_title_length(window: c_int, len: c_int) void {
+    state.validateFor(.init);
+    const obj = refObject(window);
+    switch (obj.*) {
+        .incompleteWindow => |*w| {
+            if (w.title.len == len) {
+                @memset(w.title, '_');
+                return;
+            } else {
+                // TODO: use realloc instead?
+                const newTitle = allocator.?.allocSentinel(u8, @intCast(len), 0) catch unreachable;
+                @memset(newTitle, '_');
+                allocator.?.free(w.title);
+                w.title = newTitle;
+            }
+        },
+        .completeWindow => |w| {
+            const oldTitle = w.getTitle();
+            if (oldTitle.len == len) {
+                @memset(oldTitle, '_');
+                // the window shouldn't free the old in this case since the new one is the old one
+                w.setTitle(oldTitle);
+                return;
+            } else {
+                // TODO: use realloc instead?
+                const newTitle = allocator.?.allocSentinel(u8, @intCast(len), 0) catch unreachable;
+                @memset(newTitle, '_');
+                // The window is in charge of freeing the old one
+                w.setTitle(newTitle);
+            }
+        },
+        else => unreachable,
+    }
+}
+
+pub fn pinc_window_set_title_item(window: c_int, index: c_int, item: c_char) void {
+    state.validateFor(.init);
+    const obj = refObject(window);
+    switch (obj.*) {
+        .incompleteWindow => |*w| {
+            w[@intCast(index)] = item;
+        },
+        .completeWindow => |w| {
+            const title = w.getTitle();
+
+            title[@intCast(index)] = item;
+            // Only notify the window when the last item is set
+            if (index == title.len - 1) {
+                w.setTitle(title);
+            }
+        },
+    }
+}
+
+pub fn pinc_window_get_title_length(window: c_int) c_int {
+    state.validateFor(.init);
+    const obj = refObject(window);
+    switch (obj.*) {
+        .incompleteWindow => |w| {
+            return w.title.len;
+        },
+        .completeWindow => |w| {
+            return w.getTitle().len;
+        },
+        else => unreachable,
+    }
+}
+
+pub fn pinc_window_get_title_item(window: c_int, index: c_int) c_char {
+    state.validateFor(.init);
+    const obj = refObject(window);
+    switch (obj.*) {
+        .incompleteWindow => |w| {
+            return w.title[@intCast(index)];
+        },
+        .completeWindow => |w| {
+            return w.getTitle()[@intCast(IncompleteWindow)];
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_set_width(window: c_int, width: c_int) void {

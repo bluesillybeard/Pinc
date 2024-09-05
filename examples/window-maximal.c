@@ -3,6 +3,7 @@
 
 #include <pinc.h>
 #include <stdio.h>
+#include <string.h>
 
 // color struct. Values range from 0 to 1.
 typedef struct Color {
@@ -99,9 +100,17 @@ int main(int argc, char** argv) {
     // Now that pinc is initialized, let's open a window.
     int window = pinc_window_incomplete_create();
     // Setting all of these is optional, but set them anyway for demonstration
+    char* title = "Pinc window TO THE MAX!";
+    int len = strlen(title);
+    // In the future, there will be a more ergonomic method to set the title of a window.
+    // But for now this is the only way, as the pinc public API does not allow pointers for required functions
+    pinc_window_set_title_length(window, len);
+    for(int i=0; i<len; ++i) {
+        pinc_window_set_title_item(window, i, title[i]);
+    }
     pinc_window_set_width(window, 800);
     pinc_window_set_height(window, 600);
-    // We actually don't want to be resizable
+    // We actually don't want to be resizable... for demonstration
     pinc_window_set_resizable(window, 0);
     pinc_window_set_minimized(window, 0);
     pinc_window_set_maximized(window, 0);
@@ -145,6 +154,7 @@ int main(int argc, char** argv) {
     while(running) {
         pinc_step();
         if(pinc_window_event_closed(window)) {
+            // TODO: change this to a different event so the window actually closes on the first attempt
             // Do a funny trick: instead of exiting, change the color.
             ++color;
             // exit once there are no more colors
