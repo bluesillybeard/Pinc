@@ -48,7 +48,7 @@ pub const FramebufferFormat = struct {
     // Data given out to Pincs user
     channels: u32,
     channelDepths: [maxChannels]u32,
-    // To get the range, just do (1>>depth)-1
+    // To get the range, just do (1<<depth)-1
     //channelRanges: [maxChannels]u32,
     depthBits: u32,
     // Data that is used internally
@@ -148,20 +148,27 @@ pub const ICompleteWindow = struct {
         this.vtable.setTitle(this.obj, title);
     }
 
+    /// Make the static OpenGL context current for this window
+    /// Side note: I really dislike the window-bound nature of OpenGL...
+    pub inline fn glMakeCurrent(this: ICompleteWindow) void {
+        this.vtable.glMakeCurrent(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
-        deinit: *const fn (*anyopaque) void,
-        setWidth: *const fn (*anyopaque, u32) void,
-        getWidth: *const fn (*anyopaque) u32,
-        setHeight: *const fn (*anyopaque, u32) void,
-        getHeight: *const fn (*anyopaque) u32,
-        getScaleFactor: *const fn (*anyopaque) f32,
-        setResizable: *const fn (*anyopaque, bool) void,
-        getResizable: *const fn (*anyopaque) bool,
-        presentFramebuffer: *const fn (*anyopaque, bool) void,
-        eventClosed: *const fn (*anyopaque) bool,
-        getTitle: *const fn (*anyopaque) [:0]const u8,
-        setTitle: *const fn (*anyopaque, [:0]const u8) void,
+        deinit: *const fn (this: *anyopaque) void,
+        setWidth: *const fn (this: *anyopaque, width: u32) void,
+        getWidth: *const fn (this: *anyopaque) u32,
+        setHeight: *const fn (this: *anyopaque, height: u32) void,
+        getHeight: *const fn (this: *anyopaque) u32,
+        getScaleFactor: *const fn (this: *anyopaque) f32,
+        setResizable: *const fn (this: *anyopaque, resizable: bool) void,
+        getResizable: *const fn (this: *anyopaque) bool,
+        presentFramebuffer: *const fn (this: *anyopaque, vsync: bool) void,
+        eventClosed: *const fn (this: *anyopaque) bool,
+        getTitle: *const fn (this: *anyopaque) [:0]const u8,
+        setTitle: *const fn (this: *anyopaque, title: [:0]const u8) void,
+        glMakeCurrent: *const fn (this: *anyopaque) void,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -227,6 +234,10 @@ pub const IWindowBackend = struct {
         this.vtable.step(this.obj);
     }
 
+    pub inline fn glGetProc(this: IWindowBackend, name: [:0]const u8) ?*anyopaque {
+        return this.vtable.glGetProc(this.obj, name);
+    }
+
     pub const Vtable = struct {
         // TODO: Be more smart about how window backends are handled and get rid of this function
         getBackendEnumValue: *const fn (obj: *anyopaque) WindowBackend,
@@ -237,6 +248,7 @@ pub const IWindowBackend = struct {
         prepareFramebuffer: *const fn (obj: *anyopaque, framebuffer: FramebufferFormat) void,
         createWindow: *const fn (obj: *anyopaque, data: IncompleteWindow, id: c_int) ?ICompleteWindow,
         step: *const fn (obj: *anyopaque) void,
+        glGetProc: *const fn(obj: *anyopaque, name: [:0]const u8) ?*anyopaque,
     };
 
     vtable: *Vtable,
@@ -576,11 +588,12 @@ pub export fn pinc_framebuffer_format_get_bit_depth(framebuffer_index: c_int, ch
 pub export fn pinc_framebuffer_format_get_range(framebuffer_index: c_int, channel: c_int) c_int {
     if (framebuffer_index == -1) {
         const fb = state.getFramebufferFormat() orelse unreachable;
-        return (@as(c_int, 1) >> @intCast(fb.channelDepths[@intCast(channel)])) - 1;
+        const v = (@as(c_int, 1) << @intCast(fb.channelDepths[@intCast(channel)])) - 1;
+        return v;
     }
     state.validateFor(.set_graphics_backend);
     // This is quite the mighty line of code.
-    return (@as(c_int, 1) >> @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channelDepths[@intCast(channel)])) - 1;
+    return (@as(c_int, 1) << @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channelDepths[@intCast(channel)])) - 1;
 }
 
 pub export fn pinc_framebuffer_format_get_depth_buffer(framebuffer_index: c_int) c_int {
