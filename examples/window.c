@@ -74,21 +74,21 @@ int main(int argc, char** argv) {
         }
         // Set the fill color
         switch(num_channels) {
-            case 1:
-                pinc_graphics_set_fill_color(0, color_to_grayscale(colors[color]) * channel_ranges[0]);
-                // fall through
             case 2:
                 // Pinc will automatically clamp values that are outside of the range.
                 // so to get opaque, just input a massively huge number instead of dealing with the actual range
                 pinc_graphics_set_fill_color(1, 1 >> 30);
+                // fall through
+            case 1:
+                pinc_graphics_set_fill_color(0, color_to_grayscale(colors[color]) * channel_ranges[0]);
                 break;
+            case 4:
+                pinc_graphics_set_fill_color(3, 1 >> 30);
+                // fall through
             case 3:
                 pinc_graphics_set_fill_color(0, colors[color].red * channel_ranges[0]);
                 pinc_graphics_set_fill_color(1, colors[color].green * channel_ranges[1]);
                 pinc_graphics_set_fill_color(2, colors[color].blue * channel_ranges[2]);
-                // fall through
-            case 4:
-                pinc_graphics_set_fill_color(3, 1 >> 30);
                 break;
             default:
                 // This should never happen

@@ -113,7 +113,11 @@ const libsdl = struct {
 
 pub const SDL2WindowBackend = struct {
     pub fn init(this: *SDL2WindowBackend) void {
-        _ = this;
+        this.* = .{
+            .dummyWindow = null,
+            .openglContext = null,
+            .framebufferFormat = null,
+        };
     }
 
     pub fn backendIsSupportedComptime() bool {
@@ -205,8 +209,8 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn prepareFramebuffer(this: *SDL2WindowBackend, framebuffer: pinc.FramebufferFormat) void {
-        _ = this;
-        _ = framebuffer;
+        // TODO: might actually be a good idea to make the OpenGL context here instead of later
+        this.framebufferFormat = framebuffer;
     }
 
     pub fn createWindow(this: *SDL2WindowBackend, data: pinc.IncompleteWindow, id: c_int) ?pinc.ICompleteWindow {
@@ -272,31 +276,26 @@ pub const SDL2WindowBackend = struct {
         LOOP: while (libsdl.pollEvent(&ev) != 0) {
             switch (ev.type) {
                 sdl.SDL_WINDOWEVENT => {
-                    pinc.logDebug("Recieved window event", .{});
                     // get the SDL window
                     const wn = ev.window;
                     const sdlWinOrNone = libsdl.getWindowFromID(wn.windowID);
                     if (sdlWinOrNone == null) continue :LOOP;
                     const sdlWin = sdlWinOrNone.?;
-                    pinc.logDebug("extracted SDL2 window at 0x{*}", .{sdlWin});
 
                     // extract window object
                     const dat = SDLWindowUserData.fromWindow(sdlWin);
                     const object = pinc.refObject(dat.pincWindowId);
                     // TODO: this should really be undefined behavior... Wasn't sure when I wrote it though
                     if (object.* != .completeWindow) continue :LOOP;
-                    pinc.logDebug("extracted Pinc object with ID {} at 0x{*}", .{dat.pincWindowId, object});
 
                     const winOrNone = SDL2CompleteWindow.castFrom(object.completeWindow);
                     // TODO: this should really be undefined behavior... Wasn't sure when I wrote it though
                     if (winOrNone == null) continue :LOOP;
                     const win = winOrNone.?;
-                    pinc.logDebug("cast pinc object to SDL2 window at 0x{*}", .{win});
 
                     // Finally switch on the window event type
                     switch (wn.event) {
                         sdl.SDL_WINDOWEVENT_CLOSE => {
-                            pinc.logDebug("Got window close event", .{});
                             win.evdat.closed = true;
                         },
                         else => {}
@@ -307,20 +306,32 @@ pub const SDL2WindowBackend = struct {
         }
     }
 
+    pub fn glGetProc(this: *SDL2WindowBackend, name: [:0]const u8) ?*anyopaque {
+        // TODO: error on null dummy window?
+        const dummy = this.getAnyWindow().?;
+        // TODO: checck for error
+        // TODO: might it be worth making the dummy window a fully fledged SDL2CompleteWindow so we can just call dummy.glMakeCurrent()?
+        _ = libsdl.glMakeCurrent(dummy, this.getContext().?);
+        return libsdl.glGetProcAddress(name.ptr);
+    }
+
+    // privates
+
     fn getContext(this: *SDL2WindowBackend) ?*GLContext {
         if (this.openglContext) |c| {
             return c;
         } else {
-            var framebufferFormat: pinc.FramebufferFormat = undefined;
+            const framebufferFormat: pinc.FramebufferFormat = this.framebufferFormat.?;
             var backend: pinc.GraphicsBackend = undefined;
             switch (pinc.state) {
                 .set_framebuffer_format => |f| {
-                    framebufferFormat = f.framebufferFormat;
                     backend = f.graphicsBackendEnum;
                 },
                 .init => |i| {
-                    framebufferFormat = i.framebufferFormat;
                     backend = i.graphicsBackendEnum;
+                },
+                .set_graphics_backend => |st| {
+                    backend = st.graphicsBackendEnum;
                 },
                 else => unreachable,
             }
@@ -373,9 +384,9 @@ pub const SDL2WindowBackend = struct {
         return this.dummyWindow;
     }
 
-    // privates
     dummyWindow: ?*sdl.SDL_Window,
     openglContext: ?*GLContext,
+    framebufferFormat: ?pinc.FramebufferFormat,
 };
 
 pub const SDLWindowUserData = struct {
