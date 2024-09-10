@@ -55,6 +55,8 @@ const libsdl = struct {
     pub var waitEvent: *@TypeOf(sdl.SDL_WaitEvent) = undefined;
     pub const _waitEventTimeout = "SDL_WaitEventTimeout";
     pub var waitEventTimeout: *@TypeOf(sdl.SDL_WaitEventTimeout) = undefined;
+    pub const _getMouseState = "SDL_GetMouseState";
+    pub var getMouseState: *@TypeOf(sdl.SDL_GetMouseState) = undefined;
     pub var lib: ?std.DynLib = null;
     // returns false if loading failed for any reason
     pub fn load() bool {
@@ -276,30 +278,19 @@ pub const SDL2WindowBackend = struct {
         LOOP: while (libsdl.pollEvent(&ev) != 0) {
             switch (ev.type) {
                 sdl.SDL_WINDOWEVENT => {
-                    // get the SDL window
-                    const wn = ev.window;
-                    const sdlWinOrNone = libsdl.getWindowFromID(wn.windowID);
-                    if (sdlWinOrNone == null) continue :LOOP;
-                    const sdlWin = sdlWinOrNone.?;
-
-                    // extract window object
-                    const dat = SDLWindowUserData.fromWindow(sdlWin);
-                    const object = pinc.refObject(dat.pincWindowId);
-                    // TODO: this should really be undefined behavior... Wasn't sure when I wrote it though
-                    if (object.* != .completeWindow) continue :LOOP;
-
-                    const winOrNone = SDL2CompleteWindow.castFrom(object.completeWindow);
-                    // TODO: this should really be undefined behavior... Wasn't sure when I wrote it though
-                    if (winOrNone == null) continue :LOOP;
-                    const win = winOrNone.?;
+                    const win = getWindowFromid(ev.window.windowID) orelse continue :LOOP;
 
                     // Finally switch on the window event type
-                    switch (wn.event) {
+                    switch (ev.window.event) {
                         sdl.SDL_WINDOWEVENT_CLOSE => {
                             win.evdat.closed = true;
                         },
                         else => {}
                     }
+                },
+                sdl.SDL_MOUSEBUTTONDOWN => {
+                    const win = getWindowFromid(ev.button.windowID) orelse continue :LOOP;
+                    win.evdat.mouseButton = true;
                 },
                 else => {}
             }
@@ -313,6 +304,28 @@ pub const SDL2WindowBackend = struct {
         // TODO: might it be worth making the dummy window a fully fledged SDL2CompleteWindow so we can just call dummy.glMakeCurrent()?
         _ = libsdl.glMakeCurrent(dummy, this.getContext().?);
         return libsdl.glGetProcAddress(name.ptr);
+    }
+
+    pub fn getMouseState(this: *SDL2WindowBackend, button: u32) bool {
+        _ = this;
+        var state = libsdl.getMouseState(null, null);
+        state &= (@as(u32, 1) >> @intCast(button));
+        return state != 0;
+    }
+
+    fn getWindowFromid(id: u32) ?*SDL2CompleteWindow {
+        const sdlWinOrNone = libsdl.getWindowFromID(id);
+        if (sdlWinOrNone == null) return null;
+        const sdlWin = sdlWinOrNone.?;
+
+        // extract window object
+        const dat = SDLWindowUserData.fromWindow(sdlWin);
+        const object = pinc.refObject(dat.pincWindowId);
+        // TODO: this should really be undefined behavior... Wasn't sure when I wrote it though
+        if (object.* != .completeWindow) return null;
+
+        const winOrNone = SDL2CompleteWindow.castFrom(object.completeWindow);
+        return winOrNone;
     }
 
     // privates
@@ -501,6 +514,10 @@ pub const SDL2CompleteWindow = struct {
         _ = libsdl.glMakeCurrent(this.window, sdl2WindowBackend.getContext());
     }
 
+    pub fn eventMouseButton(this: *SDL2CompleteWindow) bool {
+        return this.evdat.mouseButton;
+    }
+
     // This is so we can safely cast from ICompleteWindow to SDL2CompleteWindow.
     // TODO: this really should exist... Wasn't sure when I wrote it though.
     secret: u32 = 12345,
@@ -509,5 +526,6 @@ pub const SDL2CompleteWindow = struct {
     title: [:0]const u8,
     evdat: struct {
         closed: bool = false,
+        mouseButton: bool = false,
     },
 };

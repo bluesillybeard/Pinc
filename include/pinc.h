@@ -372,6 +372,17 @@ PINC_API void PINC_CALL pinc_step();
 // TODO: doc
 PINC_API int PINC_CALL pinc_window_event_closed(int window);
 
+/// @brief Get if there was a mouse press/release from the last step
+/// @param window The window to check - although all windows share the same mouse,
+///     only one of those windows recieves the event.
+/// @return 1 if there any mouse buttons were pressed or released, 0 otherwise.
+PINC_API int PINC_CALL pinc_window_event_mouse_button(int window);
+
+/// @brief Get the state of a mouse button
+/// @param button the button to check. Generally, 0 is the left button, 1 is the right, and 2 is the middle
+/// @return 1 if the button is pressed, 0 if it is not pressed OR if this application has no focused windows.
+PINC_API int PINC_CALL pinc_mouse_button_get(int button);
+
 // TODO: the rest of the events / event-like things:
 // - resize - size can already be retrieved, just need an event for it
 // - focus
@@ -384,8 +395,6 @@ PINC_API int PINC_CALL pinc_window_event_closed(int window);
 // - cursor_move
 // - cursor_enter
 // - cursor_exit
-// - cursor_button_down
-// - cursor_button_up
 // - scroll
 
 /// @section graphics
