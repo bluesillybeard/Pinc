@@ -154,6 +154,10 @@ pub const ICompleteWindow = struct {
         this.vtable.glMakeCurrent(this.obj);
     }
 
+    pub inline fn eventMouseButton(this: ICompleteWindow) bool {
+        return this.vtable.eventMouseButton(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -169,6 +173,7 @@ pub const ICompleteWindow = struct {
         getTitle: *const fn (this: *anyopaque) [:0]const u8,
         setTitle: *const fn (this: *anyopaque, title: [:0]const u8) void,
         glMakeCurrent: *const fn (this: *anyopaque) void,
+        eventMouseButton: *const fn(obj: *anyopaque) bool,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -238,6 +243,10 @@ pub const IWindowBackend = struct {
         return this.vtable.glGetProc(this.obj, name);
     }
 
+    pub inline fn getMouseState(this: IWindowBackend, button: u32) bool {
+        return this.vtable.getMouseState(this.obj, button);
+    }
+
     pub const Vtable = struct {
         // TODO: Be more smart about how window backends are handled and get rid of this function
         getBackendEnumValue: *const fn (obj: *anyopaque) WindowBackend,
@@ -249,6 +258,7 @@ pub const IWindowBackend = struct {
         createWindow: *const fn (obj: *anyopaque, data: IncompleteWindow, id: c_int) ?ICompleteWindow,
         step: *const fn (obj: *anyopaque) void,
         glGetProc: *const fn(obj: *anyopaque, name: [:0]const u8) ?*anyopaque,
+        getMouseState: *const fn(obj: *anyopaque, button: u32) bool,
     };
 
     vtable: *Vtable,
@@ -1076,6 +1086,22 @@ pub export fn pinc_window_event_closed(window: c_int) c_int {
         },
         else => unreachable,
     }
+}
+
+pub export fn pinc_window_event_mouse_button(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventMouseButton()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_mouse_button_get(button: c_int) c_int {
+    state.validateFor(.init);
+    return if(state.init.windowBackend.getMouseState(@intCast(button))) 1 else 0;
 }
 
 pub export fn pinc_graphics_set_fill_color(channel: c_int, value: c_int) void {

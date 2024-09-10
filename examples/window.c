@@ -61,16 +61,19 @@ int main(int argc, char** argv) {
     while(running) {
         pinc_step();
         if(pinc_window_event_closed(window)) {
-            // Do a funny trick: instead of exiting, change the color.
-            // TODO: change this to a different event so the window actually closes on the first attempt
-            ++color;
-            // exit once there are no more colors
-            if(color >= num_colors) {
-                running = 0;
-                // break so we don't draw an extra frame.
-                break;
+            running = 0;
+            break;
+        }
+        if(pinc_window_event_mouse_button(window)) {
+            // We only accept left clicks
+            if(pinc_mouse_button_get(0)) {
+                ++color;
+                // exit once there are no more colors
+                if(color >= num_colors) {
+                    color = 0;
+                }
+                printf("Set color to %i\n", color);
             }
-            printf("Set color to %i\n", color);
         }
         // Set the fill color
         switch(num_channels) {
