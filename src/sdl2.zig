@@ -147,9 +147,9 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn deinit(this: *SDL2WindowBackend) void {
-        _ = this;
         libsdl.lib.?.close();
         libsdl.lib = null;
+        pinc.allocator.?.destroy(this);
     }
 
     pub fn prepareGraphics(this: *SDL2WindowBackend, backend: pinc.GraphicsBackend) void {
@@ -445,6 +445,7 @@ pub const SDL2CompleteWindow = struct {
     pub fn deinit(this: *SDL2CompleteWindow) void {
         libsdl.destroyWindow(this.window);
         pinc.allocator.?.free(this.title);
+        pinc.allocator.?.destroy(this);
     }
 
     pub fn setWidth(this: *SDL2CompleteWindow, width: u32) void {
