@@ -20,7 +20,7 @@ pub const Opengl21GraphicsBackend = struct {
     }
 
     pub fn deinit(this: *Opengl21GraphicsBackend) void {
-        _ = this;
+        pinc.allocator.?.destroy(this);
     }
 
     pub fn step(this: *Opengl21GraphicsBackend) void {

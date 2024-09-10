@@ -92,7 +92,7 @@ pub const ICompleteWindow = struct {
         };
     }
 
-    /// The same as a C++ destructor, this is in charge of destroying any sub-objects / resources but does not free the memory of the object itself.
+    // This should also destroy the memory of the object iself. It is not like a C++ desctructor.
     pub inline fn deinit(this: ICompleteWindow) void {
         this.vtable.deinit(this.obj);
     }
@@ -338,6 +338,7 @@ pub const PincError = struct {
         return PincError{
             .fatal = fatal,
             .type = _type,
+            // TODO: maybe use a more optimized allocator specifically for strings.
             .message = std.fmt.allocPrint(allocator.?, fmt, args) catch unreachable,
         };
     }
@@ -650,6 +651,7 @@ pub export fn pinc_init_set_framebuffer_format(framebuffer_index: c_int) void {
     const format = state.set_graphics_backend.framebufferFormats[@intCast(realFramebufferIndex)];
     state.set_graphics_backend.windowBackend.prepareFramebuffer(format);
     state.set_graphics_backend.graphicsBackend.prepareFramebuffer(format);
+    allocator.?.free(state.set_graphics_backend.framebufferFormats);
     state = State{ .set_framebuffer_format = .{
         .framebufferFormat = format,
         .graphicsBackend = state.set_graphics_backend.graphicsBackend,
