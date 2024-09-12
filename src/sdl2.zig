@@ -47,6 +47,8 @@ const libsdl = struct {
     pub var glSetAttribute: *@TypeOf(sdl.SDL_GL_SetAttribute) = undefined;
     pub const _glSwapWindow = "SDL_GL_SwapWindow";
     pub var glSwapWindow: *@TypeOf(sdl.SDL_GL_SwapWindow) = undefined;
+    pub const _glGetDrawableSize = "SDL_GL_GetDrawableSize";
+    pub var glGetDrawableSize: *@TypeOf(sdl.SDL_GL_GetDrawableSize) = undefined;
     pub const _pollEvent = "SDL_PollEvent";
     pub var pollEvent: *@TypeOf(sdl.SDL_PollEvent) = undefined;
     pub const _getWindowFromID = "SDL_GetWindowFromID";
@@ -276,6 +278,8 @@ pub const SDL2WindowBackend = struct {
             .title = data.title,
             .evdat = .{},
             .resizable = data.resizable,
+            .width = width.?,
+            .height = height.?,
         };
         return pinc.ICompleteWindow.init(SDL2CompleteWindow, win);
     }
@@ -492,7 +496,7 @@ pub const SDL2CompleteWindow = struct {
         var width: c_int = undefined;
         var height: c_int = undefined;
         libsdl.getWindowSize(this.window, &width, &height);
-        return (width + height) / (this.width + this.height);
+        return @as(f32, @floatFromInt(width + height)) / @as(f32, @floatFromInt(this.width + this.height));
     }
 
     pub fn setResizable(this: *SDL2CompleteWindow, resizable: bool) void {
@@ -614,7 +618,7 @@ pub const SDL2CompleteWindow = struct {
             .opengl21 => {
                 var w: c_int = undefined;
                 var h: c_int = undefined;
-                sdl.SDL_GL_GetDrawableSize(this.window, &w, &h);
+                libsdl.glGetDrawableSize(this.window, &w, &h);
                 width.* = w;
                 height.* = h;
             },
