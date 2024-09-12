@@ -340,8 +340,7 @@ pub const SDL2WindowBackend = struct {
         // extract window object
         const dat = SDLWindowUserData.fromWindow(sdlWin);
         const object = pinc.refObject(dat.pincWindowId);
-        // TODO: this should really be undefined behavior... Wasn't sure when I wrote it though
-        if (object.* != .completeWindow) return null;
+        if (object.* != .completeWindow) undefined;
 
         const winOrNone = SDL2CompleteWindow.castFrom(object.completeWindow);
         return winOrNone;
@@ -448,13 +447,8 @@ pub const SDLWindowUserData = struct {
 
 pub const SDL2CompleteWindow = struct {
     pub fn castFrom(win: pinc.ICompleteWindow) ?*SDL2CompleteWindow {
-        // TODO: would it be worth adding a type flag to ICompleteWindow?
-        // Probably not, as there is only ever one backend anyway.
-        const windowMaybe: *SDL2CompleteWindow = @alignCast(@ptrCast(win.obj));
-        if (windowMaybe.secret == 12345) {
-            return windowMaybe;
-        }
-        return null;
+        const window: *SDL2CompleteWindow = @alignCast(@ptrCast(win.obj));
+        return window;
     }
 
     pub fn init(this: *SDL2CompleteWindow) void {
@@ -468,33 +462,37 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setWidth(this: *SDL2CompleteWindow, width: u32) void {
-        // TODO: cache window size
+        // TODO: handle scale factor
+        this.width = width;
         libsdl.setWindowSize(this.window, @intCast(width), @intCast(this.getHeight()));
     }
 
     pub fn getWidth(this: *SDL2CompleteWindow) u32 {
-        // TODO: cache window size
-        var width: c_int = 0;
-        libsdl.getWindowSize(this.window, &width, null);
-        return @intCast(width);
+        // TODO: handle scale factor
+        return this.width;
     }
 
     pub fn setHeight(this: *SDL2CompleteWindow, height: u32) void {
-        // TODO: cache window size
+        // TODO: handle scale factor
+        this.height = height;
         libsdl.setWindowSize(this.window, @intCast(this.getWidth()), @intCast(height));
     }
 
     pub fn getHeight(this: *SDL2CompleteWindow) u32 {
-        // TODO: cache window size
-        var height: c_int = 0;
-        libsdl.getWindowSize(this.window, null, &height);
-        return @intCast(height);
+        // TODO: handle scale factor
+        return this.height;
     }
 
     pub fn getScaleFactor(this: *SDL2CompleteWindow) ?f32 {
-        // TODO:
-        _ = this;
-        return null;
+        // Boy oh boy is SDL a nice and fun API with no strange graphics-backend specific code at all!
+        // (SDL does have a function go get window size in pixels, HOWEVER it does not exist on many SDL verisons)
+        // Really, I think it's windows fault for shoehorning scaling factor into an existing system
+        // by literally lying to applications about the size of the window surface.
+        // TODO: properly support scale factor - currently this should always result in 1.
+        var width: c_int = undefined;
+        var height: c_int = undefined;
+        libsdl.getWindowSize(this.window, &width, &height);
+        return (width + height) / (this.width + this.height);
     }
 
     pub fn setResizable(this: *SDL2CompleteWindow, resizable: bool) void {
@@ -576,7 +574,6 @@ pub const SDL2CompleteWindow = struct {
         return (flags & sdl.SDL_WINDOW_HIDDEN) != 0;
     }
 
-
     pub fn presentFramebuffer(this: *SDL2CompleteWindow, vsync: bool) void {
         // TODO: actually make sure we're on the OpenGL backend before swapping for OpenGL
         this.glMakeCurrent();
@@ -611,6 +608,21 @@ pub const SDL2CompleteWindow = struct {
         return this.evdat.mouseButton;
     }
 
+    // privates
+    fn getWindowSizePixels(this: *SDL2CompleteWindow, width: *u32, height: *u32) void {
+        switch (pinc.state.init.graphicsBackendEnum) {
+            .opengl21 => {
+                var w: c_int = undefined;
+                var h: c_int = undefined;
+                sdl.SDL_GL_GetDrawableSize(this.window, &w, &h);
+                width.* = w;
+                height.* = h;
+            },
+            // TODO: raw backend
+            else => unreachable,
+        }
+    }
+
     // This is so we can safely cast from ICompleteWindow to SDL2CompleteWindow.
     // TODO: this really should exist... Wasn't sure when I wrote it though.
     secret: u32 = 12345,
@@ -622,4 +634,6 @@ pub const SDL2CompleteWindow = struct {
         mouseButton: bool = false,
     },
     resizable: bool,
+    width: u32,
+    height: u32,
 };

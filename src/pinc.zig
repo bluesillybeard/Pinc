@@ -459,16 +459,39 @@ pub const State = union(StateTag) {
         graphicsBackendEnum: GraphicsBackend,
         framebufferFormat: FramebufferFormat,
         objects: std.ArrayList(PincObject),
+        emptyIds: std.ArrayList(c_int),
     },
 
     /// triggers undefined behavior when the state is not valid for the given tag.
     pub fn validateFor(this: *const State, stateTag: StateTag) void {
-        _ = this;
-        _ = stateTag;
         // TODO: have an actual error message or something
-        // TODO: does Zig seriously have no way to get the tag value of a tagged union?
-        //if (stateTag != this) undefined;
         // TODO: for this state, validate if it is correct
+        switch (this.*) {
+            .preinit => |st| {
+                if(stateTag != .preinit) unreachable;
+                _ = st;
+            },
+            .incomplete_init => |st| {
+                if(stateTag != .incomplete_init) unreachable;
+                _ = st;
+            },
+            .set_window_backend => |st| {
+                if(stateTag != .set_window_backend) unreachable;
+                _ = st;
+            },
+            .set_graphics_backend => |st| {
+                if(stateTag != .set_graphics_backend) unreachable;
+                _ = st;
+            },
+            .set_framebuffer_format => |st| {
+                if(stateTag != .set_framebuffer_format) unreachable;
+                _ = st;
+            },
+            .init => |st| {
+                if(stateTag != .init) unreachable;
+                _ = st;
+            }
+        }
     }
 
     pub fn getFramebufferFormat(this: *const State) ?FramebufferFormat {
@@ -493,10 +516,15 @@ pub inline fn pushError(fatal: bool, _type: ErrorType, comptime fmt: []const u8,
 }
 
 pub inline fn allocObject() c_int {
-    // TODO: find an empty slot
-    state.init.objects.append(.{ .none = void{} }) catch unreachable;
+    const idOrNone = state.init.emptyIds.getLastOrNull();
+    var id: c_int = idOrNone orelse undefined;
+    if(idOrNone == null) {
+        _ = state.init.objects.addOne() catch unreachable;
+        id = @intCast(state.init.objects.items.len);
+    }
+    refObject(id).* = .{.none = void{}};
     // object handle is one offset from index.
-    return @intCast(state.init.objects.items.len);
+    return id;
 }
 
 pub inline fn refObject(id: c_int) *PincObject {
@@ -721,6 +749,7 @@ pub export fn pinc_complete_init() void {
         .graphicsBackendEnum = state.set_framebuffer_format.graphicsBackendEnum,
         .framebufferFormat = state.set_framebuffer_format.framebufferFormat,
         .objects = std.ArrayList(PincObject).init(allocator.?),
+        .emptyIds = std.ArrayList(c_int).init(allocator.?),
     } };
 }
 
