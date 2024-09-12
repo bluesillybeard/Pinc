@@ -158,6 +158,46 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventMouseButton(this.obj);
     }
 
+    pub inline fn setMinimized(this: ICompleteWindow, minimized: bool) void {
+           this.vtable.setMinimized(this.obj, minimized);
+    }
+
+    pub inline fn getMinimized(this: ICompleteWindow) bool {
+        return this.vtable.getMinimized(this.obj);
+    }
+
+    pub inline fn setMaximized(this: ICompleteWindow, maximized: bool) void {
+        this.vtable.setMaximized(this.obj, maximized);
+    }
+
+    pub inline fn getMaximized(this: ICompleteWindow) bool {
+        return this.vtable.getMaximized(this.obj);
+    }
+
+    pub inline fn setFullscreen(this: ICompleteWindow, fullscreen: bool) void {
+        this.vtable.setFullscreen(this.obj, fullscreen);
+    }
+
+    pub inline fn getFullscreen(this: ICompleteWindow) bool {
+        return this.vtable.getFullscreen(this.obj);
+    }
+
+    pub inline fn setFocused(this: ICompleteWindow, focused: bool) void {
+        this.vtable.setFocused(this.obj, focused);
+    }
+
+    pub inline fn getFocused(this: ICompleteWindow) bool {
+        return this.vtable.getFocused(this.obj);
+    }
+
+    pub inline fn setHidden(this: ICompleteWindow, hidden: bool) void {
+        this.vtable.setHidden(this.obj, hidden);
+    }
+
+    pub inline fn getHidden(this: ICompleteWindow) bool {
+        return this.vtable.getHidden(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -170,10 +210,20 @@ pub const ICompleteWindow = struct {
         getResizable: *const fn (this: *anyopaque) bool,
         presentFramebuffer: *const fn (this: *anyopaque, vsync: bool) void,
         eventClosed: *const fn (this: *anyopaque) bool,
-        getTitle: *const fn (this: *anyopaque) [:0]const u8,
-        setTitle: *const fn (this: *anyopaque, title: [:0]const u8) void,
+        getTitle: *const fn (this: *anyopaque) [:0]u8,
+        setTitle: *const fn (this: *anyopaque, title: [:0]u8) void,
         glMakeCurrent: *const fn (this: *anyopaque) void,
         eventMouseButton: *const fn(obj: *anyopaque) bool,
+        setMinimized: *const fn(this: *anyopaque, bool) void,
+        getMinimized: *const fn(this: *anyopaque) bool,
+        setMaximized: *const fn(this: *anyopaque, bool) void,
+        getMaximized: *const fn(this: *anyopaque) bool,
+        setFullscreen: *const fn(this: *anyopaque, bool) void,
+        getFullscreen: *const fn(this: *anyopaque) bool,
+        setFocused: *const fn(this: *anyopaque, bool) void,
+        getFocused: *const fn(this: *anyopaque) bool,
+        setHidden: *const fn(this: *anyopaque, bool) void,
+        getHidden: *const fn(this: *anyopaque) bool,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -792,7 +842,7 @@ pub export fn pinc_window_complete(window: c_int) void {
     // Admittedly that will probably never actually be used in practice
 }
 
-pub fn pinc_window_set_title_length(window: c_int, len: c_int) void {
+pub export fn pinc_window_set_title_length(window: c_int, len: c_int) void {
     state.validateFor(.init);
     const obj = refObject(window);
     switch (obj.*) {
@@ -827,22 +877,23 @@ pub fn pinc_window_set_title_length(window: c_int, len: c_int) void {
     }
 }
 
-pub fn pinc_window_set_title_item(window: c_int, index: c_int, item: c_char) void {
+pub export fn pinc_window_set_title_item(window: c_int, index: c_int, item: c_char) void {
     state.validateFor(.init);
     const obj = refObject(window);
     switch (obj.*) {
         .incompleteWindow => |*w| {
-            w[@intCast(index)] = item;
+            w.title[@intCast(index)] = @bitCast(item);
         },
         .completeWindow => |w| {
             const title = w.getTitle();
 
-            title[@intCast(index)] = item;
+            title[@intCast(index)] = @bitCast(item);
             // Only notify the window when the last item is set
             if (index == title.len - 1) {
                 w.setTitle(title);
             }
         },
+        else => unreachable,
     }
 }
 
@@ -998,67 +1049,150 @@ pub export fn pinc_window_get_resizable(window: c_int) c_int {
             return if (w.resizable) 1 else 0;
         },
         .completeWindow => |w| {
-            // TODO: once Zig's LSP can actualy figure out what w is, remove this weird thing
-            const win: ICompleteWindow = w;
-            return if (win.getResizable()) 1 else 0;
+            return if (w.getResizable()) 1 else 0;
         },
         else => unreachable,
     }
 }
 
 pub export fn pinc_window_set_minimized(window: c_int, minimized: c_int) void {
-    _ = window; // autofix
-    _ = minimized; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |*w| {
+            w.minimized = minimized != 0;
+        },
+        .completeWindow => |w| {
+            w.setMinimized(minimized != 0);
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_get_minimized(window: c_int) c_int {
-    _ = window; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |w| {
+            return if(w.minimized) 1 else 0;
+        },
+        .completeWindow => |w| {
+            return if(w.getMinimized()) 1 else 0;
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_set_maximized(window: c_int, maximized: c_int) void {
-    _ = window; // autofix
-    _ = maximized; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |*w| {
+            w.maximized = maximized != 0;
+        },
+        .completeWindow => |w| {
+            w.setMaximized(maximized != 0);
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_get_maximized(window: c_int) c_int {
-    _ = window; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |w| {
+            return if(w.maximized) 1 else 0;
+        },
+        .completeWindow => |w| {
+            return if(w.getMaximized()) 1 else 0;
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_set_fullscreen(window: c_int, fullscreen: c_int) void {
-    _ = window; // autofix
-    _ = fullscreen; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |*w| {
+            w.fullscreen = fullscreen != 0;
+        },
+        .completeWindow => |w| {
+            w.setFullscreen(fullscreen != 0);
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_get_fullscreen(window: c_int) c_int {
-    _ = window; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |w| {
+            return if(w.fullscreen) 1 else 0;
+        },
+        .completeWindow => |w| {
+            return if(w.getFullscreen()) 1 else 0;
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_set_focused(window: c_int, focused: c_int) void {
-    _ = window; // autofix
-    _ = focused; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |*w| {
+            w.focused = focused != 0;
+        },
+        .completeWindow => |w| {
+            w.setFocused(focused != 0);
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_get_focused(window: c_int) c_int {
-    _ = window; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |w| {
+            return if(w.focused) 1 else 0;
+        },
+        .completeWindow => |w| {
+            return if(w.getFocused()) 1 else 0;
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_set_hidden(window: c_int, hidden: c_int) void {
-    _ = window; // autofix
-    _ = hidden; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |*w| {
+            w.hidden = hidden != 0;
+        },
+        .completeWindow => |w| {
+            w.setHidden(hidden != 0);
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_get_hidden(window: c_int) c_int {
-    _ = window; // autofix
-    std.debug.panic("Function not implemented", .{});
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .incompleteWindow => |w| {
+            return if(w.hidden) 1 else 0;
+        },
+        .completeWindow => |w| {
+            return if(w.getHidden()) 1 else 0;
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_window_present_framebuffer(window: c_int, vsync: c_int) void {

@@ -57,6 +57,24 @@ const libsdl = struct {
     pub var waitEventTimeout: *@TypeOf(sdl.SDL_WaitEventTimeout) = undefined;
     pub const _getMouseState = "SDL_GetMouseState";
     pub var getMouseState: *@TypeOf(sdl.SDL_GetMouseState) = undefined;
+    pub const _setWindowResizable = "SDL_SetWindowResizable";
+    pub var setWindowResizable: *@TypeOf(sdl.SDL_SetWindowResizable) = undefined;
+    pub const _minimizeWindow = "SDL_MinimizeWindow";
+    pub var minimizeWindow: *@TypeOf(sdl.SDL_MinimizeWindow) = undefined;
+    pub const _restoreWindow = "SDL_RestoreWindow";
+    pub var restoreWindow: *@TypeOf(sdl.SDL_RestoreWindow) = undefined;
+    pub const _getWindowFlags = "SDL_GetWindowFlags";
+    pub var getWindowFlags: *@TypeOf(sdl.SDL_GetWindowFlags) = undefined;
+    pub const _maximizeWindow = "SDL_MaximizeWindow";
+    pub var maximizeWindow: *@TypeOf(sdl.SDL_MaximizeWindow) = undefined;
+    pub const _setWindowFullscreen = "SDL_SetWindowFullscreen";
+    pub var setWindowFullscreen: *@TypeOf(sdl.SDL_SetWindowFullscreen) = undefined;
+    pub const _raiseWindow = "SDL_RaiseWindow";
+    pub var raiseWindow: *@TypeOf(sdl.SDL_RaiseWindow) = undefined;
+    pub const _hideWindow = "SDL_HideWindow";
+    pub var hideWindow: *@TypeOf(sdl.SDL_HideWindow) = undefined;
+    pub const _showWindow = "SDL_ShowWindow";
+    pub var showWindow: *@TypeOf(sdl.SDL_ShowWindow) = undefined;
     pub var lib: ?std.DynLib = null;
     // returns false if loading failed for any reason
     pub fn load() bool {
@@ -257,6 +275,7 @@ pub const SDL2WindowBackend = struct {
             // we own the title now
             .title = data.title,
             .evdat = .{},
+            .resizable = data.resizable,
         };
         return pinc.ICompleteWindow.init(SDL2CompleteWindow, win);
     }
@@ -449,41 +468,114 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setWidth(this: *SDL2CompleteWindow, width: u32) void {
-        _ = this;
-        _ = width;
+        // TODO: cache window size
+        libsdl.setWindowSize(this.window, @intCast(width), @intCast(this.getHeight()));
     }
 
     pub fn getWidth(this: *SDL2CompleteWindow) u32 {
-        _ = this;
-        unreachable;
+        // TODO: cache window size
+        var width: c_int = 0;
+        libsdl.getWindowSize(this.window, &width, null);
+        return @intCast(width);
     }
 
     pub fn setHeight(this: *SDL2CompleteWindow, height: u32) void {
-        _ = this;
-        _ = height;
-        unreachable;
+        // TODO: cache window size
+        libsdl.setWindowSize(this.window, @intCast(this.getWidth()), @intCast(height));
     }
 
     pub fn getHeight(this: *SDL2CompleteWindow) u32 {
-        _ = this;
-        unreachable;
+        // TODO: cache window size
+        var height: c_int = 0;
+        libsdl.getWindowSize(this.window, null, &height);
+        return @intCast(height);
     }
 
-    pub fn getScaleFactor(this: *SDL2CompleteWindow) f32 {
+    pub fn getScaleFactor(this: *SDL2CompleteWindow) ?f32 {
+        // TODO:
         _ = this;
-        unreachable;
+        return null;
     }
 
     pub fn setResizable(this: *SDL2CompleteWindow, resizable: bool) void {
-        _ = this;
-        _ = resizable;
-        unreachable;
+        this.resizable = resizable;
+        libsdl.setWindowResizable(this.window, if(resizable) sdl.SDL_TRUE else sdl.SDL_FALSE);
     }
 
     pub fn getResizable(this: *SDL2CompleteWindow) bool {
-        _ = this;
-        unreachable;
+        return this.resizable;
     }
+
+    pub fn setMinimized(this: *SDL2CompleteWindow, minimized: bool) void {
+        if(minimized) {
+            libsdl.minimizeWindow(this.window);
+        } else {
+            libsdl.restoreWindow(this.window);
+            // TODO: If a window was maximized and minimized at the same time, do we need to restore the maximized state?
+        }
+    }
+
+    pub fn getMinimized(this: *SDL2CompleteWindow) bool {
+        const flags = libsdl.getWindowFlags(this.window);
+        return (flags & sdl.SDL_WINDOW_MINIMIZED) != 0;
+    }
+
+    pub fn setMaximized(this: *SDL2CompleteWindow, maximized: bool) void {
+        if(maximized){
+            libsdl.maximizeWindow(this.window);
+        } else {
+            // TODO: if a window was minimized and maximized at the same time, do we need to restore the minimized state?
+            libsdl.restoreWindow(this.window);
+        }
+    }
+
+    pub fn getMaximized(this: *SDL2CompleteWindow) bool {
+        const flags = libsdl.getWindowFlags(this.window);
+        return (flags & sdl.SDL_WINDOW_MAXIMIZED) != 0;
+    }
+
+    pub fn setFullscreen(this: *SDL2CompleteWindow, fullscreen: bool) void {
+        if(fullscreen) {
+            // TODO: error check
+            _ = libsdl.setWindowFullscreen(this.window, sdl.SDL_WINDOW_FULLSCREEN);
+        } else {
+            // TODO: error check
+            _ = libsdl.setWindowFullscreen(this.window, 0);
+        }
+    }
+
+    pub fn getFullscreen(this: *SDL2CompleteWindow) bool {
+        const flags = libsdl.getWindowFlags(this.window);
+        return (flags & sdl.SDL_WINDOW_FULLSCREEN) != 0;
+    }
+
+    pub fn setFocused(this: *SDL2CompleteWindow, focused: bool) void {
+        if(focused) {
+            libsdl.raiseWindow(this.window);
+        } else {
+            // Do nothing lol
+            // What does unfocusing a window even look like?
+        }
+    }
+
+    pub fn getFocused(this: *SDL2CompleteWindow) bool {
+        const flags = libsdl.getWindowFlags(this.window);
+        return (flags & sdl.SDL_WINDOW_INPUT_FOCUS) != 0;
+    }
+
+    pub fn setHidden(this: *SDL2CompleteWindow, hidden: bool) void {
+        if(hidden) {
+            libsdl.hideWindow(this.window);
+        } else {
+            libsdl.showWindow(this.window);
+        }
+    }
+
+    pub fn getHidden(this: *SDL2CompleteWindow) bool {
+        const flags = libsdl.getWindowFlags(this.window);
+        return (flags & sdl.SDL_WINDOW_HIDDEN) != 0;
+    }
+
 
     pub fn presentFramebuffer(this: *SDL2CompleteWindow, vsync: bool) void {
         // TODO: actually make sure we're on the OpenGL backend before swapping for OpenGL
@@ -529,4 +621,5 @@ pub const SDL2CompleteWindow = struct {
         closed: bool = false,
         mouseButton: bool = false,
     },
+    resizable: bool,
 };
