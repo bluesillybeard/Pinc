@@ -11,15 +11,16 @@
             "program": "${workspaceFolder}/zig-out/bin/window",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "preLaunchTask": "examples"
+            "preLaunchTask": "exampleWindow"
         },
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug window example without building",
-            "program": "${workspaceFolder}/zig-out/bin/window",
+            "name": "Debug windowMaximal example",
+            "program": "${workspaceFolder}/zig-out/bin/windowMaximal",
             "args": [],
             "cwd": "${workspaceFolder}",
+            "preLaunchTask": "exampleWindowMaximal"
         }
     ]
 }

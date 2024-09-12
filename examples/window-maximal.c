@@ -12,6 +12,9 @@ typedef struct Color {
     float blue;
 } Color;
 
+// declare stuff
+int collect_errors(void);
+
 /// @brief You know what main is. At least, I hope you know what main is...
 int main(int argc, char** argv) {
     pinc_incomplete_init();
@@ -19,7 +22,7 @@ int main(int argc, char** argv) {
     const int supported_window_backends[2] = {
         // Prioritize using SDL2
         pinc_window_backend_sdl2,
-        // If SDL2 isn't available, use whatever.
+        // If SDL2 isn't available, use whatever
         pinc_window_backend_any,
     };
     // Select a backend
@@ -108,14 +111,12 @@ int main(int argc, char** argv) {
     for(int i=0; i<len; ++i) {
         pinc_window_set_title_item(window, i, title[i]);
     }
-    pinc_window_set_width(window, 800);
-    pinc_window_set_height(window, 600);
-    // We actually don't want to be resizable... for demonstration
+    pinc_window_set_width(window, 498);
+    pinc_window_set_height(window, 700);
     pinc_window_set_resizable(window, 0);
-    pinc_window_set_minimized(window, 0);
+    pinc_window_set_minimized(window, 1);
     pinc_window_set_maximized(window, 0);
     pinc_window_set_fullscreen(window, 0);
-    // This isn't the default! So if you want a window to gain focus when openened, you'll have to do this.
     pinc_window_set_focused(window, 1);
     pinc_window_set_hidden(window, 0);
     pinc_window_complete(window);
@@ -154,14 +155,18 @@ int main(int argc, char** argv) {
     while(running) {
         pinc_step();
         if(pinc_window_event_closed(window)) {
-            // TODO: change this to a different event so the window actually closes on the first attempt
-            // Do a funny trick: instead of exiting, change the color.
-            ++color;
-            // exit once there are no more colors
-            if(color >= num_colors) {
-                running = 0;
-                // break so we don't draw an extra frame.
-                break;
+            running = 0;
+            break;
+        }
+        if(pinc_window_event_mouse_button(window)) {
+            // We only accept left clicks
+            if(pinc_mouse_button_get(0)) {
+                ++color;
+                // exit once there are no more colors
+                if(color >= num_colors) {
+                    color = 0;
+                }
+                printf("Set color to %i\n", color);
             }
         }
         // Set the fill color

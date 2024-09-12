@@ -59,30 +59,31 @@ pub fn build(b: *std.Build) void {
         sharedLib.step.dependOn(&install.step);
     }
 
-    // window example
-    {
-        const exe = b.addExecutable(.{
-            .target = target,
-            .optimize = optimize,
-            .name = "window",
-        });
-        exe.addIncludePath(b.path("include"));
-        exe.addIncludePath(b.path("ext"));
-        exe.addCSourceFile(.{
-            .file = b.path("examples/window.c"),
-        });
-        exe.linkLibrary(staticLib);
-        exe.step.dependOn(&staticLib.step);
+    registerExample(b, target, optimize, staticLib, run, "window", b.path("examples/window.c"));
+    registerExample(b, target, optimize, staticLib, run, "windowMaximal", b.path("examples/window-maximal.c"));
+}
 
-        if (run) {
-            const runArtifact = b.addRunArtifact(exe);
-            var runStep = b.step("window", "window example");
-            runStep.dependOn(&runArtifact.step);
-        } else {
-            const install = b.addInstallArtifact(exe, .{});
-            var installStep = b.step("window", "window example");
-            installStep.dependOn(&install.step);
-        }
+fn registerExample(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, pinclib: *std.Build.Step.Compile, run: bool, comptime name: []const u8, sourceFile: std.Build.LazyPath) void {
+    const exe = b.addExecutable(.{
+        .target = target,
+        .optimize = optimize,
+        .name = name,
+    });
+    exe.addIncludePath(b.path("include"));
+    exe.addIncludePath(b.path("ext"));
+    exe.addCSourceFile(.{
+        .file = sourceFile,
+    });
+    exe.linkLibrary(pinclib);
+    exe.step.dependOn(&pinclib.step);
+
+    if (run) {
+        const runArtifact = b.addRunArtifact(exe);
+        var runStep = b.step(name, name ++ " example");
+        runStep.dependOn(&runArtifact.step);
+    } else {
+        const install = b.addInstallArtifact(exe, .{});
+        var installStep = b.step(name, name ++ " example");
+        installStep.dependOn(&install.step);
     }
-    // TODO: maximal window example
 }

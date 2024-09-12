@@ -2,10 +2,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "examples",
+            "label": "exampleWindow",
             "type": "shell",
             "command": "zig",
             "args": ["build", "window"]
-        }
+        },
+        {
+            "label": "exampleWindowMaximal",
+            "type": "shell",
+            "command": "zig",
+            "args": ["build", "windowMaximal"]
+        },
     ]
 }
