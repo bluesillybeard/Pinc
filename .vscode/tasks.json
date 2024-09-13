@@ -13,5 +13,11 @@
             "command": "zig",
             "args": ["build", "windowMaximal"]
         },
+        {
+            "label": "events",
+            "type": "shell",
+            "command": "zig",
+            "args": ["build", "events"]
+        },
     ]
 }

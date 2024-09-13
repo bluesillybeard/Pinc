@@ -21,6 +21,15 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "exampleWindowMaximal"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug events example",
+            "program": "${workspaceFolder}/zig-out/bin/events",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "events"
         }
     ]
 }

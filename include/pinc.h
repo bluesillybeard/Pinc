@@ -364,7 +364,14 @@ PINC_API int PINC_CALL pinc_window_get_hidden(int window);
 // TODO: doc
 PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 
-/// @section main loop & user IO / events
+/// @section user IO
+
+/// @brief Get the state of a mouse button
+/// @param button the button to check. Generally, 0 is the left button, 1 is the right, and 2 is the middle
+/// @return 1 if the button is pressed, 0 if it is not pressed OR if this application has no focused windows.
+PINC_API int PINC_CALL pinc_mouse_button_get(int button);
+
+/// @section main loop & events
 
 /// @brief Collects user input and flushes internal buffers
 PINC_API void PINC_CALL pinc_step();
@@ -378,13 +385,10 @@ PINC_API int PINC_CALL pinc_event_window_closed(int window);
 /// @return 1 if there any mouse buttons were pressed or released, 0 otherwise.
 PINC_API int PINC_CALL pinc_event_window_mouse_button(int window);
 
-/// @brief Get the state of a mouse button
-/// @param button the button to check. Generally, 0 is the left button, 1 is the right, and 2 is the middle
-/// @return 1 if the button is pressed, 0 if it is not pressed OR if this application has no focused windows.
-PINC_API int PINC_CALL pinc_mouse_button_get(int button);
+// TODO: doc
+PINC_API int PINC_CALL pinc_event_window_resized(int window);
 
 // TODO: the rest of the events / event-like things:
-// - resize - size can already be retrieved, just need an event for it
 // - focus
 // - unfocus
 // - damaged / exposed

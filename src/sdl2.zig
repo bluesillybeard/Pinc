@@ -313,6 +313,11 @@ pub const SDL2WindowBackend = struct {
                         sdl.SDL_WINDOWEVENT_CLOSE => {
                             win.evdat.closed = true;
                         },
+                        sdl.SDL_WINDOWEVENT_RESIZED => {
+                            win.evdat.resized = true;
+                            win.width = @intCast(ev.window.data1);
+                            win.height = @intCast(ev.window.data2);
+                        },
                         else => {}
                     }
                 },
@@ -610,11 +615,13 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn getTitle(this: *SDL2CompleteWindow) [:0]const u8 {
+        // TODO
         _ = this;
         unreachable;
     }
 
     pub fn setTitle(this: *SDL2CompleteWindow, title: [:0]const u8) void {
+        // TODO
         _ = this;
         _ = title;
         unreachable;
@@ -629,6 +636,10 @@ pub const SDL2CompleteWindow = struct {
 
     pub fn eventMouseButton(this: *SDL2CompleteWindow) bool {
         return this.evdat.mouseButton;
+    }
+
+    pub fn eventResized(this: *SDL2CompleteWindow) bool {
+        return this.evdat.resized;
     }
 
     // privates
@@ -655,6 +666,7 @@ pub const SDL2CompleteWindow = struct {
     evdat: struct {
         closed: bool = false,
         mouseButton: bool = false,
+        resized: bool = false,
     },
     resizable: bool,
     width: u32,

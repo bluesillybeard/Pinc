@@ -198,6 +198,10 @@ pub const ICompleteWindow = struct {
         return this.vtable.getHidden(this.obj);
     }
 
+    pub inline fn eventResized(this: ICompleteWindow) bool {
+        return this.vtable.eventResized(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -205,7 +209,7 @@ pub const ICompleteWindow = struct {
         getWidth: *const fn (this: *anyopaque) u32,
         setHeight: *const fn (this: *anyopaque, height: u32) void,
         getHeight: *const fn (this: *anyopaque) u32,
-        getScaleFactor: *const fn (this: *anyopaque) f32,
+        getScaleFactor: *const fn (this: *anyopaque) ?f32,
         setResizable: *const fn (this: *anyopaque, resizable: bool) void,
         getResizable: *const fn (this: *anyopaque) bool,
         presentFramebuffer: *const fn (this: *anyopaque, vsync: bool) void,
@@ -224,6 +228,7 @@ pub const ICompleteWindow = struct {
         getFocused: *const fn(this: *anyopaque) bool,
         setHidden: *const fn(this: *anyopaque, bool) void,
         getHidden: *const fn(this: *anyopaque) bool,
+        eventResized: *const fn(this: *anyopaque) bool,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -1235,6 +1240,11 @@ pub export fn pinc_window_present_framebuffer(window: c_int, vsync: c_int) void 
     }
 }
 
+pub export fn pinc_mouse_button_get(button: c_int) c_int {
+    state.validateFor(.init);
+    return if(state.init.windowBackend.getMouseState(@intCast(button))) 1 else 0;
+}
+
 pub export fn pinc_step() void {
     state.validateFor(.init);
     state.init.windowBackend.step();
@@ -1264,9 +1274,15 @@ pub export fn pinc_event_window_mouse_button(window: c_int) c_int {
     }
 }
 
-pub export fn pinc_mouse_button_get(button: c_int) c_int {
+pub export fn pinc_event_window_resized(window: c_int) c_int {
     state.validateFor(.init);
-    return if(state.init.windowBackend.getMouseState(@intCast(button))) 1 else 0;
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventResized()) 1 else 0;
+        },
+        else => unreachable,
+    }
 }
 
 pub export fn pinc_graphics_set_fill_color(channel: c_int, value: c_int) void {
