@@ -6,6 +6,11 @@ const sdl = @cImport({
     @cInclude("SDL2/SDL.h");
 });
 
+// SDL-specific TODOs
+// - fix the bug in the SDL backend where unfocusing a window while buttons are being held down not causing window events
+//    - Arguably this is not an issue, it's actually a bug in SDL2 (and I think GLFW) as well.
+// - Check version of loaded SDL2 binary
+
 // improvements of translated SDL types
 
 const GLContext = opaque {};

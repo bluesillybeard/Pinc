@@ -60,11 +60,11 @@ int main(int argc, char** argv) {
     int running = 1;
     while(running) {
         pinc_step();
-        if(pinc_window_event_closed(window)) {
+        if(pinc_event_window_closed(window)) {
             running = 0;
             break;
         }
-        if(pinc_window_event_mouse_button(window)) {
+        if(pinc_event_window_mouse_button(window)) {
             // When left click is pressed
             if(pinc_mouse_button_get(0)) {
                 ++color;
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
                 printf("Left click: Set color to %i\n", color);
             }
             // When right click is either pressed OR released, change the window color
-            // Do do that, keep track of what it was last time.
+            // To do that, keep track of what it was last time.
             static int lastRightClickState = 0;
             if(pinc_mouse_button_get(1) != lastRightClickState) {
                 lastRightClickState = pinc_mouse_button_get(1);

@@ -46,7 +46,7 @@
 // - main loop
 //     - call pinc_step
 //         - this will collect events, update window properties, clear arena allocators, etc.
-//     - handle events
+//     - handle events (pinc_event_*)
 //     - draw stuff (pinc_graphics_*)
 //     - present framebuffers (pinc_window_present_framebuffer)
 
@@ -370,13 +370,13 @@ PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 PINC_API void PINC_CALL pinc_step();
 
 // TODO: doc
-PINC_API int PINC_CALL pinc_window_event_closed(int window);
+PINC_API int PINC_CALL pinc_event_window_closed(int window);
 
 /// @brief Get if there was a mouse press/release from the last step
 /// @param window The window to check - although all windows share the same mouse,
 ///     only one of those windows recieves the event.
 /// @return 1 if there any mouse buttons were pressed or released, 0 otherwise.
-PINC_API int PINC_CALL pinc_window_event_mouse_button(int window);
+PINC_API int PINC_CALL pinc_event_window_mouse_button(int window);
 
 /// @brief Get the state of a mouse button
 /// @param button the button to check. Generally, 0 is the left button, 1 is the right, and 2 is the middle

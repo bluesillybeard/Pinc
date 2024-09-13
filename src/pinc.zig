@@ -1242,7 +1242,7 @@ pub export fn pinc_step() void {
     // TODO: clear temp allocator (once one is implemented)
 }
 
-pub export fn pinc_window_event_closed(window: c_int) c_int {
+pub export fn pinc_event_window_closed(window: c_int) c_int {
     state.validateFor(.init);
     const object = refObject(window);
     switch (object.*) {
@@ -1253,7 +1253,7 @@ pub export fn pinc_window_event_closed(window: c_int) c_int {
     }
 }
 
-pub export fn pinc_window_event_mouse_button(window: c_int) c_int {
+pub export fn pinc_event_window_mouse_button(window: c_int) c_int {
     state.validateFor(.init);
     const object = refObject(window);
     switch (object.*) {
