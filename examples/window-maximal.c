@@ -125,8 +125,8 @@ int main(int argc, char** argv) {
         return 255;
     }
     // List of colors for later
-    int num_colors = 3;
-    const Color colors[3] = {
+    int num_colors = 4;
+    const Color colors[4] = {
         {0, 0, 0},
         {1, 0, 0},
         {0, 1, 0},
@@ -159,14 +159,24 @@ int main(int argc, char** argv) {
             break;
         }
         if(pinc_window_event_mouse_button(window)) {
-            // We only accept left clicks
+            // When left click is pressed
             if(pinc_mouse_button_get(0)) {
                 ++color;
-                // exit once there are no more colors
                 if(color >= num_colors) {
                     color = 0;
                 }
-                printf("Set color to %i\n", color);
+                printf("Left click: Set color to %i\n", color);
+            }
+            // When right click is either pressed OR released, change the window color
+            // Do do that, keep track of what it was last time.
+            static int lastRightClickState = 0;
+            if(pinc_mouse_button_get(1) != lastRightClickState) {
+                lastRightClickState = pinc_mouse_button_get(1);
+                --color;
+                if(color < 0) {
+                    color = num_colors-1;
+                }
+                printf("Right Click or Release: Set color to %i\n", color);
             }
         }
         // Set the fill color

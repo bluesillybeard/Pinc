@@ -315,6 +315,10 @@ pub const SDL2WindowBackend = struct {
                     const win = getWindowFromid(ev.button.windowID) orelse continue :LOOP;
                     win.evdat.mouseButton = true;
                 },
+                sdl.SDL_MOUSEBUTTONUP => {
+                    const win = getWindowFromid(ev.button.windowID) orelse continue :LOOP;
+                    win.evdat.mouseButton = true;
+                },
                 else => {}
             }
         }
@@ -331,8 +335,18 @@ pub const SDL2WindowBackend = struct {
 
     pub fn getMouseState(this: *SDL2WindowBackend, button: u32) bool {
         _ = this;
+        // For some inexplicable reason, right click and middle click are swapped for SDL.
+        // I was under the impression that everyone used 1 for right click and 2 for middle click,
+        // But it seems that's just a GLFW thing.
+        var realButton = button;
+        if(realButton == 1) {
+            realButton = 2;
+        } else if(realButton == 2) {
+            realButton = 1;
+        }
         var state = libsdl.getMouseState(null, null);
-        state &= (@as(u32, 1) >> @intCast(button));
+        const mask = (@as(u32, 1) << @intCast(realButton));
+        state &= mask;
         return state != 0;
     }
 
