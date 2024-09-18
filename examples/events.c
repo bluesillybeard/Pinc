@@ -53,6 +53,23 @@ int main(int argc, char** argv) {
             }
             printf("\n");
         }
+        if(pinc_event_window_focused(window)) {
+            printf("Window gained focus\n");
+        }
+        if(pinc_event_window_unfocused(window)) {
+            printf("Window lost focus\n");
+        }
+        if(pinc_event_window_exposed(window)) {
+            printf("Window was exposed\n");
+        }
+        if(pinc_event_window_keyboard_button(window)) {
+            // TODO: figure out which buttons were pressed/released
+            printf("Key event\n");
+        }
+        if(pinc_event_window_keyboard_button_repeat(window)) {
+            // TODO: figure out which buttons were repeated
+            printf("Key repeat\n");
+        }
         pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
         pinc_window_present_framebuffer(window, 1);
         // It is good practice to collect errors after each frame
