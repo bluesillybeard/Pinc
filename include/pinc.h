@@ -107,6 +107,144 @@ enum pinc_graphics_fill_flag {
     pinc_graphics_fill_flag_depth = 2,
 };
 
+/// enumeration of pinc keyboard codes
+/// These are not physical, but logical - when the user presses the button labeled 'q' on their keyboard, that's the key reported here.
+/// In order words, this ignores the idea of a keyboard layout, and reports based on what the user is typing, not what actual buttons are being pressed.
+enum pinc_keyboard_key {
+    pinc_keyboard_key_unknown = -1,
+    pinc_keyboard_key_space = 0,
+    pinc_keyboard_key_apostrophe,
+    pinc_keyboard_key_comma,
+    pinc_keyboard_key_dash,
+    pinc_keyboard_key_dot,
+    pinc_keyboard_key_slash,
+    pinc_keyboard_key_0,
+    pinc_keyboard_key_1,
+    pinc_keyboard_key_2,
+    pinc_keyboard_key_3,
+    pinc_keyboard_key_4,
+    pinc_keyboard_key_5,
+    pinc_keyboard_key_6,
+    pinc_keyboard_key_7,
+    pinc_keyboard_key_8,
+    pinc_keyboard_key_9,
+    pinc_keyboard_key_semicolon,
+    pinc_keyboard_key_equals,
+    pinc_keyboard_key_a,
+    pinc_keyboard_key_b,
+    pinc_keyboard_key_c,
+    pinc_keyboard_key_d,
+    pinc_keyboard_key_e,
+    pinc_keyboard_key_f,
+    pinc_keyboard_key_g,
+    pinc_keyboard_key_h,
+    pinc_keyboard_key_i,
+    pinc_keyboard_key_j,
+    pinc_keyboard_key_k,
+    pinc_keyboard_key_l,
+    pinc_keyboard_key_m,
+    pinc_keyboard_key_n,
+    pinc_keyboard_key_o,
+    pinc_keyboard_key_p,
+    pinc_keyboard_key_q,
+    pinc_keyboard_key_r,
+    pinc_keyboard_key_s,
+    pinc_keyboard_key_t,
+    pinc_keyboard_key_u,
+    pinc_keyboard_key_v,
+    pinc_keyboard_key_w,
+    pinc_keyboard_key_x,
+    pinc_keyboard_key_y,
+    pinc_keyboard_key_z,
+    pinc_keyboard_key_left_bracket,
+    pinc_keyboard_key_backslash,
+    pinc_keyboard_key_right_bracket,
+    /// @brief The ` character. The ~` button on US keyboards.
+    pinc_keyboard_key_backtick,
+    // TODO: what are GLFW_WORLD_1 and GLFW_WORLD_2
+    pinc_keyboard_key_escape,
+    pinc_keyboard_key_enter,
+    pinc_keyboard_key_tab,
+    pinc_keyboard_key_backspace,
+    pinc_keyboard_key_insert,
+    pinc_keyboard_key_delete,
+    pinc_keyboard_key_right,
+    pinc_keyboard_key_left,
+    pinc_keyboard_key_down,
+    pinc_keyboard_key_up,
+    pinc_keyboard_key_page_up,
+    pinc_keyboard_key_page_down,
+    pinc_keyboard_key_home,
+    pinc_keyboard_key_end,
+    pinc_keyboard_key_caps_lock,
+    pinc_keyboard_key_scroll_lock,
+    pinc_keyboard_key_num_lock,
+    pinc_keyboard_key_print_screen,
+    pinc_keyboard_key_pause,
+    pinc_keyboard_key_f1,
+    pinc_keyboard_key_f2,
+    pinc_keyboard_key_f3,
+    pinc_keyboard_key_f4,
+    pinc_keyboard_key_f5,
+    pinc_keyboard_key_f6,
+    pinc_keyboard_key_f7,
+    pinc_keyboard_key_f8,
+    pinc_keyboard_key_f9,
+    pinc_keyboard_key_f10,
+    pinc_keyboard_key_f11,
+    pinc_keyboard_key_f12,
+    pinc_keyboard_key_f13,
+    pinc_keyboard_key_f14,
+    pinc_keyboard_key_f15,
+    pinc_keyboard_key_f16,
+    pinc_keyboard_key_f17,
+    pinc_keyboard_key_f18,
+    pinc_keyboard_key_f19,
+    pinc_keyboard_key_f20,
+    pinc_keyboard_key_f21,
+    pinc_keyboard_key_f22,
+    pinc_keyboard_key_f23,
+    pinc_keyboard_key_f24,
+    // Note: I don't think any actual systems have support for function keys beyond 24.
+    pinc_keyboard_key_f25,
+    pinc_keyboard_key_f26,
+    pinc_keyboard_key_f27,
+    pinc_keyboard_key_f28,
+    pinc_keyboard_key_f29,
+    pinc_keyboard_key_f30,
+    pinc_keyboard_key_numpad_0,
+    pinc_keyboard_key_numpad_1,
+    pinc_keyboard_key_numpad_2,
+    pinc_keyboard_key_numpad_3,
+    pinc_keyboard_key_numpad_4,
+    pinc_keyboard_key_numpad_5,
+    pinc_keyboard_key_numpad_6,
+    pinc_keyboard_key_numpad_7,
+    pinc_keyboard_key_numpad_8,
+    pinc_keyboard_key_numpad_9,
+    pinc_keyboard_key_numpad_dot,
+    pinc_keyboard_key_numpad_slash,
+    pinc_keyboard_key_numpad_asterisk,
+    pinc_keyboard_key_numpad_dash,
+    pinc_keyboard_key_numpad_plus,
+    pinc_keyboard_key_numpad_enter,
+    pinc_keyboard_key_numpad_equal,
+    pinc_keyboard_key_left_shift,
+    pinc_keyboard_key_left_control,
+    pinc_keyboard_key_left_alt,
+    /// @brief On many keyboards, this is a windows icon and is generally called "the windows button"
+    pinc_keyboard_key_left_super,
+    pinc_keyboard_key_right_shift,
+    pinc_keyboard_key_right_control,
+    pinc_keyboard_key_right_alt,
+    /// @brief On many keyboards, this is a windows icon and is generally called "the windows button". Most keyboards only have the one on the left, not this one.
+    pinc_keyboard_key_right_super,
+    /// @brief On many keyboards, this is the button next to right control
+    pinc_keyboard_key_menu,
+    // Don't you just love C?
+    pinc_keyboard_key_count,
+};
+
 /// @section initialization
 // These are roughly in the order they should be called in a normal application
 
@@ -371,9 +509,13 @@ PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 /// @return 1 if the button is pressed, 0 if it is not pressed OR if this application has no focused windows.
 PINC_API int PINC_CALL pinc_mouse_button_get(int button);
 
+// TODO doc
+// button is a value of pinc_keyboard_key
+PINC_API int PINC_CALL pinc_keyboard_key_get(int button);
+
 /// @section main loop & events
 
-/// @brief Collects user input and flushes internal buffers
+/// @brief Flushes internal buffers and collects user input
 PINC_API void PINC_CALL pinc_step();
 
 // TODO: doc
@@ -388,13 +530,24 @@ PINC_API int PINC_CALL pinc_event_window_mouse_button(int window);
 // TODO: doc
 PINC_API int PINC_CALL pinc_event_window_resized(int window);
 
+// TODO: doc
+PINC_API int PINC_CALL pinc_event_window_focused(int window);
+
+// TODO: doc
+PINC_API int PINC_CALL pinc_event_window_unfocused(int window);
+
+// TODO: doc
+PINC_API int PINC_CALL pinc_event_window_exposed(int window);
+
+// TODO: doc
+// Keyboard key press / release
+PINC_API int PINC_CALL pinc_event_window_keyboard_button(int window);
+
+// TODO: doc
+// Keyboard key repeat after being held down
+PINC_API int PINC_CALL pinc_event_window_keyboard_button_repeat(int window);
+
 // TODO: the rest of the events / event-like things:
-// - focus
-// - unfocus
-// - damaged / exposed
-// - key_down
-// - key_up
-// - key_repeat
 // - text - just have the entire text over this frame in a buffer
 // - cursor_move
 // - cursor_enter

@@ -8,11 +8,12 @@ const sdl = @cImport({
 
 // SDL-specific TODOs
 // - fix the bug in the SDL backend where unfocusing a window while buttons are being held down not causing window events
-//    - Arguably this is not an issue, it's actually a bug in SDL2 (and I think GLFW) as well.
+//    - Arguably this is not an issue, it's actually a bug in SDL2 (and I think GLFW) as well. The user can detect this in the unfocus event.
 // - Check version of loaded SDL2 binary
 
 // improvements of translated SDL types
 
+// OG SDL uses a pointer here, but I prefer to declare things as pointers myself
 const GLContext = opaque {};
 
 // struct to assist with loading SDL at runtime
@@ -82,6 +83,8 @@ const libsdl = struct {
     pub var hideWindow: *@TypeOf(sdl.SDL_HideWindow) = undefined;
     pub const _showWindow = "SDL_ShowWindow";
     pub var showWindow: *@TypeOf(sdl.SDL_ShowWindow) = undefined;
+    pub const _getKeyboardFocus = "getKeyboardFocus";
+    pub var getKeyboardFocus: *@TypeOf(sdl.SDL_GetKeyboardFocus) = undefined;
     pub var lib: ?std.DynLib = null;
     // returns false if loading failed for any reason
     pub fn load() bool {
@@ -277,7 +280,6 @@ pub const SDL2WindowBackend = struct {
         dat.toWindow(sdlwin.?);
         const win = pinc.allocator.?.create(SDL2CompleteWindow) catch unreachable;
         win.* = SDL2CompleteWindow{
-            .secret = 12345,
             .window = sdlwin.?,
             // we own the title now
             .title = data.title,
@@ -307,7 +309,6 @@ pub const SDL2WindowBackend = struct {
             switch (ev.type) {
                 sdl.SDL_WINDOWEVENT => {
                     const win = getWindowFromid(ev.window.windowID) orelse continue :LOOP;
-
                     // Finally switch on the window event type
                     switch (ev.window.event) {
                         sdl.SDL_WINDOWEVENT_CLOSE => {
@@ -317,6 +318,15 @@ pub const SDL2WindowBackend = struct {
                             win.evdat.resized = true;
                             win.width = @intCast(ev.window.data1);
                             win.height = @intCast(ev.window.data2);
+                        },
+                        sdl.SDL_WINDOWEVENT_FOCUS_GAINED => {
+                            win.evdat.focused = true;
+                        },
+                        sdl.SDL_WINDOWEVENT_FOCUS_LOST => {
+                            win.evdat.unfocused = true;
+                        },
+                        sdl.SDL_WINDOWEVENT_EXPOSED => {
+                            win.evdat.exposed = true;
                         },
                         else => {}
                     }
@@ -328,6 +338,18 @@ pub const SDL2WindowBackend = struct {
                 sdl.SDL_MOUSEBUTTONUP => {
                     const win = getWindowFromid(ev.button.windowID) orelse continue :LOOP;
                     win.evdat.mouseButton = true;
+                },
+                sdl.SDL_KEYDOWN => {
+                    const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
+                    if(ev.key.repeat != 0) {
+                        win.evdat.keyboardButtonRepeat = true;
+                    } else {
+                        win.evdat.keyboardButton = true;
+                    }
+                },
+                sdl.SDL_KEYUP => {
+                    const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
+                    win.evdat.keyboardButton = true;
                 },
                 else => {}
             }
@@ -642,6 +664,26 @@ pub const SDL2CompleteWindow = struct {
         return this.evdat.resized;
     }
 
+    pub fn eventWindowFocused(this: *SDL2CompleteWindow) bool {
+        return this.evdat.focused;
+    }
+
+    pub fn eventWindowUnfocused(this: *SDL2CompleteWindow) bool {
+        return this.evdat.unfocused;
+    }
+
+    pub fn eventWindowExposed(this: *SDL2CompleteWindow) bool {
+        return this.evdat.exposed;
+    }
+
+    pub fn eventKeyboardButton(this: *SDL2CompleteWindow) bool {
+        return this.evdat.keyboardButton;
+    }
+
+    pub fn eventKeyboardButtonRepeat(this: *SDL2CompleteWindow) bool {
+        return this.evdat.keyboardButtonRepeat;
+    }
+
     // privates
     fn getWindowSizePixels(this: *SDL2CompleteWindow, width: *u32, height: *u32) void {
         switch (pinc.state.init.graphicsBackendEnum) {
@@ -657,9 +699,6 @@ pub const SDL2CompleteWindow = struct {
         }
     }
 
-    // This is so we can safely cast from ICompleteWindow to SDL2CompleteWindow.
-    // TODO: this really should exist... Wasn't sure when I wrote it though.
-    secret: u32 = 12345,
     window: *sdl.SDL_Window,
     // allocated on the pinc global allocator
     title: [:0]const u8,
@@ -667,6 +706,11 @@ pub const SDL2CompleteWindow = struct {
         closed: bool = false,
         mouseButton: bool = false,
         resized: bool = false,
+        focused: bool = false,
+        unfocused: bool = false,
+        exposed: bool = false,
+        keyboardButton: bool = false,
+        keyboardButtonRepeat: bool = false,
     },
     resizable: bool,
     width: u32,

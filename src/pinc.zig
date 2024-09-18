@@ -202,6 +202,26 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventResized(this.obj);
     }
 
+    pub inline fn eventWindowFocused(this: ICompleteWindow) bool {
+        return this.vtable.eventWindowFocused(this.obj);
+    }
+
+    pub inline fn eventWindowUnfocused(this: ICompleteWindow) bool {
+        return this.vtable.eventWindowUnfocused(this.obj);
+    }
+
+    pub inline fn eventWindowExposed(this: ICompleteWindow) bool {
+        return this.vtable.eventWindowExposed(this.obj);
+    }
+
+    pub inline fn eventKeyboardButton(this: ICompleteWindow) bool {
+        return this.vtable.eventKeyboardButton(this.obj);
+    }
+
+    pub inline fn eventKeyboardButtonRepeat(this: ICompleteWindow) bool {
+        return this.vtable.eventKeyboardButtonRepeat(this.obj);
+    }
+    
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -229,6 +249,11 @@ pub const ICompleteWindow = struct {
         setHidden: *const fn(this: *anyopaque, bool) void,
         getHidden: *const fn(this: *anyopaque) bool,
         eventResized: *const fn(this: *anyopaque) bool,
+        eventWindowFocused: *const fn(this: *anyopaque) bool,
+        eventWindowUnfocused: *const fn(this: *anyopaque) bool,
+        eventWindowExposed: *const fn(this: *anyopaque) bool,
+        eventKeyboardButton: *const fn(this: *anyopaque) bool,
+        eventKeyboardButtonRepeat: *const fn(this: *anyopaque) bool,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -1284,6 +1309,62 @@ pub export fn pinc_event_window_resized(window: c_int) c_int {
         else => unreachable,
     }
 }
+
+pub export fn pinc_event_window_focused(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventWindowFocused()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_unfocused(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventWindowUnfocused()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_exposed(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventWindowExposed()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_keyboard_button(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventKeyboardButton()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_keyboard_button_repeat(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventKeyboardButtonRepeat()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
 
 pub export fn pinc_graphics_set_fill_color(channel: c_int, value: c_int) void {
     state.validateFor(.init);
