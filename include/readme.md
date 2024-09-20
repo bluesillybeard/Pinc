@@ -60,7 +60,7 @@ The basic order of events:
 - swap buffers
 
 General notes:
-- This library has no equivalent to a Vertex Buffer Object like in OpenGL.
+- This library has no equivalent to a Vertex Array Object like in OpenGL.
     - Instead, the pipeline defines how a buffer is interpereted as vertices
 - Pinc has no such thing as a texture sampler
     - Again, this is part of the pipeline

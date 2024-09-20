@@ -16,6 +16,7 @@
 //     - lists are entered by setting the length and using the set function
 // - no structs either, particularily for languages like python where a 'struct' doesn't actually exist
 // - using only void, int, and float seems limiting... because it is
+//     - typedefs are allowed, however none of them have been made yet (oops)
 
 // error policy:
 // - incorrect usage of Pinc's API will trigger an assert in debug builds (-Doptimize=Debug or -Doptimize=ReleaseSafe)
@@ -27,6 +28,7 @@
 
 // The flow of your code should be like this:
 // - call pinc_incomplete_init()
+// - TODO: refactor this to help give users more information and control over this while still allowing for flexibility between devices
 // - (optional) decide which window backend to use
 //     - use pinc_window_backend_is_supported to get if a backend is supported by Pinc
 //     - use pinc_init_set_window_backend to set your chosen backend. Note that this MUST be the first init variable set, if you are going to set it.
@@ -541,12 +543,15 @@ PINC_API int PINC_CALL pinc_event_window_exposed(int window);
 
 // TODO: doc
 // Keyboard key press / release
-PINC_API int PINC_CALL pinc_event_window_keyboard_button(int window);
+PINC_API int PINC_CALL pinc_event_window_keyboard_button_num(int window);
+
+// TODO doc
+// get which key was changed
+PINC_API int PINC_CALL pinc_event_window_keyboard_button_get(int window, int index);
 
 // TODO: doc
-// Keyboard key repeat after being held down
-PINC_API int PINC_CALL pinc_event_window_keyboard_button_repeat(int window);
-
+// get if a keyboard event is a repeat
+PINC_API int PINC_CALL pinc_event_window_keyboard_button_get_repeat(int window, int index);
 // TODO: the rest of the events / event-like things:
 // - text - just have the entire text over this frame in a buffer
 // - cursor_move

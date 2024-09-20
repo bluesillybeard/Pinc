@@ -40,6 +40,134 @@ pub const ObjectType = enum(c_int) {
     window,
 };
 
+pub const KeyboardKey = enum(c_int) {
+    unknown = -1,
+    space = 0,
+    apostrophe,
+    comma,
+    dash,
+    dot,
+    slash,
+    @"0",
+    @"1",
+    @"2",
+    @"3",
+    @"4",
+    @"5",
+    @"6",
+    @"7",
+    @"8",
+    @"9",
+    semicolon,
+    equals,
+    a,
+    b,
+    c,
+    d,
+    e,
+    f,
+    g,
+    h,
+    i,
+    j,
+    k,
+    l,
+    m,
+    n,
+    o,
+    p,
+    q,
+    r,
+    s,
+    t,
+    u,
+    v,
+    w,
+    x,
+    y,
+    z,
+    left_bracket,
+    backslash,
+    right_bracket,
+    backtick,
+    escape,
+    enter,
+    tab,
+    backspace,
+    insert,
+    delete,
+    right,
+    left,
+    down,
+    up,
+    page_up,
+    page_down,
+    home,
+    end,
+    caps_lock,
+    scroll_lock,
+    num_lock,
+    print_screen,
+    pause,
+    f1,
+    f2,
+    f3,
+    f4,
+    f5,
+    f6,
+    f7,
+    f8,
+    f9,
+    f10,
+    f11,
+    f12,
+    f13,
+    f14,
+    f15,
+    f16,
+    f17,
+    f18,
+    f19,
+    f20,
+    f21,
+    f22,
+    f23,
+    f24,
+    f25,
+    f26,
+    f27,
+    f28,
+    f29,
+    f30,
+    numpad_0,
+    numpad_1,
+    numpad_2,
+    numpad_3,
+    numpad_4,
+    numpad_5,
+    numpad_6,
+    numpad_7,
+    numpad_8,
+    numpad_9,
+    numpad_dot,
+    numpad_slash,
+    numpad_asterisk,
+    numpad_dash,
+    numpad_plus,
+    numpad_enter,
+    numpad_equal,
+    left_shift,
+    left_control,
+    left_alt,
+    left_super,
+    right_shift,
+    right_control,
+    right_alt,
+    right_super,
+    menu,
+    count,
+};
+
 // other types
 
 pub const maxChannels = 4;
@@ -66,6 +194,11 @@ pub const IncompleteWindow = struct {
     focused: bool = false,
     hidden: bool = false,
     title: [:0]u8,
+};
+
+pub const KeyboardButtonEvent = struct {
+    key: KeyboardKey,
+    repeated: bool,
 };
 
 pub const ICompleteWindow = struct {
@@ -214,14 +347,10 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventWindowExposed(this.obj);
     }
 
-    pub inline fn eventKeyboardButton(this: ICompleteWindow) bool {
-        return this.vtable.eventKeyboardButton(this.obj);
+    pub inline fn eventKeyboardButtons(this: ICompleteWindow) []const KeyboardButtonEvent {
+        return this.vtable.eventKeyboardButtons(this.obj);
     }
 
-    pub inline fn eventKeyboardButtonRepeat(this: ICompleteWindow) bool {
-        return this.vtable.eventKeyboardButtonRepeat(this.obj);
-    }
-    
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -252,8 +381,7 @@ pub const ICompleteWindow = struct {
         eventWindowFocused: *const fn(this: *anyopaque) bool,
         eventWindowUnfocused: *const fn(this: *anyopaque) bool,
         eventWindowExposed: *const fn(this: *anyopaque) bool,
-        eventKeyboardButton: *const fn(this: *anyopaque) bool,
-        eventKeyboardButtonRepeat: *const fn(this: *anyopaque) bool,
+        eventKeyboardButtons: *const fn(this: *anyopaque) []const KeyboardButtonEvent,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -327,6 +455,10 @@ pub const IWindowBackend = struct {
         return this.vtable.getMouseState(this.obj, button);
     }
 
+    pub inline fn getKeyboardState(this: IWindowBackend, button: KeyboardKey) bool {
+        return this.vtable.getKeyboardState(this.obj, button);
+    } 
+
     pub const Vtable = struct {
         // TODO: Be more smart about how window backends are handled and get rid of this function
         getBackendEnumValue: *const fn (obj: *anyopaque) WindowBackend,
@@ -339,6 +471,7 @@ pub const IWindowBackend = struct {
         step: *const fn (obj: *anyopaque) void,
         glGetProc: *const fn(obj: *anyopaque, name: [:0]const u8) ?*anyopaque,
         getMouseState: *const fn(obj: *anyopaque, button: u32) bool,
+        getKeyboardState: *const fn(obj: *anyopaque, button: KeyboardKey) bool,
     };
 
     vtable: *Vtable,
@@ -1270,6 +1403,11 @@ pub export fn pinc_mouse_button_get(button: c_int) c_int {
     return if(state.init.windowBackend.getMouseState(@intCast(button))) 1 else 0;
 }
 
+pub export fn pinc_keyboard_key_get(button: c_int) c_int {
+    state.validateFor(.init);
+    return if(state.init.windowBackend.getKeyboardState(@enumFromInt(button))) 1 else 0;
+}
+
 pub export fn pinc_step() void {
     state.validateFor(.init);
     state.init.windowBackend.step();
@@ -1343,28 +1481,38 @@ pub export fn pinc_event_window_exposed(window: c_int) c_int {
     }
 }
 
-pub export fn pinc_event_window_keyboard_button(window: c_int) c_int {
+pub export fn pinc_event_window_keyboard_button_num(window: c_int) c_int {
     state.validateFor(.init);
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventKeyboardButton()) 1 else 0;
+            return @intCast(w.eventKeyboardButtons().len);
         },
         else => unreachable,
     }
 }
 
-pub export fn pinc_event_window_keyboard_button_repeat(window: c_int) c_int {
+pub export fn pinc_event_window_keyboard_button_get(window: c_int, index: c_int) c_int {
     state.validateFor(.init);
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventKeyboardButtonRepeat()) 1 else 0;
+            return @intCast(@intFromEnum(w.eventKeyboardButtons()[@intCast(index)].key));
         },
         else => unreachable,
     }
 }
 
+pub export fn pinc_event_window_keyboard_button_get_repeat(window: c_int, index: c_int) c_int {
+state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventKeyboardButtons()[@intCast(index)].repeated) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
 
 pub export fn pinc_graphics_set_fill_color(channel: c_int, value: c_int) void {
     state.validateFor(.init);
