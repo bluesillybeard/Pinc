@@ -83,8 +83,10 @@ const libsdl = struct {
     pub var hideWindow: *@TypeOf(sdl.SDL_HideWindow) = undefined;
     pub const _showWindow = "SDL_ShowWindow";
     pub var showWindow: *@TypeOf(sdl.SDL_ShowWindow) = undefined;
-    pub const _getKeyboardFocus = "getKeyboardFocus";
+    pub const _getKeyboardFocus = "SDL_GetKeyboardFocus";
     pub var getKeyboardFocus: *@TypeOf(sdl.SDL_GetKeyboardFocus) = undefined;
+    pub const _getKeyboardState = "SDL_GetKeyboardState";
+    pub var getKeyboardState: *@TypeOf(sdl.SDL_GetKeyboardState) = undefined;
     pub var lib: ?std.DynLib = null;
     // returns false if loading failed for any reason
     pub fn load() bool {
@@ -341,16 +343,22 @@ pub const SDL2WindowBackend = struct {
                 },
                 sdl.SDL_KEYDOWN => {
                     const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
+                    if(win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) continue :LOOP;
                     win.evdat.keyboardButtons[win.evdat.numKeyboardButtons] = .{
-                        .key = translateSdlScancode(ev.key.keysym.scancode),
+                        .key = translateSdlScancodeToPinc(ev.key.keysym.scancode),
                         .repeated  = ev.key.repeat != 0,
                     };
                     win.evdat.numKeyboardButtons += 1;
                 },
-                // sdl.SDL_KEYUP => {
-                //     const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
-                //     win.evdat.keyboardButton = true;
-                // },
+                sdl.SDL_KEYUP => {
+                    const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
+                    if(win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) continue :LOOP;
+                    win.evdat.keyboardButtons[win.evdat.numKeyboardButtons] = .{
+                        .key = translateSdlScancodeToPinc(ev.key.keysym.scancode),
+                        .repeated = false,
+                    };
+                    win.evdat.numKeyboardButtons += 1;
+                },
                 else => {}
             }
         }
@@ -367,7 +375,7 @@ pub const SDL2WindowBackend = struct {
 
     pub fn getMouseState(this: *SDL2WindowBackend, button: u32) bool {
         _ = this;
-        // For some inexplicable reason, right click and middle click are swapped for SDL.
+        // For some inexplicable reason, right click and middle click are swapped for sdl.
         // I was under the impression that everyone used 1 for right click and 2 for middle click,
         // But it seems that's just a GLFW thing.
         var realButton = button;
@@ -384,9 +392,12 @@ pub const SDL2WindowBackend = struct {
 
     pub fn getKeyboardState(this: *SDL2WindowBackend, button: pinc.KeyboardKey) bool {
         _ = this;
-        _ = button;
-        // TODO
-        return false;
+        const sdlScancode = translatePincToSdlScancode(button);
+        if(sdlScancode == sdl.SDL_SCANCODE_UNKNOWN) {
+            return false;
+        }
+        const state = libsdl.getKeyboardState(null);
+        return state[sdlScancode] != 0;
     }
 
     fn getWindowFromid(id: u32) ?*SDL2CompleteWindow {
@@ -721,7 +732,7 @@ pub const SDL2CompleteWindow = struct {
     height: u32,
 };
 
-fn translateSdlScancode(sdlScancode: c_uint) pinc.KeyboardKey {
+fn translateSdlScancodeToPinc(sdlScancode: c_uint) pinc.KeyboardKey {
     // TODO: menu
     return switch (sdlScancode) {
         sdl.SDL_SCANCODE_UNKNOWN => pinc.KeyboardKey.unknown,
@@ -972,5 +983,135 @@ fn translateSdlScancode(sdlScancode: c_uint) pinc.KeyboardKey {
         sdl.SDL_SCANCODE_CALL => pinc.KeyboardKey.unknown,
         sdl.SDL_SCANCODE_ENDCALL => pinc.KeyboardKey.unknown,
         else => pinc.KeyboardKey.unknown,
+    };
+}
+
+fn translatePincToSdlScancode(key: pinc.KeyboardKey) c_uint {
+    return switch (key) {
+        .unknown => sdl.SDL_SCANCODE_UNKNOWN,
+        .space => sdl.SDL_SCANCODE_SPACE,
+        .apostrophe => sdl.SDL_SCANCODE_APOSTROPHE,
+        .comma => sdl.SDL_SCANCODE_COMMA,
+        .dash => sdl.SDL_SCANCODE_MINUS,
+        .dot => sdl.SDL_SCANCODE_PERIOD,
+        .slash => sdl.SDL_SCANCODE_SLASH,
+        .@"0" => sdl.SDL_SCANCODE_0,
+        .@"1" => sdl.SDL_SCANCODE_1,
+        .@"2" => sdl.SDL_SCANCODE_2,
+        .@"3" => sdl.SDL_SCANCODE_3,
+        .@"4" => sdl.SDL_SCANCODE_4,
+        .@"5" => sdl.SDL_SCANCODE_5,
+        .@"6" => sdl.SDL_SCANCODE_6,
+        .@"7" => sdl.SDL_SCANCODE_7,
+        .@"8" => sdl.SDL_SCANCODE_8,
+        .@"9" => sdl.SDL_SCANCODE_9,
+        .semicolon => sdl.SDL_SCANCODE_SEMICOLON,
+        .equals => sdl.SDL_SCANCODE_EQUALS,
+        .a => sdl.SDL_SCANCODE_A,
+        .b => sdl.SDL_SCANCODE_B,
+        .c => sdl.SDL_SCANCODE_C,
+        .d => sdl.SDL_SCANCODE_D,
+        .e => sdl.SDL_SCANCODE_E,
+        .f => sdl.SDL_SCANCODE_F,
+        .g => sdl.SDL_SCANCODE_G,
+        .h => sdl.SDL_SCANCODE_H,
+        .i => sdl.SDL_SCANCODE_I,
+        .j => sdl.SDL_SCANCODE_J,
+        .k => sdl.SDL_SCANCODE_K,
+        .l => sdl.SDL_SCANCODE_L,
+        .m => sdl.SDL_SCANCODE_M,
+        .n => sdl.SDL_SCANCODE_N,
+        .o => sdl.SDL_SCANCODE_O,
+        .p => sdl.SDL_SCANCODE_P,
+        .q => sdl.SDL_SCANCODE_Q,
+        .r => sdl.SDL_SCANCODE_R,
+        .s => sdl.SDL_SCANCODE_S,
+        .t => sdl.SDL_SCANCODE_T,
+        .u => sdl.SDL_SCANCODE_U,
+        .v => sdl.SDL_SCANCODE_V,
+        .w => sdl.SDL_SCANCODE_W,
+        .x => sdl.SDL_SCANCODE_X,
+        .y => sdl.SDL_SCANCODE_Y,
+        .z => sdl.SDL_SCANCODE_Z,
+        .left_bracket => sdl.SDL_SCANCODE_LEFTBRACKET,
+        .backslash => sdl.SDL_SCANCODE_BACKSLASH,
+        .right_bracket => sdl.SDL_SCANCODE_RIGHTBRACKET,
+        .backtick => sdl.SDL_SCANCODE_GRAVE,
+        .escape => sdl.SDL_SCANCODE_ESCAPE,
+        .enter => sdl.SDL_SCANCODE_RETURN,
+        .tab => sdl.SDL_SCANCODE_TAB,
+        .backspace => sdl.SDL_SCANCODE_BACKSPACE,
+        .insert => sdl.SDL_SCANCODE_INSERT,
+        .delete => sdl.SDL_SCANCODE_DELETE,
+        .right => sdl.SDL_SCANCODE_RIGHT,
+        .left => sdl.SDL_SCANCODE_LEFT,
+        .down => sdl.SDL_SCANCODE_DOWN,
+        .up => sdl.SDL_SCANCODE_UP,
+        .page_up => sdl.SDL_SCANCODE_PAGEUP,
+        .page_down => sdl.SDL_SCANCODE_PAGEDOWN,
+        .home => sdl.SDL_SCANCODE_HOME,
+        .end => sdl.SDL_SCANCODE_END,
+        .caps_lock => sdl.SDL_SCANCODE_CAPSLOCK,
+        .scroll_lock => sdl.SDL_SCANCODE_SCROLLLOCK,
+        .num_lock => sdl.SDL_SCANCODE_NUMLOCKCLEAR, // ?
+        .print_screen => sdl.SDL_SCANCODE_PRINTSCREEN,
+        .pause => sdl.SDL_SCANCODE_PAUSE,
+        .f1 => sdl.SDL_SCANCODE_F1,
+        .f2 => sdl.SDL_SCANCODE_F2,
+        .f3 => sdl.SDL_SCANCODE_F3,
+        .f4 => sdl.SDL_SCANCODE_F4,
+        .f5 => sdl.SDL_SCANCODE_F5,
+        .f6 => sdl.SDL_SCANCODE_F6,
+        .f7 => sdl.SDL_SCANCODE_F7,
+        .f8 => sdl.SDL_SCANCODE_F8,
+        .f9 => sdl.SDL_SCANCODE_F9,
+        .f10 => sdl.SDL_SCANCODE_F10,
+        .f11 => sdl.SDL_SCANCODE_F11,
+        .f12 => sdl.SDL_SCANCODE_F12,
+        .f13 => sdl.SDL_SCANCODE_F13,
+        .f14 => sdl.SDL_SCANCODE_F14,
+        .f15 => sdl.SDL_SCANCODE_F15,
+        .f16 => sdl.SDL_SCANCODE_F16,
+        .f17 => sdl.SDL_SCANCODE_F17,
+        .f18 => sdl.SDL_SCANCODE_F18,
+        .f19 => sdl.SDL_SCANCODE_F19,
+        .f20 => sdl.SDL_SCANCODE_F20,
+        .f21 => sdl.SDL_SCANCODE_F21,
+        .f22 => sdl.SDL_SCANCODE_F22,
+        .f23 => sdl.SDL_SCANCODE_F23,
+        .f24 => sdl.SDL_SCANCODE_F24,
+        .f25 => sdl.SDL_SCANCODE_UNKNOWN,
+        .f26 => sdl.SDL_SCANCODE_UNKNOWN,
+        .f27 => sdl.SDL_SCANCODE_UNKNOWN,
+        .f28 => sdl.SDL_SCANCODE_UNKNOWN,
+        .f29 => sdl.SDL_SCANCODE_UNKNOWN,
+        .f30 => sdl.SDL_SCANCODE_UNKNOWN,
+        .numpad_0 => sdl.SDL_SCANCODE_KP_0,
+        .numpad_1 => sdl.SDL_SCANCODE_KP_1,
+        .numpad_2 => sdl.SDL_SCANCODE_KP_2,
+        .numpad_3 => sdl.SDL_SCANCODE_KP_3,
+        .numpad_4 => sdl.SDL_SCANCODE_KP_4,
+        .numpad_5 => sdl.SDL_SCANCODE_KP_5,
+        .numpad_6 => sdl.SDL_SCANCODE_KP_6,
+        .numpad_7 => sdl.SDL_SCANCODE_KP_7,
+        .numpad_8 => sdl.SDL_SCANCODE_KP_8,
+        .numpad_9 => sdl.SDL_SCANCODE_KP_9,
+        .numpad_dot => sdl.SDL_SCANCODE_KP_PERIOD,
+        .numpad_slash => sdl.SDL_SCANCODE_SLASH,
+        .numpad_asterisk => sdl.SDL_SCANCODE_KP_MULTIPLY,
+        .numpad_dash => sdl.SDL_SCANCODE_KP_MINUS,
+        .numpad_plus => sdl.SDL_SCANCODE_KP_PLUS,
+        .numpad_enter => sdl.SDL_SCANCODE_KP_ENTER,
+        .numpad_equal => sdl.SDL_SCANCODE_KP_EQUALS,
+        .left_shift => sdl.SDL_SCANCODE_LSHIFT,
+        .left_control => sdl.SDL_SCANCODE_LCTRL,
+        .left_alt => sdl.SDL_SCANCODE_LALT,
+        .left_super => sdl.SDL_SCANCODE_LGUI,
+        .right_shift => sdl.SDL_SCANCODE_RSHIFT,
+        .right_control => sdl.SDL_SCANCODE_RCTRL,
+        .right_alt => sdl.SDL_SCANCODE_RALT,
+        .right_super => sdl.SDL_SCANCODE_RGUI,
+        .menu => sdl.SDL_SCANCODE_MENU,
+        .count => sdl.SDL_SCANCODE_UNKNOWN,
     };
 }
