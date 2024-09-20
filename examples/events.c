@@ -62,13 +62,22 @@ int main(int argc, char** argv) {
         if(pinc_event_window_exposed(window)) {
             printf("Window was exposed\n");
         }
-        if(pinc_event_window_keyboard_button(window)) {
-            // TODO: figure out which buttons were pressed/released
-            printf("Key event\n");
-        }
-        if(pinc_event_window_keyboard_button_repeat(window)) {
-            // TODO: figure out which buttons were repeated
-            printf("Key repeat\n");
+        int numKeyChanges = pinc_event_window_keyboard_button_num(window);
+        if(numKeyChanges > 0) {
+            for(int eventIndex=0; eventIndex<numKeyChanges; ++eventIndex) {
+                // TODO: key name
+                int key = pinc_event_window_keyboard_button_get(window, eventIndex);
+                printf("Key %i ", key);
+                if(pinc_keyboard_key_get(key)) {
+                    if(pinc_event_window_keyboard_button_get_repeat(window, eventIndex)) {
+                        printf("repeated\n");
+                    } else {
+                        printf("down\n");
+                    }
+                } else {
+                    printf("up\n");
+                }
+            }
         }
         pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
         pinc_window_present_framebuffer(window, 1);
