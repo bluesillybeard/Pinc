@@ -330,7 +330,7 @@ pub const SDL2WindowBackend = struct {
                         sdl.SDL_WINDOWEVENT_EXPOSED => {
                             win.evdat.exposed = true;
                         },
-                        else => {}
+                        else => {},
                     }
                 },
                 sdl.SDL_MOUSEBUTTONDOWN => {
@@ -343,23 +343,35 @@ pub const SDL2WindowBackend = struct {
                 },
                 sdl.SDL_KEYDOWN => {
                     const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
-                    if(win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) continue :LOOP;
+                    if (win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) {
+                        pinc.logDebug("Maxed out at {} key events this frame", .{win.evdat.numKeyboardButtons});
+                        win.evdat.numKeyboardButtons += 1;
+                        continue :LOOP;
+                    }
                     win.evdat.keyboardButtons[win.evdat.numKeyboardButtons] = .{
                         .key = translateSdlScancodeToPinc(ev.key.keysym.scancode),
-                        .repeated  = ev.key.repeat != 0,
+                        .repeated = ev.key.repeat != 0,
                     };
                     win.evdat.numKeyboardButtons += 1;
                 },
                 sdl.SDL_KEYUP => {
                     const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
-                    if(win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) continue :LOOP;
+                    if (win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) {
+                        pinc.logDebug("Maxed out at {} key events this frame", .{win.evdat.numKeyboardButtons});
+                        win.evdat.numKeyboardButtons += 1;
+                        continue :LOOP;
+                    }
                     win.evdat.keyboardButtons[win.evdat.numKeyboardButtons] = .{
                         .key = translateSdlScancodeToPinc(ev.key.keysym.scancode),
                         .repeated = false,
                     };
                     win.evdat.numKeyboardButtons += 1;
                 },
-                else => {}
+                sdl.SDL_MOUSEMOTION => {
+                    const win = getWindowFromid(ev.motion.windowID) orelse continue :LOOP;
+                    win.evdat.cursorMove = true;
+                },
+                else => {},
             }
         }
     }
@@ -379,9 +391,9 @@ pub const SDL2WindowBackend = struct {
         // I was under the impression that everyone used 1 for right click and 2 for middle click,
         // But it seems that's just a GLFW thing.
         var realButton = button;
-        if(realButton == 1) {
+        if (realButton == 1) {
             realButton = 2;
-        } else if(realButton == 2) {
+        } else if (realButton == 2) {
             realButton = 1;
         }
         var state = libsdl.getMouseState(null, null);
@@ -393,11 +405,22 @@ pub const SDL2WindowBackend = struct {
     pub fn getKeyboardState(this: *SDL2WindowBackend, button: pinc.KeyboardKey) bool {
         _ = this;
         const sdlScancode = translatePincToSdlScancode(button);
-        if(sdlScancode == sdl.SDL_SCANCODE_UNKNOWN) {
+        if (sdlScancode == sdl.SDL_SCANCODE_UNKNOWN) {
             return false;
         }
         const state = libsdl.getKeyboardState(null);
         return state[sdlScancode] != 0;
+    }
+
+    pub fn getCursorPos(this: *SDL2WindowBackend) pinc.PixelPos {
+        _ = this;
+        var x: c_int = undefined;
+        var y: c_int = undefined;
+        _ = libsdl.getMouseState(&x, &y);
+        return pinc.PixelPos {
+            .x = @intCast(x),
+            .y = @intCast(y),
+        };
     }
 
     fn getWindowFromid(id: u32) ?*SDL2CompleteWindow {
@@ -565,7 +588,7 @@ pub const SDL2CompleteWindow = struct {
 
     pub fn setResizable(this: *SDL2CompleteWindow, resizable: bool) void {
         this.resizable = resizable;
-        libsdl.setWindowResizable(this.window, if(resizable) sdl.SDL_TRUE else sdl.SDL_FALSE);
+        libsdl.setWindowResizable(this.window, if (resizable) sdl.SDL_TRUE else sdl.SDL_FALSE);
     }
 
     pub fn getResizable(this: *SDL2CompleteWindow) bool {
@@ -573,7 +596,7 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setMinimized(this: *SDL2CompleteWindow, minimized: bool) void {
-        if(minimized) {
+        if (minimized) {
             libsdl.minimizeWindow(this.window);
         } else {
             libsdl.restoreWindow(this.window);
@@ -587,7 +610,7 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setMaximized(this: *SDL2CompleteWindow, maximized: bool) void {
-        if(maximized){
+        if (maximized) {
             libsdl.maximizeWindow(this.window);
         } else {
             // TODO: if a window was minimized and maximized at the same time, do we need to restore the minimized state?
@@ -601,7 +624,7 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setFullscreen(this: *SDL2CompleteWindow, fullscreen: bool) void {
-        if(fullscreen) {
+        if (fullscreen) {
             // TODO: error check
             _ = libsdl.setWindowFullscreen(this.window, sdl.SDL_WINDOW_FULLSCREEN);
         } else {
@@ -616,7 +639,7 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setFocused(this: *SDL2CompleteWindow, focused: bool) void {
-        if(focused) {
+        if (focused) {
             libsdl.raiseWindow(this.window);
         } else {
             // Do nothing lol
@@ -630,7 +653,7 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn setHidden(this: *SDL2CompleteWindow, hidden: bool) void {
-        if(hidden) {
+        if (hidden) {
             libsdl.hideWindow(this.window);
         } else {
             libsdl.showWindow(this.window);
@@ -646,7 +669,7 @@ pub const SDL2CompleteWindow = struct {
         // TODO: actually make sure we're on the OpenGL backend before swapping for OpenGL
         this.glMakeCurrent();
         // TODO: test for success
-        _ = libsdl.glSetSwapInterval(if(vsync) -1 else 0);
+        _ = libsdl.glSetSwapInterval(if (vsync) -1 else 0);
         libsdl.glSwapWindow(this.window);
     }
 
@@ -695,7 +718,11 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn eventKeyboardButtons(this: *SDL2CompleteWindow) []const pinc.KeyboardButtonEvent {
-        return this.evdat.keyboardButtons[0..this.evdat.numKeyboardButtons];
+        return this.evdat.keyboardButtons[0..@min(this.evdat.numKeyboardButtons, 10)];
+    }
+
+    pub fn eventCursorMove(this: *SDL2CompleteWindow) bool {
+        return this.evdat.cursorMove;
     }
 
     // privates
@@ -726,6 +753,7 @@ pub const SDL2CompleteWindow = struct {
         exposed: bool = false,
         numKeyboardButtons: usize = 0,
         keyboardButtons: [maxNumKeyboardButtons]pinc.KeyboardButtonEvent = undefined,
+        cursorMove: bool = false,
     },
     resizable: bool,
     width: u32,
@@ -931,8 +959,8 @@ fn translateSdlScancodeToPinc(sdlScancode: c_uint) pinc.KeyboardKey {
         sdl.SDL_SCANCODE_KP_MEMCLEAR => pinc.KeyboardKey.unknown,
         sdl.SDL_SCANCODE_KP_MEMADD => pinc.KeyboardKey.unknown,
         sdl.SDL_SCANCODE_KP_MEMSUBTRACT => pinc.KeyboardKey.unknown,
-        sdl.SDL_SCANCODE_KP_MEMMULTIPLY => pinc.KeyboardKey.numpad_asterisk,
-        sdl.SDL_SCANCODE_KP_MEMDIVIDE => pinc.KeyboardKey.numpad_slash,
+        sdl.SDL_SCANCODE_KP_MEMMULTIPLY => pinc.KeyboardKey.unknown,
+        sdl.SDL_SCANCODE_KP_MEMDIVIDE => pinc.KeyboardKey.unknown,
         sdl.SDL_SCANCODE_KP_PLUSMINUS => pinc.KeyboardKey.unknown,
         sdl.SDL_SCANCODE_KP_CLEAR => pinc.KeyboardKey.unknown,
         sdl.SDL_SCANCODE_KP_CLEARENTRY => pinc.KeyboardKey.unknown,
@@ -1097,7 +1125,7 @@ fn translatePincToSdlScancode(key: pinc.KeyboardKey) c_uint {
         .numpad_8 => sdl.SDL_SCANCODE_KP_8,
         .numpad_9 => sdl.SDL_SCANCODE_KP_9,
         .numpad_dot => sdl.SDL_SCANCODE_KP_PERIOD,
-        .numpad_slash => sdl.SDL_SCANCODE_SLASH,
+        .numpad_slash => sdl.SDL_SCANCODE_KP_DIVIDE,
         .numpad_asterisk => sdl.SDL_SCANCODE_KP_MULTIPLY,
         .numpad_dash => sdl.SDL_SCANCODE_KP_MINUS,
         .numpad_plus => sdl.SDL_SCANCODE_KP_PLUS,

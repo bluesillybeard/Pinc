@@ -515,10 +515,20 @@ PINC_API int PINC_CALL pinc_mouse_button_get(int button);
 // button is a value of pinc_keyboard_key
 PINC_API int PINC_CALL pinc_keyboard_key_get(int button);
 
+// TODO: doc
+// Get cursor position in pixels relative to current window
+// goes from x=0 on the left to x=width-1 on the right
+PINC_API int PINC_CALL pinc_get_cursor_x(void);
+
+// TODO: doc
+// Get cursor position in pixels relative to current window
+// goes from y=0 on the top tp y=height-1 on the bottom
+PINC_API int PINC_CALL pinc_get_cursor_y(void);
+
 /// @section main loop & events
 
 /// @brief Flushes internal buffers and collects user input
-PINC_API void PINC_CALL pinc_step();
+PINC_API void PINC_CALL pinc_step(void);
 
 // TODO: doc
 PINC_API int PINC_CALL pinc_event_window_closed(int window);
@@ -552,9 +562,16 @@ PINC_API int PINC_CALL pinc_event_window_keyboard_button_get(int window, int ind
 // TODO: doc
 // get if a keyboard event is a repeat
 PINC_API int PINC_CALL pinc_event_window_keyboard_button_get_repeat(int window, int index);
+
+// TODO: doc
+// get if the cursor moved in this window
+// TODO: add a way to get the cursor movement within specifically this window
+// TODO: add a way to get movement delta
+// TODO: get a way to lock cursor
+PINC_API int PINC_CALL pinc_event_window_cursor_move(int window);
+
 // TODO: the rest of the events / event-like things:
 // - text - just have the entire text over this frame in a buffer
-// - cursor_move
 // - cursor_enter
 // - cursor_exit
 // - scroll

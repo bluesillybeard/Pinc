@@ -201,6 +201,11 @@ pub const KeyboardButtonEvent = struct {
     repeated: bool,
 };
 
+pub const PixelPos = struct {
+    x: i32,
+    y: i32,
+};
+
 pub const ICompleteWindow = struct {
     // Once a window is complete, all of its data is up to the backend to handle.
     // So complete windows, naturally, are an OOP style interface.
@@ -292,7 +297,7 @@ pub const ICompleteWindow = struct {
     }
 
     pub inline fn setMinimized(this: ICompleteWindow, minimized: bool) void {
-           this.vtable.setMinimized(this.obj, minimized);
+        this.vtable.setMinimized(this.obj, minimized);
     }
 
     pub inline fn getMinimized(this: ICompleteWindow) bool {
@@ -351,6 +356,10 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventKeyboardButtons(this.obj);
     }
 
+    pub inline fn eventCursorMove(this: ICompleteWindow) bool {
+        return this.vtable.eventCursorMove(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -366,22 +375,23 @@ pub const ICompleteWindow = struct {
         getTitle: *const fn (this: *anyopaque) [:0]u8,
         setTitle: *const fn (this: *anyopaque, title: [:0]u8) void,
         glMakeCurrent: *const fn (this: *anyopaque) void,
-        eventMouseButton: *const fn(obj: *anyopaque) bool,
-        setMinimized: *const fn(this: *anyopaque, bool) void,
-        getMinimized: *const fn(this: *anyopaque) bool,
-        setMaximized: *const fn(this: *anyopaque, bool) void,
-        getMaximized: *const fn(this: *anyopaque) bool,
-        setFullscreen: *const fn(this: *anyopaque, bool) void,
-        getFullscreen: *const fn(this: *anyopaque) bool,
-        setFocused: *const fn(this: *anyopaque, bool) void,
-        getFocused: *const fn(this: *anyopaque) bool,
-        setHidden: *const fn(this: *anyopaque, bool) void,
-        getHidden: *const fn(this: *anyopaque) bool,
-        eventResized: *const fn(this: *anyopaque) bool,
-        eventWindowFocused: *const fn(this: *anyopaque) bool,
-        eventWindowUnfocused: *const fn(this: *anyopaque) bool,
-        eventWindowExposed: *const fn(this: *anyopaque) bool,
-        eventKeyboardButtons: *const fn(this: *anyopaque) []const KeyboardButtonEvent,
+        eventMouseButton: *const fn (this: *anyopaque) bool,
+        setMinimized: *const fn (this: *anyopaque, bool) void,
+        getMinimized: *const fn (this: *anyopaque) bool,
+        setMaximized: *const fn (this: *anyopaque, bool) void,
+        getMaximized: *const fn (this: *anyopaque) bool,
+        setFullscreen: *const fn (this: *anyopaque, bool) void,
+        getFullscreen: *const fn (this: *anyopaque) bool,
+        setFocused: *const fn (this: *anyopaque, bool) void,
+        getFocused: *const fn (this: *anyopaque) bool,
+        setHidden: *const fn (this: *anyopaque, bool) void,
+        getHidden: *const fn (this: *anyopaque) bool,
+        eventResized: *const fn (this: *anyopaque) bool,
+        eventWindowFocused: *const fn (this: *anyopaque) bool,
+        eventWindowUnfocused: *const fn (this: *anyopaque) bool,
+        eventWindowExposed: *const fn (this: *anyopaque) bool,
+        eventKeyboardButtons: *const fn (this: *anyopaque) []const KeyboardButtonEvent,
+        eventCursorMove: *const fn (this: *anyopaque) bool,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -457,21 +467,26 @@ pub const IWindowBackend = struct {
 
     pub inline fn getKeyboardState(this: IWindowBackend, button: KeyboardKey) bool {
         return this.vtable.getKeyboardState(this.obj, button);
-    } 
+    }
+
+    pub inline fn getCursorPos(this: IWindowBackend) PixelPos {
+        return this.vtable.getCursorPos(this.obj);
+    }
 
     pub const Vtable = struct {
         // TODO: Be more smart about how window backends are handled and get rid of this function
-        getBackendEnumValue: *const fn (obj: *anyopaque) WindowBackend,
-        isGraphicsBackendSupported: *const fn (obj: *anyopaque, backend: GraphicsBackend) bool,
-        deinit: *const fn (obj: *anyopaque) void,
-        prepareGraphics: *const fn (obj: *anyopaque, backend: GraphicsBackend) void,
-        getFramebufferFormats: *const fn (obj: *anyopaque, graphicsBackendEnum: GraphicsBackend, graphicsBackend: IGraphicsBackend) []const FramebufferFormat,
-        prepareFramebuffer: *const fn (obj: *anyopaque, framebuffer: FramebufferFormat) void,
-        createWindow: *const fn (obj: *anyopaque, data: IncompleteWindow, id: c_int) ?ICompleteWindow,
-        step: *const fn (obj: *anyopaque) void,
-        glGetProc: *const fn(obj: *anyopaque, name: [:0]const u8) ?*anyopaque,
-        getMouseState: *const fn(obj: *anyopaque, button: u32) bool,
-        getKeyboardState: *const fn(obj: *anyopaque, button: KeyboardKey) bool,
+        getBackendEnumValue: *const fn (this: *anyopaque) WindowBackend,
+        isGraphicsBackendSupported: *const fn (this: *anyopaque, backend: GraphicsBackend) bool,
+        deinit: *const fn (this: *anyopaque) void,
+        prepareGraphics: *const fn (this: *anyopaque, backend: GraphicsBackend) void,
+        getFramebufferFormats: *const fn (this: *anyopaque, graphicsBackendEnum: GraphicsBackend, graphicsBackend: IGraphicsBackend) []const FramebufferFormat,
+        prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
+        createWindow: *const fn (this: *anyopaque, data: IncompleteWindow, id: c_int) ?ICompleteWindow,
+        step: *const fn (this: *anyopaque) void,
+        glGetProc: *const fn (this: *anyopaque, name: [:0]const u8) ?*anyopaque,
+        getMouseState: *const fn (this: *anyopaque, button: u32) bool,
+        getKeyboardState: *const fn (this: *anyopaque, button: KeyboardKey) bool,
+        getCursorPos: *const fn (this: *anyopaque) PixelPos,
     };
 
     vtable: *Vtable,
@@ -530,12 +545,12 @@ pub const IGraphicsBackend = struct {
     }
 
     pub const Vtable = struct {
-        prepareFramebuffer: *const fn (obj: *anyopaque, framebuffer: FramebufferFormat) void,
-        deinit: *const fn (obj: *anyopaque) void,
-        step: *const fn (obj: *anyopaque) void,
-        setFillColor: *const fn (obj: *anyopaque, u32, i32) void,
-        setFillDepth: *const fn (obj: *anyopaque, f32) void,
-        fillWindow: *const fn (*anyopaque, ICompleteWindow, GraphicsFillFlags) void,
+        prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
+        deinit: *const fn (this: *anyopaque) void,
+        step: *const fn (this: *anyopaque) void,
+        setFillColor: *const fn (this: *anyopaque, channel: u32, value: i32) void,
+        setFillDepth: *const fn (this: *anyopaque, depth: f32) void,
+        fillWindow: *const fn (this: *anyopaque, ICompleteWindow, GraphicsFillFlags) void,
     };
 
     vtable: *Vtable,
@@ -631,29 +646,29 @@ pub const State = union(StateTag) {
         // TODO: for this state, validate if it is correct
         switch (this.*) {
             .preinit => |st| {
-                if(stateTag != .preinit) unreachable;
+                if (stateTag != .preinit) unreachable;
                 _ = st;
             },
             .incomplete_init => |st| {
-                if(stateTag != .incomplete_init) unreachable;
+                if (stateTag != .incomplete_init) unreachable;
                 _ = st;
             },
             .set_window_backend => |st| {
-                if(stateTag != .set_window_backend) unreachable;
+                if (stateTag != .set_window_backend) unreachable;
                 _ = st;
             },
             .set_graphics_backend => |st| {
-                if(stateTag != .set_graphics_backend) unreachable;
+                if (stateTag != .set_graphics_backend) unreachable;
                 _ = st;
             },
             .set_framebuffer_format => |st| {
-                if(stateTag != .set_framebuffer_format) unreachable;
+                if (stateTag != .set_framebuffer_format) unreachable;
                 _ = st;
             },
             .init => |st| {
-                if(stateTag != .init) unreachable;
+                if (stateTag != .init) unreachable;
                 _ = st;
-            }
+            },
         }
     }
 
@@ -681,11 +696,11 @@ pub inline fn pushError(fatal: bool, _type: ErrorType, comptime fmt: []const u8,
 pub inline fn allocObject() c_int {
     const idOrNone = state.init.emptyIds.getLastOrNull();
     var id: c_int = idOrNone orelse undefined;
-    if(idOrNone == null) {
+    if (idOrNone == null) {
         _ = state.init.objects.addOne() catch unreachable;
         id = @intCast(state.init.objects.items.len);
     }
-    refObject(id).* = .{.none = void{}};
+    refObject(id).* = .{ .none = void{} };
     // object handle is one offset from index.
     return id;
 }
@@ -1266,10 +1281,10 @@ pub export fn pinc_window_get_minimized(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .incompleteWindow => |w| {
-            return if(w.minimized) 1 else 0;
+            return if (w.minimized) 1 else 0;
         },
         .completeWindow => |w| {
-            return if(w.getMinimized()) 1 else 0;
+            return if (w.getMinimized()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1294,10 +1309,10 @@ pub export fn pinc_window_get_maximized(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .incompleteWindow => |w| {
-            return if(w.maximized) 1 else 0;
+            return if (w.maximized) 1 else 0;
         },
         .completeWindow => |w| {
-            return if(w.getMaximized()) 1 else 0;
+            return if (w.getMaximized()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1322,10 +1337,10 @@ pub export fn pinc_window_get_fullscreen(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .incompleteWindow => |w| {
-            return if(w.fullscreen) 1 else 0;
+            return if (w.fullscreen) 1 else 0;
         },
         .completeWindow => |w| {
-            return if(w.getFullscreen()) 1 else 0;
+            return if (w.getFullscreen()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1350,10 +1365,10 @@ pub export fn pinc_window_get_focused(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .incompleteWindow => |w| {
-            return if(w.focused) 1 else 0;
+            return if (w.focused) 1 else 0;
         },
         .completeWindow => |w| {
-            return if(w.getFocused()) 1 else 0;
+            return if (w.getFocused()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1378,10 +1393,10 @@ pub export fn pinc_window_get_hidden(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .incompleteWindow => |w| {
-            return if(w.hidden) 1 else 0;
+            return if (w.hidden) 1 else 0;
         },
         .completeWindow => |w| {
-            return if(w.getHidden()) 1 else 0;
+            return if (w.getHidden()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1400,12 +1415,22 @@ pub export fn pinc_window_present_framebuffer(window: c_int, vsync: c_int) void 
 
 pub export fn pinc_mouse_button_get(button: c_int) c_int {
     state.validateFor(.init);
-    return if(state.init.windowBackend.getMouseState(@intCast(button))) 1 else 0;
+    return if (state.init.windowBackend.getMouseState(@intCast(button))) 1 else 0;
 }
 
 pub export fn pinc_keyboard_key_get(button: c_int) c_int {
     state.validateFor(.init);
-    return if(state.init.windowBackend.getKeyboardState(@enumFromInt(button))) 1 else 0;
+    return if (state.init.windowBackend.getKeyboardState(@enumFromInt(button))) 1 else 0;
+}
+
+pub export fn pinc_get_cursor_x() c_int {
+    state.validateFor(.init);
+    return @intCast(state.init.windowBackend.getCursorPos().x);
+}
+
+pub export fn pinc_get_cursor_y() c_int {
+    state.validateFor(.init);
+    return @intCast(state.init.windowBackend.getCursorPos().y);
 }
 
 pub export fn pinc_step() void {
@@ -1431,7 +1456,7 @@ pub export fn pinc_event_window_mouse_button(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventMouseButton()) 1 else 0;
+            return if (w.eventMouseButton()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1442,7 +1467,7 @@ pub export fn pinc_event_window_resized(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventResized()) 1 else 0;
+            return if (w.eventResized()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1453,7 +1478,7 @@ pub export fn pinc_event_window_focused(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventWindowFocused()) 1 else 0;
+            return if (w.eventWindowFocused()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1464,7 +1489,7 @@ pub export fn pinc_event_window_unfocused(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventWindowUnfocused()) 1 else 0;
+            return if (w.eventWindowUnfocused()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1475,7 +1500,7 @@ pub export fn pinc_event_window_exposed(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventWindowExposed()) 1 else 0;
+            return if (w.eventWindowExposed()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1504,11 +1529,22 @@ pub export fn pinc_event_window_keyboard_button_get(window: c_int, index: c_int)
 }
 
 pub export fn pinc_event_window_keyboard_button_get_repeat(window: c_int, index: c_int) c_int {
-state.validateFor(.init);
+    state.validateFor(.init);
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventKeyboardButtons()[@intCast(index)].repeated) 1 else 0;
+            return if (w.eventKeyboardButtons()[@intCast(index)].repeated) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_cursor_move(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if (w.eventCursorMove()) 1 else 0;
         },
         else => unreachable,
     }
