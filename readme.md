@@ -42,7 +42,7 @@ Pinc is a very new library, and is MASSIVELY out of scope for a single developer
 - Expect bugs / issues
     - a large portion of the API is not implemented yet
 - the API is highly variable for the forseeable future
-    - Give me your suggestions - the API is VERY incomplete and I don't know what's missing!
+    - Give me your suggestions - the API is VERY incomplete and we don't know what's missing!
 - the project desparately needs contributors - see [contribution guide](contribute.md)
 
 Pinc's current API is fundamentally incompatible with multithreading. Sorry.
@@ -55,11 +55,11 @@ Pinc's current API is fundamentally incompatible with multithreading. Sorry.
 
 The easiest way to do it would be to just compile Pinc into a library with `zig build static` or `zig build dynamic`, copy the artifact and the header, and just add it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
 
-This project does not integrate with any existing build systems other than Zig, and it doesn't even integrate with Zig's build system properly. That being said, I would LOVE contributions that add support for other build systems / package managers. Once a build system is implemented, it shouldn't need much (or any) maintainence due to the fact that Pinc has all dependencies self-contained or loaded at runtime.
+This project does not integrate with any existing build systems other than Zig, and it doesn't even integrate with Zig's build system properly. That being said, contributions that add support for other build systems / package managers are accepted and celebrated! Once a build system is implemented, it shouldn't need much (or any) maintainence due to the fact that Pinc has all dependencies self-contained or loaded at runtime.
 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
-It's worth noting the Pinc makes heavy use of asserts that will not trigger in ReleaseFast mode. I suggest using Debug to build the library, until you are confident everything works correctly, in which case ReleaseFast is a decent option. That being said, ReleaseSafe is almost certainly fast enough for any reasonable use case, but retains the safety checks of Debug mode.
+It's worth noting the Pinc makes heavy use of asserts that will not trigger in ReleaseFast mode. We suggest using Debug to build the library, until you are confident everything works correctly, in which case ReleaseFast is a decent option. That being said, ReleaseSafe is almost certainly fast enough for any reasonable use case, but retains the safety checks of Debug mode.
 
 ## Other notes
 - When cross-compiling, it is generally a good idea to specify the ABI (example: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying.
@@ -69,9 +69,11 @@ It's worth noting the Pinc makes heavy use of asserts that will not trigger in R
 
 ## Q&A
 - Why make this when other libraries already exist?
-    - I am frustrated at the state of low-level windowing / graphics libraries. Kinc's build system is a mess, Raylib is too minimal to do anything serious, V-EZ hasn't been updated in many years, bgfx is written in C++, SDL is a giant pain to cross-compile with, nicegraf and llgl don't provide a way to create a window, GLFW has no way to have multiple windows on a single OpenGL context, Jai is a programming language instead of a library, and the list goes on and on and on. They are all great, but they all suck in specific ways that are conveniently very bad for my own requirements.
+    - the state of low-level windowing / graphics libraries is not ideal. Kinc's build system is a mess, Raylib is too basic, V-EZ hasn't been updated in many years, bgfx is written in C++, SDL doesn't cross-compile easily, nicegraf and llgl don't provide a way to create a window, GLFW has no way to have multiple windows on a single OpenGL context, Jai is a programming language instead of a library, and the list goes on and on and on. They are all great, but they all suck in specific ways that are conveniently very bad for my own requirements.
+    - Additionally, a library with an insanely wide net of supported backends is very useful. Admittedly, the only backend implemented at the moment is based on SDL2, but take a look at the [Planned Backends](#planned-window-backends-not-final)
 - Why support OpenGL 2.1. It's so old! (and deprecated)
     - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. Partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
+    - If a platform is capible of running OpenGL 2.1, someone has probably made an opengl driver for it
 
 ## Planned graphics backends (NOT FINAL)
 - Raw / framebuffer on the CPU / software rasterizer
@@ -95,9 +97,9 @@ It's worth noting the Pinc makes heavy use of asserts that will not trigger in R
 ## Planned window backends (NOT FINAL)
 - SDL 1
 - SDL 3
-- X11
+- X11 (Xlib)
 - win32
-- windows 9x
+- windows 9x (TODO: figure out what the API is called for this)
 - Cocoa
 - Wayland
 - GLFW
@@ -159,18 +161,19 @@ None of these are going to be implemented any time soon - if ever.
         - could probably just read the GTK and QT system themes and get 99% coverage
 
 ## Todo (NOT IN ORDER)
+Note: Even if a feature/item you want is in here, make an issue anyway! Features are prioritized based on github issues.
 - Test zero-dependency compilation
 - Set up github discussions thingy
 - error callback function, instead of forcing everyone to manually get the error if a function returns a value indicating an error
 - test on ALL zig tier 3 platforms, ideally using real hardware. As of right now, those are:
-    - Windows x86_64 (I have hardware)
+    - Windows x86_64 (testing hardware is available)
     - Windows x86
-    - Windows aarch64 (I think I have hardware... an old surface RT)
+    - Windows aarch64
     - Macos aarch64
     - Macos x86_64
-    - Linux x86_64 (I have hardware)
-    - Linux x86 (I have hardware, it's literally been sitting in storage for like 20 or 25 years though)
-    - Linux aarch64 (I might be able to get that surface RT to work...)
+    - Linux x86_64 (testing hardware is available)
+    - Linux x86 (testing hardware is available)
+    - Linux aarch64
     - Linux armv7a
     - Linux riscv64
     - Linux powerpc64le
@@ -178,13 +181,12 @@ None of these are going to be implemented any time soon - if ever.
     - particularily for 3D rendering with large meshes
 - Replace the global state "OpenGl-y" graphics functions to use a graphics context object
     - Maybe each graphics context could even use a different graphics backend? Probably not...
-- the graphics API as a whole is missing things
-    - framebuffer objects
-    - general drawing functions:
-        - rectangle, triangle, circle, both solid and outlined
-        - rotated rectangle, ellipse, arbitrary quad
-    - anti-aliasing
-    - meshes
-    - shaders
+- the graphics API as a whole does not exist really
+- example / test for having multiple windows
+- get the cursor movement within a specific window
+- get cursor movement delta
+- lock cursor
+- properly implement and test scaling
+- add a way to get the size of a window in real units (like inches or something)
 - empty / "null" / mock window backend
 - empty / "null" / mock graphics backend

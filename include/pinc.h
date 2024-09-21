@@ -591,10 +591,6 @@ PINC_API int PINC_CALL pinc_event_window_keyboard_button_get(int window, int ind
 /// @return 1 if this event was a key repeat, 0 if not.
 PINC_API int PINC_CALL pinc_event_window_keyboard_button_get_repeat(int window, int index);
 
-// TODO: add a way to get the cursor movement within specifically this window
-// TODO: add a way to get movement delta
-// TODO: get a way to lock cursor
-
 /// @brief Get if the cursor moved within a window during the last step.
 ///        Requires a window because it's possible for the cursor to move from one window to another window in a single step.
 /// @param window the window to query. Only accepts complete windows.
