@@ -55,7 +55,7 @@ Pinc's current API is fundamentally incompatible with multithreading. Sorry.
 
 The easiest way to do it would be to just compile Pinc into a library with `zig build static` or `zig build dynamic`, copy the artifact and the header, and just add it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
 
-This project does not integrate with any existing build systems other than Zig, and it doesn't even integrate with Zig's build system properly. That being said, contributions that add support for other build systems / package managers are accepted and celebrated! Once a build system is implemented, it shouldn't need much (or any) maintainence due to the fact that Pinc has all dependencies self-contained or loaded at runtime.
+This project does not integrate with any existing build systems other than Zig. It doesn't even integrate with Zig's build system properly, since this is intended for use with C and not Zig. That being said, contributions that add support for other build systems / package managers are accepted and celebrated! Once a build system is implemented, it shouldn't need much (or any) maintainence due to the fact that Pinc has all dependencies self-contained or loaded at runtime.
 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
@@ -63,14 +63,14 @@ It's worth noting the Pinc makes heavy use of asserts that will not trigger in R
 
 ## Other notes
 - When cross-compiling, it is generally a good idea to specify the ABI (example: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying.
-    - In particular, compiling from Windows to Linux uses musl, which does not work as Pinc uses dynamic loading with libc on Linux
+    - In particular, compiling from Windows to Linux uses musl by default, which does not work as Pinc uses dynamic loading with libc on Linux
 - The main branch is "stable" in the sense that it should always work. Before commiting to the main branch, We'll make sure everything still works.
     - the library as a whole is NOT stable. DO not use Pinc unless you are willing to face the consequences!
 
 ## Q&A
 - Why make this when other libraries already exist?
-    - the state of low-level windowing / graphics libraries is not ideal. Kinc's build system is a mess, Raylib is too basic, V-EZ hasn't been updated in many years, bgfx is written in C++, SDL doesn't cross-compile easily, nicegraf and llgl don't provide a way to create a window, GLFW has no way to have multiple windows on a single OpenGL context, Jai is a programming language instead of a library, and the list goes on and on and on. They are all great, but they all suck in specific ways that are conveniently very bad for my own requirements.
-    - Additionally, a library with an insanely wide net of supported backends is very useful. Admittedly, the only backend implemented at the moment is based on SDL2, but take a look at the [Planned Backends](#planned-window-backends-not-final)
+    - the state of low-level windowing / graphics libraries is not ideal. Kinc's build system is a mess, Raylib is too basic, V-EZ hasn't been updated in many years, bgfx is written in C++, SDL doesn't cross-compile easily, nicegraf and llgl don't provide a way to create a window, GLFW has no way to have multiple windows on a single OpenGL context, Jai is a programming language instead of a library, and the list goes on and on and on. They are all great, but they all suck in specific ways that are conveniently very bad for a certain group of programmers
+    - Additionally, a library with an insanely wide net of supported backends is very useful. Admittedly, the only backend implemented at the moment is based on SDL2, but take a look at the [Planned Backends](#planned-window-backends-not-final),
 - Why support OpenGL 2.1. It's so old! (and deprecated)
     - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. Partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
     - If a platform is capible of running OpenGL 2.1, someone has probably made an opengl driver for it
