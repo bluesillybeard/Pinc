@@ -5,7 +5,7 @@ pub const Opengl21GraphicsBackend = struct {
     pub fn init(this: *Opengl21GraphicsBackend) void {
         _ = this;
     }
-    
+
     // This shouldn't be required, but for some reason Zig complains when we try to give gl.load the window backend glGetProc function directly
     pub fn loadProcFnGl(b: pinc.IWindowBackend, name: [:0]const u8) ?*anyopaque {
         return b.glGetProc(name);
@@ -48,7 +48,7 @@ pub const Opengl21GraphicsBackend = struct {
     pub fn fillWindow(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, flags: pinc.GraphicsFillFlags) void {
         window.glMakeCurrent();
         var glFlags: gl.GLuint = 0;
-        if(flags.color) {
+        if (flags.color) {
             // TODO: handle non-RGBA colors? Or will we just always use RGBA internally?
             // Does OpenGL itself even support non-rgba framebuffers?
             gl.clearColor(this.fillColor[0], this.fillColor[1], this.fillColor[2], this.fillColor[3]);
@@ -58,5 +58,5 @@ pub const Opengl21GraphicsBackend = struct {
         gl.clear(glFlags);
     }
 
-    fillColor: [4]f32
+    fillColor: [4]f32,
 };
