@@ -74,19 +74,23 @@ It's worth noting the Pinc makes heavy use of asserts that will not trigger in R
     - I thought it would be cool to be able to run this on extremely ancient hardware and OS, for no other reason than to see it run. Partially inspired by [MattKC porting .NET framework 2 to Windows 95.](https://www.youtube.com/watch?v=CTUMNtKQLl8)
 
 ## Planned graphics backends (NOT FINAL)
-- Raw / framebuffer on the CPU
+- Raw / framebuffer on the CPU / software rasterizer
 - SDL 1
+    - Is this even worth implementing despite the raw and opengl backends?
 - SDL 2
+    - Is this even worth implementing despite the raw and opengl backends?
 - SDL 3
+    - Is this even worth implementing despite the raw and opengl backends?
 - OpenGL 1.x
-    - not sure which 1.x versions yet
-- OpenGL 3.0
-- OpenGL 3.3
-- OpenGL 4.2
-- OpenGL 4.6
-- Vulkan 1.0
-- Vulkan 1.2
-- Vulkan 1.3
+    - not sure which 1.x version(s) yet
+- OpenGL 3.x
+    - not sure which 3.x verison yet
+- OpenGL 4.x
+    - note sure which 4.x version(s) yet
+- OpenGL 4.6 (last OpenGL release)
+- Vulkan 1.0 (first vulkan release)
+- Vulkan 1.2 (last Vulkan release that is very widely supported on older hardware)
+- Vulkan 1.3 (last Vulkan release)
 
 ## Planned window backends (NOT FINAL)
 - SDL 1
@@ -129,6 +133,7 @@ None of these are going to be implemented any time soon - if ever.
     - X display, X windows, SDL2 opengl context, Win32 window handle, etc etc etc
 - backend-specific settings
 - ability to use backend objects to create Pinc objects
+    - example: init pinc's X backend with an X Display, or a window with an X window handle, etc.
 - general input methods
     - controller / gamepad
     - touch screen

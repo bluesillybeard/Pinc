@@ -323,9 +323,14 @@ pub const SDL2WindowBackend = struct {
                         },
                         sdl.SDL_WINDOWEVENT_FOCUS_GAINED => {
                             win.evdat.focused = true;
+                            // This is to make sure that application has no confusion of whether a window has focus - 
+                            // if we gained focus after being unfocused in the same step, then this window is focused
+                            // and other windows are unfocused.
+                            win.evdat.unfocused = false;
                         },
                         sdl.SDL_WINDOWEVENT_FOCUS_LOST => {
                             win.evdat.unfocused = true;
+                            // TODO: is it worth setting the focused event to false here? Probably not.
                         },
                         sdl.SDL_WINDOWEVENT_EXPOSED => {
                             win.evdat.exposed = true;

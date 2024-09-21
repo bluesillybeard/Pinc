@@ -97,13 +97,14 @@ enum pinc_error_type {
     // - Pinc developers made a mistake and forgot something -> an error with Pinc itself, that's an assert
 };
 
+/// @brief Enumeration of Pinc object types.
 enum pinc_object_type {
     /// @brief the object is empty / invalid
     pinc_object_none,
     pinc_object_window,
 };
 
-// TODO: doc
+/// @brief Graphics fill flags, for determining what buffers to fill.
 enum pinc_graphics_fill_flag {
     pinc_graphics_fill_flag_color = 1,
     pinc_graphics_fill_flag_depth = 2,
@@ -163,7 +164,6 @@ enum pinc_keyboard_key {
     pinc_keyboard_key_right_bracket,
     /// @brief The ` character. The ~` button on US keyboards.
     pinc_keyboard_key_backtick,
-    // TODO: what are GLFW_WORLD_1 and GLFW_WORLD_2
     pinc_keyboard_key_escape,
     pinc_keyboard_key_enter,
     pinc_keyboard_key_tab,
@@ -384,24 +384,32 @@ PINC_API void PINC_CALL pinc_window_complete(int window);
 // - bool hidden (rw) [false]
 //     - when hidden, a window cannot be seen anywhere to the user (at least not directly), but is still secretly open.
 
-// TODO: doc
-// fills the new title with all underscores
+/// @brief Sets the length of a window's title and sets the title to all underscores
+/// @param window the window whose title to set
+/// @param len the new length for the title
 PINC_API void PINC_CALL pinc_window_set_title_length(int window, int len);
 
-// TODO: doc
-// utf-8 (if supported on platform, otherwise ascii)
-// the title is only required to actually be updated when the last item is set
+// TODO: add way to check if utf8 is supported on a given plaform
+
+/// @brief Sets a byte of a windows title. Generally, UTF8 is supported. On some platforms, only ASCII encoding is supported.
+/// @param window the window whose title to change. May be a complete or incomplete window.
+/// @param index the byte index into the string to change.
+/// @param item the item to set.
 PINC_API void PINC_CALL pinc_window_set_title_item(int window, int index, char item);
 
-// TODO: doc
+/// @brief Get the length of a windows title.
+/// @param window the window whose title to query. May be a complete or incomplete window.
+/// @return the length of the window title in bytes
 PINC_API int PINC_CALL pinc_window_get_title_length(int window);
 
-// TODO: doc
-// utf-8 like in window_set_title_item
+/// @brief Get a byte of a windows title.
+/// @param window the window whose title to query. May be a complete or incomplete window.
+/// @param index the index to query.
+/// @return a byte of the window title.
 PINC_API char PINC_CALL pinc_window_get_title_item(int window, int index);
 
-/// @brief set the width of a window, in pixels
-/// @param window the window whose width to set. Asserts the object is valid, and is a window
+/// @brief set the width of a window, in pixels.
+/// @param window the window whose width to set. Asserts the object is valid, and is a window.
 /// @param width the width to set.
 PINC_API void PINC_CALL pinc_window_set_width(int window, int width);
 
@@ -501,7 +509,10 @@ PINC_API void PINC_CALL pinc_window_set_hidden(int window, int hidden);
 /// @return 1 if the window is hidden, 0 if not
 PINC_API int PINC_CALL pinc_window_get_hidden(int window);
 
-// TODO: doc
+/// @brief Present the framebuffer of a given window and prepares a backbuffer to draw on.
+///        The number of backbuffers depends on the graphics backend, but it's generally 2 or 3.
+/// @param window the window whose framebuffer to present.
+/// @param vsync whether to sync with the monitor refresh or not.
 PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 
 /// @section user IO
@@ -511,18 +522,17 @@ PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 /// @return 1 if the button is pressed, 0 if it is not pressed OR if this application has no focused windows.
 PINC_API int PINC_CALL pinc_mouse_button_get(int button);
 
-// TODO doc
-// button is a value of pinc_keyboard_key
+/// @brief Get the state of a keyboard key.
+/// @param button A value of pinc_keyboard_key to check
+/// @return 1 if the key is pressed, 0 if it is not.
 PINC_API int PINC_CALL pinc_keyboard_key_get(int button);
 
-// TODO: doc
-// Get cursor position in pixels relative to current window
-// goes from x=0 on the left to x=width-1 on the right
+/// @brief Get the cursor X position relative to the window the cursor is currently in
+/// @return the X position. 0 on the left to width-1 on the right.
 PINC_API int PINC_CALL pinc_get_cursor_x(void);
 
-// TODO: doc
-// Get cursor position in pixels relative to current window
-// goes from y=0 on the top tp y=height-1 on the bottom
+/// @brief get the cursor Y position relative to the window the cursor is currently in
+/// @return the X position. 0 on the top to height-1 on the bottom.
 PINC_API int PINC_CALL pinc_get_cursor_y(void);
 
 /// @section main loop & events
@@ -530,44 +540,65 @@ PINC_API int PINC_CALL pinc_get_cursor_y(void);
 /// @brief Flushes internal buffers and collects user input
 PINC_API void PINC_CALL pinc_step(void);
 
-// TODO: doc
+/// @brief Gets if a window was signalled to close during the last step.
+/// @param window the window to query. Only accepts comple windows.
+/// @return 1 if a window was signalled to close in the last step, 0 otherwise.
 PINC_API int PINC_CALL pinc_event_window_closed(int window);
 
 /// @brief Get if there was a mouse press/release from the last step
-/// @param window The window to check - although all windows share the same mouse,
-///     only one of those windows recieves the event.
+/// @param window The window to check - although all windows share the same cursor,
+///     it is possible for multiple windows to be clicked in the same step.
 /// @return 1 if there any mouse buttons were pressed or released, 0 otherwise.
 PINC_API int PINC_CALL pinc_event_window_mouse_button(int window);
 
-// TODO: doc
+/// @brief Gets if a window was resized during the last step.
+/// @param window the window to query. Only accepts complete windows.
+/// @return 
 PINC_API int PINC_CALL pinc_event_window_resized(int window);
 
-// TODO: doc
+/// @brief Gets if a window recieved input focus in the last step.
+///        If a window lost and gained focus in the same step, it is safe to assume that window is not focused.
+/// @param window the window to query. Only accepts complete windows.
+/// @return 1 if the window was focused in the last step, 0 otherwise.
 PINC_API int PINC_CALL pinc_event_window_focused(int window);
 
-// TODO: doc
+/// @brief gets if a window lost input focus in the last step, unless it regained focus in that same step.
+/// @param window the window to query. Only accepts complete windows.
+/// @return 1 if the window was focused in the last step, 0 otherwise.
 PINC_API int PINC_CALL pinc_event_window_unfocused(int window);
 
-// TODO: doc
+/// @brief gets if a window should be redrawn from last step.
+/// @param window the window to query. Only accepts complere windows.
+/// @return 1 if the window should be redrawn this step, 0 otherwise.
 PINC_API int PINC_CALL pinc_event_window_exposed(int window);
 
-// TODO: doc
-// Keyboard key press / release
+// Keyboard events require a window because it's possible for multiple windows to have key events in a single step
+
+/// @brief Get the number of key presses/releases on a window during the last step
+/// @param window the window to query. Only accepts complete windows.
+/// @return the number of key events during last step
 PINC_API int PINC_CALL pinc_event_window_keyboard_button_num(int window);
 
-// TODO doc
-// get which key was changed
+/// @brief Get a key whose state changed on a window since the last step.
+/// @param window the window to query. Only complete windows are accepted.
+/// @param index the index of the event to check. May range from 0 to the result of pinc_event_window_keyboard_button_num on this window.
+/// @return which key was changed. A value of pinc_keyboard_key.
 PINC_API int PINC_CALL pinc_event_window_keyboard_button_get(int window, int index);
 
-// TODO: doc
-// get if a keyboard event is a repeat
+/// @brief Get if a key whose state changed was a repeat
+/// @param window the window to query. Only accepts complete windows.
+/// @param index the index of the event to check. May range from 0 to the result of pinc_event_window_keyboard_button_num on this window.
+/// @return 1 if this event was a key repeat, 0 if not.
 PINC_API int PINC_CALL pinc_event_window_keyboard_button_get_repeat(int window, int index);
 
-// TODO: doc
-// get if the cursor moved in this window
 // TODO: add a way to get the cursor movement within specifically this window
 // TODO: add a way to get movement delta
 // TODO: get a way to lock cursor
+
+/// @brief Get if the cursor moved within a window during the last step.
+///        Requires a window because it's possible for the cursor to move from one window to another window in a single step.
+/// @param window the window to query. Only accepts complete windows.
+/// @return 1 if the cursor moved in this window, 0 if not.
 PINC_API int PINC_CALL pinc_event_window_cursor_move(int window);
 
 // TODO: the rest of the events / event-like things:
