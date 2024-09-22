@@ -31,12 +31,10 @@ pub const Opengl21GraphicsBackend = struct {
     // More accurately, there will be a graphics context object that is entirely managed by pinc.zig,
     // and the graphics backends will just get all the data they need to draw all in one function
     // instead of having to deal with this state stuff
-    pub fn setFillColor(this: *Opengl21GraphicsBackend, channel: u32, value: i32) void {
+    pub fn setFillColor(this: *Opengl21GraphicsBackend, channel: u32, value: f32) void {
         // TODO: handle non-RGBA colors.
         // This only works because the only implemented window backend (SDL2) assumes an RGBA framebuffer
-        // TODO: handle non-8bpc colors
-        // this only works because the only implemented window backend (SDL2) assumes 8bpc
-        this.fillColor[channel] = @as(f32, @floatFromInt(value)) / 255.0;
+        this.fillColor[channel] = value;
     }
 
     pub fn setFillDepth(this: *Opengl21GraphicsBackend, depth: f32) void {

@@ -2,6 +2,12 @@
 
 Pinc's graphics API does not exist yet. This serves as a reminder of what that API needs to have
 
+Pinc graphics rendering issues:
+- static state shall be abolished
+- colors are annoying because I want to support 1 - 4 channels
+    - I think I'll take in 4 values anyway, and only read the ones that matter
+- can't easily upload a buffer due to the lack of pointers in the API
+
 Pinc's API needs to have these fundamental graphics features:
 - mesh
 - texture
