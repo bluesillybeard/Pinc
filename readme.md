@@ -49,9 +49,12 @@ Pinc's current API is fundamentally incompatible with multithreading. Sorry.
 
 ## How to get started
 - Get Zig (this is tested on zig master but it might work on older versions)
+    - I suggest installing zigup or some kind of zig version manager.
 - Clone the repository
-- Make sure it works by running `zig build window -Drun=true`, which will build and run the window example.
-- The library is ready to be used...
+- Make sure it works by running `zig build window -Drun=true` in the root of the repository, which will build and run the window example.
+    - For now, you will need SDL2 on your system. Pinc doesn't need it to compile anything, but SDL2 is required to run programs made with Pinc. In the future, native backends for most supported platforms will be implemented so SDL2 is no longer required. But for now, SDL2 is a requirement.
+
+At this point, I suggest messing with the examples for a bit to get a feel for how the library works.
 
 The easiest way to do it would be to just compile Pinc into a library with `zig build static` or `zig build dynamic`, copy the artifact and the header, and just add it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
 
@@ -60,6 +63,8 @@ This project does not integrate with any existing build systems other than Zig. 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
 It's worth noting the Pinc makes heavy use of asserts that will not trigger in ReleaseFast mode. We suggest using Debug to build the library, until you are confident everything works correctly, in which case ReleaseFast is a decent option. That being said, ReleaseSafe is almost certainly fast enough for any reasonable use case, but retains the safety checks of Debug mode.
+
+Using Pinc with Zig is not supported through zig's package management at the moment. Treat Pinc like a C library, because it is. It may be written in Zig, it may use Zig's build system, but the public-facing API is entirely for C.
 
 ## Other notes
 - When cross-compiling, it is generally a good idea to specify the ABI (example: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying.
@@ -193,8 +198,6 @@ Note: Even if a feature/item you want is in here, make an issue anyway! Features
     - Linux powerpc64le
 - add functions that take advantage of pointers for performance
     - particularily for 3D rendering with large meshes
-- Replace the global state "OpenGl-y" graphics functions to use a graphics context object
-    - Maybe each graphics context could even use a different graphics backend? Probably not...
 - the graphics API as a whole does not exist really
 - example / test for having multiple windows
 - get the cursor movement within a specific window
