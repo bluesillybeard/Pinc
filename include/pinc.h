@@ -621,9 +621,11 @@ PINC_API int PINC_CALL pinc_event_window_text_len(int window);
 /// @return the byte. Text input is utf8 encoded, or ascii on platforms where unicode is not supported. It's safe to always assume utf8.
 PINC_API char PINC_CALL pinc_event_window_text_item(int window, int index);
 
-// TODO: the rest of the events / event-like things:
-// - text - just have the entire text over this frame in a buffer
-// - scroll
+// TODO: doc
+PINC_API float PINC_CALL pinc_event_window_scroll_vertical(int window);
+
+// TODO: doc
+PINC_API float PINC_CALL pinc_event_window_scroll_horizontal(int window);
 
 /// @section graphics
 
@@ -635,5 +637,3 @@ PINC_API void PINC_CALL pinc_graphics_set_fill_depth(float value);
 
 // TODO: doc
 PINC_API void PINC_CALL pinc_graphics_fill(int framebuffer, int flags);
-
-

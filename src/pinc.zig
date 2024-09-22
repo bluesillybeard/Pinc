@@ -206,6 +206,11 @@ pub const PixelPos = struct {
     y: i32,
 };
 
+pub const Vec2 = struct {
+    x: f32,
+    y: f32,
+};
+
 pub const ICompleteWindow = struct {
     // Once a window is complete, all of its data is up to the backend to handle.
     // So complete windows, naturally, are an OOP style interface.
@@ -372,6 +377,10 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventText(this.obj);
     }
 
+    pub inline fn eventScroll(this: ICompleteWindow) Vec2 {
+        return this.vtable.eventScroll(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -407,6 +416,7 @@ pub const ICompleteWindow = struct {
         eventCursorExit: *const fn(this: *anyopaque) bool,
         eventCursorEnter: *const fn(this: *anyopaque) bool,
         eventText: *const fn(this: *anyopaque) []const u8,
+        eventScroll: *const fn(this: *anyopaque) Vec2,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -1604,6 +1614,28 @@ pub export fn pinc_event_window_text_item(window: c_int, index: c_int) c_char {
     switch (object.*) {
         .completeWindow => |w| {
             return @intCast(w.eventText()[@intCast(index)]);
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_scroll_vertical(window: c_int) f32 {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return w.eventScroll().y;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return w.eventScroll().x;
         },
         else => unreachable,
     }
