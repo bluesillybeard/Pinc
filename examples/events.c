@@ -79,9 +79,15 @@ int main(int argc, char** argv) {
                 }
             }
         }
+        if(pinc_event_window_cursor_enter(window)) {
+            printf("cursor entered\n");
+        }
         if(pinc_event_window_cursor_move(window)) {
             // TODO: once the ability to get the movement of this specific window event is added, change this
             printf("cursor moved to (%i, %i)\n", pinc_get_cursor_x(), pinc_get_cursor_y());
+        }
+        if(pinc_event_window_cursor_exit(window)) {
+            printf("cursor exited\n");
         }
         pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
         pinc_window_present_framebuffer(window, 1);

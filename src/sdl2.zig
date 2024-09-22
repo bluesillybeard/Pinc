@@ -335,6 +335,14 @@ pub const SDL2WindowBackend = struct {
                         sdl.SDL_WINDOWEVENT_EXPOSED => {
                             win.evdat.exposed = true;
                         },
+                        sdl.SDL_WINDOWEVENT_ENTER => {
+                            // TODO: disallow an exit and enter on the same window on the same step?
+                            win.evdat.cursorEnter = true;
+                        },
+                        sdl.SDL_WINDOWEVENT_LEAVE => {
+                            // TODO: disallow an exit and enter on the same window on the same step?
+                            win.evdat.cursorExit = true;
+                        },
                         else => {},
                     }
                 },
@@ -730,6 +738,14 @@ pub const SDL2CompleteWindow = struct {
         return this.evdat.cursorMove;
     }
 
+    pub fn eventCursorExit(this: *SDL2CompleteWindow) bool {
+        return this.evdat.cursorExit;
+    }
+
+    pub fn eventCursorEnter(this: *SDL2CompleteWindow) bool {
+        return this.evdat.cursorEnter;
+    }
+
     // privates
     fn getWindowSizePixels(this: *SDL2CompleteWindow, width: *u32, height: *u32) void {
         switch (pinc.state.init.graphicsBackendEnum) {
@@ -759,6 +775,8 @@ pub const SDL2CompleteWindow = struct {
         numKeyboardButtons: usize = 0,
         keyboardButtons: [maxNumKeyboardButtons]pinc.KeyboardButtonEvent = undefined,
         cursorMove: bool = false,
+        cursorExit: bool = false,
+        cursorEnter: bool = false,
     },
     resizable: bool,
     width: u32,
