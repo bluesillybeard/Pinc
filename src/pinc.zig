@@ -183,25 +183,25 @@ pub const FramebufferFormat = struct {
 
     pub fn channelsToRgbaColor(this: FramebufferFormat, c1: f32, c2: f32, c3: f32, c4: f32) Color {
         return switch (this.channels) {
-            1 => Color {
+            1 => Color{
                 .r = c1,
                 .g = c1,
                 .b = c1,
                 .a = 1,
             },
-            2 => Color {
+            2 => Color{
                 .r = c1,
                 .g = c1,
                 .b = c1,
                 .a = c2,
             },
-            3 => Color {
+            3 => Color{
                 .r = c1,
                 .g = c2,
                 .b = c3,
                 .a = 1,
             },
-            4 => Color {
+            4 => Color{
                 .r = c1,
                 .g = c2,
                 .b = c3,
@@ -1692,4 +1692,3 @@ pub export fn pinc_raw_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque {
         else => unreachable,
     }
 }
-
