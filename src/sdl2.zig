@@ -370,7 +370,7 @@ pub const SDL2WindowBackend = struct {
                 sdl.SDL_KEYUP => {
                     const win = getWindowFromid(ev.key.windowID) orelse continue :LOOP;
                     if (win.evdat.numKeyboardButtons >= @TypeOf(win.evdat).maxNumKeyboardButtons) {
-                        pinc.logDebug("Maxed out at {} key events this frame", .{win.evdat.numKeyboardButtons});
+                        pinc.logDebug("Maxed out at {} key events this step", .{win.evdat.numKeyboardButtons});
                         win.evdat.numKeyboardButtons += 1;
                         continue :LOOP;
                     }
@@ -383,6 +383,20 @@ pub const SDL2WindowBackend = struct {
                 sdl.SDL_MOUSEMOTION => {
                     const win = getWindowFromid(ev.motion.windowID) orelse continue :LOOP;
                     win.evdat.cursorMove = true;
+                },
+                sdl.SDL_TEXTINPUT => {
+                    const win = getWindowFromid(ev.text.windowID) orelse continue :LOOP;
+                    // I will say this EVERY time: Zig needs a way to make this variable not leak outside the scope of the wile loop!
+                    var byteIndex: usize = 0;
+                    while(byteIndex < ev.text.text.len and ev.text.text[byteIndex] != 0) : (byteIndex += 1) {
+                        if(win.evdat.textLen >= @TypeOf(win.evdat).maxTextLen){
+                            pinc.logDebug("Maxed out at {} text input bytes this step", .{win.evdat.textLen});
+                            win.evdat.textLen += 1;
+                            continue;
+                        }
+                        win.evdat.textBuffer[win.evdat.textLen] = ev.text.text[byteIndex];
+                        win.evdat.textLen += 1;
+                    }
                 },
                 else => {},
             }
@@ -731,7 +745,7 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn eventKeyboardButtons(this: *SDL2CompleteWindow) []const pinc.KeyboardButtonEvent {
-        return this.evdat.keyboardButtons[0..@min(this.evdat.numKeyboardButtons, 10)];
+        return this.evdat.keyboardButtons[0..@min(this.evdat.numKeyboardButtons, @TypeOf(this.evdat).maxNumKeyboardButtons)];
     }
 
     pub fn eventCursorMove(this: *SDL2CompleteWindow) bool {
@@ -744,6 +758,10 @@ pub const SDL2CompleteWindow = struct {
 
     pub fn eventCursorEnter(this: *SDL2CompleteWindow) bool {
         return this.evdat.cursorEnter;
+    }
+
+    pub fn eventText(this: *SDL2CompleteWindow) []const u8{
+        return this.evdat.textBuffer[0..@min(this.evdat.textLen, @TypeOf(this.evdat).maxTextLen)];
     }
 
     // privates
@@ -766,6 +784,7 @@ pub const SDL2CompleteWindow = struct {
     title: [:0]const u8,
     evdat: struct {
         const maxNumKeyboardButtons = 10;
+        const maxTextLen = 128;
         closed: bool = false,
         mouseButton: bool = false,
         resized: bool = false,
@@ -777,6 +796,8 @@ pub const SDL2CompleteWindow = struct {
         cursorMove: bool = false,
         cursorExit: bool = false,
         cursorEnter: bool = false,
+        textBuffer: [maxTextLen]u8 = undefined,
+        textLen: usize = 0,
     },
     resizable: bool,
     width: u32,

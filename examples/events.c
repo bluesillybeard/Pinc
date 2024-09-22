@@ -63,20 +63,18 @@ int main(int argc, char** argv) {
             printf("Window was exposed\n");
         }
         int numKeyChanges = pinc_event_window_keyboard_button_num(window);
-        if(numKeyChanges > 0) {
-            for(int eventIndex=0; eventIndex<numKeyChanges; ++eventIndex) {
-                // TODO: key name
-                int key = pinc_event_window_keyboard_button_get(window, eventIndex);
-                printf("Key %i ", key);
-                if(pinc_keyboard_key_get(key)) {
-                    if(pinc_event_window_keyboard_button_get_repeat(window, eventIndex)) {
-                        printf("repeated\n");
-                    } else {
-                        printf("down\n");
-                    }
+        for(int eventIndex=0; eventIndex<numKeyChanges; ++eventIndex) {
+            // TODO: key name
+            int key = pinc_event_window_keyboard_button_get(window, eventIndex);
+            printf("Key %i ", key);
+            if(pinc_keyboard_key_get(key)) {
+                if(pinc_event_window_keyboard_button_get_repeat(window, eventIndex)) {
+                    printf("repeated\n");
                 } else {
-                    printf("up\n");
+                    printf("down\n");
                 }
+            } else {
+                printf("up\n");
             }
         }
         if(pinc_event_window_cursor_enter(window)) {
@@ -88,6 +86,14 @@ int main(int argc, char** argv) {
         }
         if(pinc_event_window_cursor_exit(window)) {
             printf("cursor exited\n");
+        }
+        int textLen = pinc_event_window_text_len(window);
+        if(textLen > 0) {
+            printf("Text typed: \"");
+            for(int textIndex=0; textIndex<textLen; ++textIndex) {
+                printf("%c", pinc_event_window_text_item(window, textIndex));
+            }
+            printf("\"\n");
         }
         pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
         pinc_window_present_framebuffer(window, 1);
