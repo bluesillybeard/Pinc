@@ -557,7 +557,7 @@ pub const IGraphicsBackend = struct {
         this.vtable.step(this.obj);
     }
 
-    pub inline fn setFillColor(this: IGraphicsBackend, channel: u32, value: i32) void {
+    pub inline fn setFillColor(this: IGraphicsBackend, channel: u32, value: f32) void {
         this.vtable.setFillColor(this.obj, channel, value);
     }
 
@@ -573,7 +573,7 @@ pub const IGraphicsBackend = struct {
         prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
         deinit: *const fn (this: *anyopaque) void,
         step: *const fn (this: *anyopaque) void,
-        setFillColor: *const fn (this: *anyopaque, channel: u32, value: i32) void,
+        setFillColor: *const fn (this: *anyopaque, channel: u32, value: f32) void,
         setFillDepth: *const fn (this: *anyopaque, depth: f32) void,
         fillWindow: *const fn (this: *anyopaque, ICompleteWindow, GraphicsFillFlags) void,
     };
@@ -1641,9 +1641,9 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
     }
 }
 
-pub export fn pinc_graphics_set_fill_color(channel: c_int, value: c_int) void {
+pub export fn pinc_graphics_set_fill_color(channel: c_int, value: f32) void {
     state.validateFor(.init);
-    state.init.graphicsBackend.setFillColor(@intCast(channel), @intCast(value));
+    state.init.graphicsBackend.setFillColor(@intCast(channel), value);
 }
 
 pub export fn pinc_graphics_set_fill_depth(value: f32) void {

@@ -141,15 +141,6 @@ int main(int argc, char** argv) {
         // Again, this should NEVER happen, but we check it anyway just to be safe.
         return 255;
     }
-    // Pinc input colors expects integers, but we represent them in floats to make things simple.
-    // To convert that, we need some information about how to do that, since we can't assume 8 bit channels.
-    // TODO: pinc may support HDR in the future.
-    // Also consider that there are formats where each channel is a different number of bits (source: https://www.khronos.org/opengl/wiki/Image_Format)
-    // Floating point formats are handled by interanally mapping them as reasonably as possible to an integer format.
-    // Pinc provides a nice function to retrieve that information
-    int red_channel_range = pinc_framebuffer_format_get_range(-1, 0);
-    int green_channel_range = pinc_framebuffer_format_get_range(-1, 1);
-    int blue_channel_range = pinc_framebuffer_format_get_range(-1, 2);
     // Finally, we're in the main loop
     int running = 1;
     while(running) {
@@ -180,12 +171,10 @@ int main(int argc, char** argv) {
             }
         }
         // Set the fill color
-        pinc_graphics_set_fill_color(0, colors[color].red * red_channel_range);
-        pinc_graphics_set_fill_color(1, colors[color].green * green_channel_range);
-        pinc_graphics_set_fill_color(2, colors[color].blue * blue_channel_range);
-        // Pinc will automatically clamp values that are outside of the range.
-        // so to get opaque, just input a massively huge number instead of dealing with the actual range
-        if(num_channels == 4) pinc_graphics_set_fill_color(3, 1 >> 30);
+        pinc_graphics_set_fill_color(0, colors[color].red);
+        pinc_graphics_set_fill_color(1, colors[color].green);
+        pinc_graphics_set_fill_color(2, colors[color].blue);
+        if(num_channels == 4) pinc_graphics_set_fill_color(3, 1);
         pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
         pinc_window_present_framebuffer(window, 1);
         // It is good practice to collect errors after each frame

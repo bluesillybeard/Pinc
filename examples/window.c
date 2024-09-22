@@ -46,16 +46,6 @@ int main(int argc, char** argv) {
     int color = 0;
     // some more data used for later
     int num_channels = pinc_framebuffer_format_get_channels(-1);
-    // Pinc input colors expects integers, but we represent them in floats to make things simple.
-    // To convert that, we need some information about how to do that, since we can't assume 8 bit channels.
-    // TODO: pinc may support HDR in the future.
-    // Also consider that there are formats where each channel is a different number of bits (source: https://www.khronos.org/opengl/wiki/Image_Format)
-    // Floating point formats are handled by interanally mapping them as reasonably as possible to an integer format.
-    // Pinc provides a nice function to retrieve that information
-    int channel_ranges[4] = {};
-    for(int i=0; i<num_channels; ++i) {
-        channel_ranges[i] = pinc_framebuffer_format_get_range(-1, i);
-    }
     // Finally, we're in the main loop
     int running = 1;
     while(running) {
@@ -88,20 +78,18 @@ int main(int argc, char** argv) {
         // Set the fill color
         switch(num_channels) {
             case 2:
-                // Pinc will automatically clamp values that are outside of the range.
-                // so to get opaque, just input a massively huge number instead of dealing with the actual range
-                pinc_graphics_set_fill_color(1, 1 >> 30);
+                pinc_graphics_set_fill_color(1, 1);
                 // fall through
             case 1:
-                pinc_graphics_set_fill_color(0, color_to_grayscale(colors[color]) * channel_ranges[0]);
+                pinc_graphics_set_fill_color(0, color_to_grayscale(colors[color]));
                 break;
             case 4:
-                pinc_graphics_set_fill_color(3, 1 >> 30);
+                pinc_graphics_set_fill_color(3, 1);
                 // fall through
             case 3:
-                pinc_graphics_set_fill_color(0, colors[color].red * channel_ranges[0]);
-                pinc_graphics_set_fill_color(1, colors[color].green * channel_ranges[1]);
-                pinc_graphics_set_fill_color(2, colors[color].blue * channel_ranges[2]);
+                pinc_graphics_set_fill_color(0, colors[color].red);
+                pinc_graphics_set_fill_color(1, colors[color].green);
+                pinc_graphics_set_fill_color(2, colors[color].blue);
                 break;
             default:
                 // This should never happen

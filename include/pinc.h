@@ -9,13 +9,13 @@
 
 // In general, here are the rules / properties of Pinc's api:
 // - no unions or bit fields, as they tend to cause ABI problems
-// - we assume floats are in the IEE754 format. There are some whack platforms where floats do not follow the IEE654 standard. Thankfully, Pinc does not support any of those
+// - we assume floats are in the single precsision IEE754 format.
 // - Any pinc functions that take or return pointers are optional
 //     - This is to make bindings to other languages as freakishly straightforward as possible.
 //     - Lists are returned by providing a length and a get function
 //     - lists are entered by setting the length and using the set function
 // - no structs either, particularily for languages like python where a 'struct' doesn't actually exist
-// - using only void, int, and float seems limiting... because it is
+// - using only void, int, char, and float seems limiting... because it is
 //     - typedefs are allowed, however none of them have been made yet (oops)
 
 // error policy:
@@ -289,12 +289,6 @@ PINC_API int PINC_CALL pinc_framebuffer_format_get_channels(int framebuffer_inde
 /// @return the number of bits in this color channel.
 PINC_API int PINC_CALL pinc_framebuffer_format_get_bit_depth(int framebuffer_index, int channel);
 
-/// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
-///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
-/// @param channel the index of the channel within this framebuffer. Ranges from 0 to the output of pinc_framebuffer_format_get_channels(framebuffer_index)-1.
-/// @return the range in a framebufer's channel. Black is always at 0 (although HDR formats may allow negative values), and white (ignoring HDR brighter-than-white values) is the output of this function.
-PINC_API int PINC_CALL pinc_framebuffer_format_get_range(int framebuffer_index, int channel);
-
 /// @brief returns the number of bits in this framebuffer's depth buffer.
 /// @param framebuffer_index the index of the framebuffer. starting at 0. The allowed range for this is from 0 to the output of pinc_framebuffer_format_get_num-1.
 ///                          Alternatively, -1 can be entered for the set framebuffer format. Note that this is undefined if a framebuffer format has not been determined.
@@ -441,7 +435,7 @@ PINC_API int PINC_CALL pinc_window_has_height(int window);
 /// @brief get the scale factor of a window. This is set by the user when they want to "zoom in" - a value of 1.5 should make everything appear 1.5x larger.
 /// @param window the window. Asserts the object is valid, is a window, and has its scale factor set (see pinc_window_has_scale_factor)
 /// @return the scale factor of this window.
-float pinc_window_get_scale_factor(int window);
+PINC_API float PINC_CALL pinc_window_get_scale_factor(int window);
 
 /// @brief get if a window has its scale factor defined. Whether this is true depends on the backend, whether the scale is set, and if the window is complete.
 ///        In general, it is safe to assume 1 unless it is set otherwise.
@@ -630,7 +624,7 @@ PINC_API float PINC_CALL pinc_event_window_scroll_horizontal(int window);
 /// @section graphics
 
 // TODO: doc
-PINC_API void PINC_CALL pinc_graphics_set_fill_color(int channel, int value);
+PINC_API void PINC_CALL pinc_graphics_set_fill_color(int channel, float value);
 
 // TODO: doc
 PINC_API void PINC_CALL pinc_graphics_set_fill_depth(float value);
