@@ -413,10 +413,10 @@ pub const ICompleteWindow = struct {
         eventWindowExposed: *const fn (this: *anyopaque) bool,
         eventKeyboardButtons: *const fn (this: *anyopaque) []const KeyboardButtonEvent,
         eventCursorMove: *const fn (this: *anyopaque) bool,
-        eventCursorExit: *const fn(this: *anyopaque) bool,
-        eventCursorEnter: *const fn(this: *anyopaque) bool,
-        eventText: *const fn(this: *anyopaque) []const u8,
-        eventScroll: *const fn(this: *anyopaque) Vec2,
+        eventCursorExit: *const fn (this: *anyopaque) bool,
+        eventCursorEnter: *const fn (this: *anyopaque) bool,
+        eventText: *const fn (this: *anyopaque) []const u8,
+        eventScroll: *const fn (this: *anyopaque) Vec2,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -1580,7 +1580,7 @@ pub export fn pinc_event_window_cursor_exit(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventCursorExit()) 1 else 0;
+            return if (w.eventCursorExit()) 1 else 0;
         },
         else => unreachable,
     }
@@ -1591,7 +1591,7 @@ pub export fn pinc_event_window_cursor_enter(window: c_int) c_int {
     const object = refObject(window);
     switch (object.*) {
         .completeWindow => |w| {
-            return if(w.eventCursorEnter()) 1 else 0;
+            return if (w.eventCursorEnter()) 1 else 0;
         },
         else => unreachable,
     }
