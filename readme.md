@@ -159,9 +159,23 @@ None of these are going to be implemented any time soon - if ever.
         - Mate
         - ... and a billion more, although most of the current smaller ones will likely die along with X11
         - could probably just read the GTK and QT system themes and get 99% coverage
+        - I think recently a portal and standard for cross-toolkit theming was created
+- Audio support
+    - audio playback to a default or specific device
+    - software audio, or something like OpenAL which supports hardware acceleration
+    - directly output samples
+    - audio recording
+    - arbitrary inputs and outputs for something like DAW software
+        - ability to check the system's ability to handle multiple inputs / multiple outputs
+        - notify the application when the user edits the audio output through system settings or something like qpwgraph
+    - native implementations for OpenAL, ALSA, pipewire, and whatever else?
+        - SDL backend probably
 
 ## Todo (NOT IN ORDER)
 Note: Even if a feature/item you want is in here, make an issue anyway! Features are prioritized based on github issues.
+- On-screen keyboard controls
+- touch gestures
+    - Hopefully this is as simple as reporting multiple cursor positions
 - Test zero-dependency compilation
 - Set up github discussions thingy
 - error callback function, instead of forcing everyone to manually get the error if a function returns a value indicating an error

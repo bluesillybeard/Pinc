@@ -517,6 +517,8 @@ PINC_API void PINC_CALL pinc_window_present_framebuffer(int window, int vsync);
 
 /// @section user IO
 
+// TODO: Clipboard
+
 /// @brief Get the state of a mouse button
 /// @param button the button to check. Generally, 0 is the left button, 1 is the right, and 2 is the middle
 /// @return 1 if the button is pressed, 0 if it is not pressed OR if this application has no focused windows.
@@ -606,6 +608,18 @@ PINC_API int PINC_CALL pinc_event_window_cursor_exit(int window);
 /// @param window the window to query. Only accepts complete windows.
 /// @return 1 if the cursor entered the window, 0 if not.
 PINC_API int PINC_CALL pinc_event_window_cursor_enter(int window);
+
+/// @brief Get the number of bytes that were typed in a windpw during the last step.
+/// @param window the window to query. Only accepts complete windows.
+///               A window is required because it's possible that multiple windows were typed into in a single step.
+/// @return the length of the text in bytes.
+PINC_API int PINC_CALL pinc_event_window_text_len(int window);
+
+/// @brief Get a byte of the text typed in a window during the last step. This is undefined if pinc_event_window_text_len(window)==0
+/// @param window The window to query. Only accepts complete windows.
+/// @param index The index to query. Accepts values between 0 and pinc_event_window_text_len(window)-1,
+/// @return the byte. Text input is utf8 encoded, or ascii on platforms where unicode is not supported. It's safe to always assume utf8.
+PINC_API char PINC_CALL pinc_event_window_text_item(int window, int index);
 
 // TODO: the rest of the events / event-like things:
 // - text - just have the entire text over this frame in a buffer
