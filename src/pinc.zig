@@ -1672,3 +1672,24 @@ pub export fn pinc_graphics_fill_depth(window: c_int, depth: f32) void {
     state.init.graphicsBackend.fillDepth(object.completeWindow, depth);
 }
 
+pub export fn pinc_raw_opengl_make_current(window: c_int) void {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (state.init.graphicsBackendEnum) {
+        .opengl21 => {
+            object.completeWindow.glMakeCurrent();
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_raw_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque {
+    state.validateFor(.init);
+    switch (state.init.graphicsBackendEnum) {
+        .opengl21 => {
+            return state.init.windowBackend.glGetProc(std.mem.sliceTo(procname, 0));
+        },
+        else => unreachable,
+    }
+}
+

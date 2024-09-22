@@ -54,15 +54,21 @@
 
 /// @section options
 /// @brief this is for setting Pinc options. Note that, right now, the build system is not set up to use these.
-// TODO: add these to build system
 
+// TODO: add these to build system
 #ifndef PINC_API
 #define PINC_API
 #endif
 
 // TODO: have the calling convention mirrored in the zig version too
+// (if the user changes the calling convention in the header, ABI issues are guaranteed to occur)
 #ifndef PINC_CALL
 #define PINC_CALL
+#endif
+
+// Allow the use of raw OpenGl commands.
+#ifdef PINC_RAW_OPENGL
+#define PINC_EXPOSE_RAW_OPENGL
 #endif
 
 /// @section types (Notice there are no structs here.)
@@ -623,3 +629,15 @@ PINC_API void PINC_CALL pinc_graphics_fill_color(int window, float c1, float c2,
 // TODO: doc
 PINC_API void PINC_CALL pinc_graphics_fill_depth(int window, float depth);
 
+#ifdef PINC_EXPOSE_RAW_OPENGL
+
+/// @brief Make pinc's OpenGL context current. Asserts that the current backend is an OpenGL backend.
+/// @param window the window whose framebuffer to bind to the opengl context.
+PINC_API void pinc_raw_opengl_make_current(int window);
+
+/// @brief Get the function pointer to an OpenGL function.
+/// @param procname A null terminated string with the name of an OpenGL function.
+/// @return the function pointer.
+PINC_API void* pinc_raw_opengl_get_proc(const char* procname);
+
+#endif

@@ -30,6 +30,15 @@
             "args": [],
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "events"
-        }
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug rawgl example",
+            "program": "${workspaceFolder}/zig-out/bin/rawgl",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "rawgl"
+        },
     ]
 }

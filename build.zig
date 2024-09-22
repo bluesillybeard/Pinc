@@ -62,6 +62,7 @@ pub fn build(b: *std.Build) void {
     registerExample(b, target, optimize, staticLib, run, "window", b.path("examples/window.c"));
     registerExample(b, target, optimize, staticLib, run, "windowMaximal", b.path("examples/window-maximal.c"));
     registerExample(b, target, optimize, staticLib, run, "events", b.path("examples/events.c"));
+    registerExample(b, target, optimize, staticLib, run, "rawgl", b.path("examples/rawgl.c"));
 }
 
 fn registerExample(b: *std.Build, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode, pinclib: *std.Build.Step.Compile, run: bool, comptime name: []const u8, sourceFile: std.Build.LazyPath) void {
