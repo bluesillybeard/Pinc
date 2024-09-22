@@ -360,6 +360,13 @@ pub const ICompleteWindow = struct {
         return this.vtable.eventCursorMove(this.obj);
     }
 
+    pub inline fn eventCursorExit(this: ICompleteWindow) bool {
+        return this.vtable.eventCursorExit(this.obj);
+    }
+    pub inline fn eventCursorEnter(this: ICompleteWindow) bool {
+        return this.vtable.eventCursorEnter(this.obj);
+    }
+
     pub const Vtable = struct {
         // init is not implemented as part of the vtable.
         deinit: *const fn (this: *anyopaque) void,
@@ -392,6 +399,8 @@ pub const ICompleteWindow = struct {
         eventWindowExposed: *const fn (this: *anyopaque) bool,
         eventKeyboardButtons: *const fn (this: *anyopaque) []const KeyboardButtonEvent,
         eventCursorMove: *const fn (this: *anyopaque) bool,
+        eventCursorExit: *const fn(this: *anyopaque) bool,
+        eventCursorEnter: *const fn(this: *anyopaque) bool,
     };
     vtable: *const Vtable,
     obj: *anyopaque,
@@ -1549,6 +1558,29 @@ pub export fn pinc_event_window_cursor_move(window: c_int) c_int {
         else => unreachable,
     }
 }
+
+pub export fn pinc_event_window_cursor_exit(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventCursorExit()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
+pub export fn pinc_event_window_cursor_enter(window: c_int) c_int {
+    state.validateFor(.init);
+    const object = refObject(window);
+    switch (object.*) {
+        .completeWindow => |w| {
+            return if(w.eventCursorEnter()) 1 else 0;
+        },
+        else => unreachable,
+    }
+}
+
 
 pub export fn pinc_graphics_set_fill_color(channel: c_int, value: c_int) void {
     state.validateFor(.init);

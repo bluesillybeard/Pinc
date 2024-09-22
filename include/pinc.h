@@ -597,10 +597,18 @@ PINC_API int PINC_CALL pinc_event_window_keyboard_button_get_repeat(int window, 
 /// @return 1 if the cursor moved in this window, 0 if not.
 PINC_API int PINC_CALL pinc_event_window_cursor_move(int window);
 
+/// @brief Get if the cursor has left a window during the last step.
+/// @param window the window to query. Only accepts complete windows.
+/// @return 1 if the cursor left the window, 0 if not.
+PINC_API int PINC_CALL pinc_event_window_cursor_exit(int window);
+
+/// @brief Get if the cursor has entered a window during the last step.
+/// @param window the window to query. Only accepts complete windows.
+/// @return 1 if the cursor entered the window, 0 if not.
+PINC_API int PINC_CALL pinc_event_window_cursor_enter(int window);
+
 // TODO: the rest of the events / event-like things:
 // - text - just have the entire text over this frame in a buffer
-// - cursor_enter
-// - cursor_exit
 // - scroll
 
 /// @section graphics
