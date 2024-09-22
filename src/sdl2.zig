@@ -90,6 +90,7 @@ const libsdl = struct {
     pub var lib: ?std.DynLib = null;
     // returns false if loading failed for any reason
     pub fn load() bool {
+        // TODO: enforce minimum SDL2 version
         // protect from calling this function multiple times
         if (lib != null) {
             return true;
@@ -397,6 +398,11 @@ pub const SDL2WindowBackend = struct {
                         win.evdat.textBuffer[win.evdat.textLen] = ev.text.text[byteIndex];
                         win.evdat.textLen += 1;
                     }
+                },
+                sdl.SDL_MOUSEWHEEL => {
+                    const win = getWindowFromid(ev.wheel.windowID) orelse continue :LOOP;
+                    win.evdat.scroll.x += ev.wheel.preciseX;
+                    win.evdat.scroll.y += ev.wheel.preciseY;
                 },
                 else => {},
             }
@@ -764,6 +770,10 @@ pub const SDL2CompleteWindow = struct {
         return this.evdat.textBuffer[0..@min(this.evdat.textLen, @TypeOf(this.evdat).maxTextLen)];
     }
 
+    pub fn eventScroll(this: *SDL2CompleteWindow) pinc.Vec2 {
+        return this.evdat.scroll;
+    }
+
     // privates
     fn getWindowSizePixels(this: *SDL2CompleteWindow, width: *u32, height: *u32) void {
         switch (pinc.state.init.graphicsBackendEnum) {
@@ -798,6 +808,7 @@ pub const SDL2CompleteWindow = struct {
         cursorEnter: bool = false,
         textBuffer: [maxTextLen]u8 = undefined,
         textLen: usize = 0,
+        scroll: pinc.Vec2 = .{.x = 0, .y = 0},
     },
     resizable: bool,
     width: u32,
