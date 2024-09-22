@@ -176,12 +176,47 @@ pub const FramebufferFormat = struct {
     // Data given out to Pincs user
     channels: u32,
     channelDepths: [maxChannels]u32,
-    // To get the range, just do (1<<depth)-1
-    //channelRanges: [maxChannels]u32,
     depthBits: u32,
     // Data that is used internally
     /// This is to help implementing backends, not used by any of Pinc's backend-agnostic code.
     id: usize,
+
+    pub fn channelsToRgbaColor(this: FramebufferFormat, c1: f32, c2: f32, c3: f32, c4: f32) Color {
+        return switch (this.channels) {
+            1 => Color {
+                .r = c1,
+                .g = c1,
+                .b = c1,
+                .a = 1,
+            },
+            2 => Color {
+                .r = c1,
+                .g = c1,
+                .b = c1,
+                .a = c2,
+            },
+            3 => Color {
+                .r = c1,
+                .g = c2,
+                .b = c3,
+                .a = 1,
+            },
+            4 => Color {
+                .r = c1,
+                .g = c2,
+                .b = c3,
+                .a = c4,
+            },
+            else => unreachable,
+        };
+    }
+};
+
+pub const Color = struct {
+    r: f32,
+    g: f32,
+    b: f32,
+    a: f32,
 };
 
 pub const IncompleteWindow = struct {
@@ -557,25 +592,20 @@ pub const IGraphicsBackend = struct {
         this.vtable.step(this.obj);
     }
 
-    pub inline fn setFillColor(this: IGraphicsBackend, channel: u32, value: f32) void {
-        this.vtable.setFillColor(this.obj, channel, value);
+    pub inline fn fillColor(this: IGraphicsBackend, window: ICompleteWindow, c1: f32, c2: f32, c3: f32, c4: f32) void {
+        this.vtable.fillColor(this.obj, window, c1, c2, c3, c4);
     }
 
-    pub inline fn setFillDepth(this: IGraphicsBackend, depth: f32) void {
-        this.vtable.setFillDepth(this.obj, depth);
-    }
-
-    pub inline fn fillWindow(this: IGraphicsBackend, window: ICompleteWindow, flags: GraphicsFillFlags) void {
-        this.vtable.fillWindow(this.obj, window, flags);
+    pub inline fn fillDepth(this: IGraphicsBackend, window: ICompleteWindow, depth: f32) void {
+        this.vtable.fillDepth(this.obj, window, depth);
     }
 
     pub const Vtable = struct {
         prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
         deinit: *const fn (this: *anyopaque) void,
         step: *const fn (this: *anyopaque) void,
-        setFillColor: *const fn (this: *anyopaque, channel: u32, value: f32) void,
-        setFillDepth: *const fn (this: *anyopaque, depth: f32) void,
-        fillWindow: *const fn (this: *anyopaque, ICompleteWindow, GraphicsFillFlags) void,
+        fillColor: *const fn (this: *anyopaque, window: ICompleteWindow, c1: f32, c2: f32, c3: f32, c4: f32) void,
+        fillDepth: *const fn (this: *anyopaque, window: ICompleteWindow, depth: f32) void,
     };
 
     vtable: *Vtable,
@@ -875,17 +905,6 @@ pub export fn pinc_framebuffer_format_get_bit_depth(framebuffer_index: c_int, ch
     }
     state.validateFor(.set_graphics_backend);
     return @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channelDepths[@intCast(channel)]);
-}
-
-pub export fn pinc_framebuffer_format_get_range(framebuffer_index: c_int, channel: c_int) c_int {
-    if (framebuffer_index == -1) {
-        const fb = state.getFramebufferFormat() orelse unreachable;
-        const v = (@as(c_int, 1) << @intCast(fb.channelDepths[@intCast(channel)])) - 1;
-        return v;
-    }
-    state.validateFor(.set_graphics_backend);
-    // This is quite the mighty line of code.
-    return (@as(c_int, 1) << @intCast(state.set_graphics_backend.framebufferFormats[@intCast(framebuffer_index)].channelDepths[@intCast(channel)])) - 1;
 }
 
 pub export fn pinc_framebuffer_format_get_depth_buffer(framebuffer_index: c_int) c_int {
@@ -1641,29 +1660,15 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
     }
 }
 
-pub export fn pinc_graphics_set_fill_color(channel: c_int, value: f32) void {
+pub export fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void {
     state.validateFor(.init);
-    state.init.graphicsBackend.setFillColor(@intCast(channel), value);
+    const object = refObject(window);
+    state.init.graphicsBackend.fillColor(object.completeWindow, c1, c2, c3, c4);
 }
 
-pub export fn pinc_graphics_set_fill_depth(value: f32) void {
+pub export fn pinc_graphics_fill_depth(window: c_int, depth: f32) void {
     state.validateFor(.init);
-    state.init.graphicsBackend.setFillDepth(value);
+    const object = refObject(window);
+    state.init.graphicsBackend.fillDepth(object.completeWindow, depth);
 }
 
-pub export fn pinc_graphics_fill(framebuffer: c_int, flags: c_int) void {
-    // SYNC: flag values with header
-    const colorFlag = 1;
-    const depthFlag = 2;
-    state.validateFor(.init);
-    const object = refObject(framebuffer);
-    switch (object.*) {
-        .completeWindow => |w| {
-            state.init.graphicsBackend.fillWindow(w, .{
-                .color = (flags & colorFlag) != 0,
-                .depth = (flags & depthFlag) != 0,
-            });
-        },
-        else => unreachable,
-    }
-}

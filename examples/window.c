@@ -77,25 +77,19 @@ int main(int argc, char** argv) {
         }
         // Set the fill color
         switch(num_channels) {
-            case 2:
-                pinc_graphics_set_fill_color(1, 1);
-                // fall through
             case 1:
-                pinc_graphics_set_fill_color(0, color_to_grayscale(colors[color]));
+            case 2:
+                pinc_graphics_fill_color(window, color_to_grayscale(colors[color]), 1, 0, 0);
                 break;
-            case 4:
-                pinc_graphics_set_fill_color(3, 1);
-                // fall through
             case 3:
-                pinc_graphics_set_fill_color(0, colors[color].red);
-                pinc_graphics_set_fill_color(1, colors[color].green);
-                pinc_graphics_set_fill_color(2, colors[color].blue);
+            case 4:
+                Color colorValue = colors[color];
+                pinc_graphics_fill_color(window, colorValue.red, colorValue.green, colorValue.blue, 1);
                 break;
             default:
                 // This should never happen
                 return 255;
         }
-        pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
         pinc_window_present_framebuffer(window, 1);
         // It is good practice to collect errors after each frame
         if(collect_errors()) {

@@ -27,34 +27,18 @@ pub const Opengl21GraphicsBackend = struct {
         _ = this;
     }
 
-    // TODO: this weird fill color conversion state crap will be removed soon enough... right?
-    // More accurately, there will be a graphics context object that is entirely managed by pinc.zig,
-    // and the graphics backends will just get all the data they need to draw all in one function
-    // instead of having to deal with this state stuff
-    pub fn setFillColor(this: *Opengl21GraphicsBackend, channel: u32, value: f32) void {
-        // TODO: handle non-RGBA colors.
-        // This only works because the only implemented window backend (SDL2) assumes an RGBA framebuffer
-        this.fillColor[channel] = value;
-    }
-
-    pub fn setFillDepth(this: *Opengl21GraphicsBackend, depth: f32) void {
+    pub fn fillColor(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, c1: f32, c2: f32, c3: f32, c4: f32) void {
         _ = this;
-        _ = depth;
-        // TODO
-    }
-
-    pub fn fillWindow(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, flags: pinc.GraphicsFillFlags) void {
         window.glMakeCurrent();
-        var glFlags: gl.GLuint = 0;
-        if (flags.color) {
-            // TODO: handle non-RGBA colors? Or will we just always use RGBA internally?
-            // Does OpenGL itself even support non-rgba framebuffers?
-            gl.clearColor(this.fillColor[0], this.fillColor[1], this.fillColor[2], this.fillColor[3]);
-            glFlags |= gl.COLOR_BUFFER_BIT;
-        }
-        // TODO: depth
-        gl.clear(glFlags);
+        const color = pinc.state.getFramebufferFormat().?.channelsToRgbaColor(c1, c2, c3, c4);
+        gl.clearColor(color.r, color.g, color.b, color.a);
+        gl.clear(gl.COLOR_BUFFER_BIT);
     }
 
-    fillColor: [4]f32,
+    pub fn fillDepth(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, c1: f32) void {
+        _ = this;
+        window.glMakeCurrent();
+        gl.clearDepth(c1);
+        gl.clear(gl.DEPTH_BUFFER_BIT);
+    }
 };
