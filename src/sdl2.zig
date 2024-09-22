@@ -324,7 +324,7 @@ pub const SDL2WindowBackend = struct {
                         },
                         sdl.SDL_WINDOWEVENT_FOCUS_GAINED => {
                             win.evdat.focused = true;
-                            // This is to make sure that application has no confusion of whether a window has focus - 
+                            // This is to make sure that application has no confusion of whether a window has focus -
                             // if we gained focus after being unfocused in the same step, then this window is focused
                             // and other windows are unfocused.
                             win.evdat.unfocused = false;
@@ -389,8 +389,8 @@ pub const SDL2WindowBackend = struct {
                     const win = getWindowFromid(ev.text.windowID) orelse continue :LOOP;
                     // I will say this EVERY time: Zig needs a way to make this variable not leak outside the scope of the wile loop!
                     var byteIndex: usize = 0;
-                    while(byteIndex < ev.text.text.len and ev.text.text[byteIndex] != 0) : (byteIndex += 1) {
-                        if(win.evdat.textLen >= @TypeOf(win.evdat).maxTextLen){
+                    while (byteIndex < ev.text.text.len and ev.text.text[byteIndex] != 0) : (byteIndex += 1) {
+                        if (win.evdat.textLen >= @TypeOf(win.evdat).maxTextLen) {
                             pinc.logDebug("Maxed out at {} text input bytes this step", .{win.evdat.textLen});
                             win.evdat.textLen += 1;
                             continue;
@@ -450,7 +450,7 @@ pub const SDL2WindowBackend = struct {
         var x: c_int = undefined;
         var y: c_int = undefined;
         _ = libsdl.getMouseState(&x, &y);
-        return pinc.PixelPos {
+        return pinc.PixelPos{
             .x = @intCast(x),
             .y = @intCast(y),
         };
@@ -766,7 +766,7 @@ pub const SDL2CompleteWindow = struct {
         return this.evdat.cursorEnter;
     }
 
-    pub fn eventText(this: *SDL2CompleteWindow) []const u8{
+    pub fn eventText(this: *SDL2CompleteWindow) []const u8 {
         return this.evdat.textBuffer[0..@min(this.evdat.textLen, @TypeOf(this.evdat).maxTextLen)];
     }
 
@@ -808,7 +808,7 @@ pub const SDL2CompleteWindow = struct {
         cursorEnter: bool = false,
         textBuffer: [maxTextLen]u8 = undefined,
         textLen: usize = 0,
-        scroll: pinc.Vec2 = .{.x = 0, .y = 0},
+        scroll: pinc.Vec2 = .{ .x = 0, .y = 0 },
     },
     resizable: bool,
     width: u32,
