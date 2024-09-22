@@ -19,5 +19,11 @@
             "command": "zig",
             "args": ["build", "events"]
         },
+        {
+            "label": "rawgl",
+            "type": "shell",
+            "command": "zig",
+            "args": ["build", "rawgl"]
+        },
     ]
 }
