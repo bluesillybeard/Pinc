@@ -171,11 +171,8 @@ int main(int argc, char** argv) {
             }
         }
         // Set the fill color
-        pinc_graphics_set_fill_color(0, colors[color].red);
-        pinc_graphics_set_fill_color(1, colors[color].green);
-        pinc_graphics_set_fill_color(2, colors[color].blue);
-        if(num_channels == 4) pinc_graphics_set_fill_color(3, 1);
-        pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
+        Color colorVal = colors[color];
+        pinc_graphics_fill_color(window, colorVal.red, colorVal.green, colorVal.blue, 1);
         pinc_window_present_framebuffer(window, 1);
         // It is good practice to collect errors after each frame
         if(collect_errors()) {

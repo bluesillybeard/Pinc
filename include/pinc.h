@@ -104,12 +104,6 @@ enum pinc_object_type {
     pinc_object_window,
 };
 
-/// @brief Graphics fill flags, for determining what buffers to fill.
-enum pinc_graphics_fill_flag {
-    pinc_graphics_fill_flag_color = 1,
-    pinc_graphics_fill_flag_depth = 2,
-};
-
 /// enumeration of pinc keyboard codes
 /// These are not physical, but logical - when the user presses the button labeled 'q' on their keyboard, that's the key reported here.
 /// In order words, this ignores the idea of a keyboard layout, and reports based on what the user is typing, not what actual buttons are being pressed.
@@ -624,10 +618,8 @@ PINC_API float PINC_CALL pinc_event_window_scroll_horizontal(int window);
 /// @section graphics
 
 // TODO: doc
-PINC_API void PINC_CALL pinc_graphics_set_fill_color(int channel, float value);
+PINC_API void PINC_CALL pinc_graphics_fill_color(int window, float c1, float c2, float c3, float c4);
 
 // TODO: doc
-PINC_API void PINC_CALL pinc_graphics_set_fill_depth(float value);
+PINC_API void PINC_CALL pinc_graphics_fill_depth(int window, float depth);
 
-// TODO: doc
-PINC_API void PINC_CALL pinc_graphics_fill(int framebuffer, int flags);
