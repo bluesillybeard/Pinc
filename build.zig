@@ -30,6 +30,18 @@ pub fn build(b: *std.Build) void {
         const installStep = b.step("static", "Build static library");
         installStep.dependOn(&install.step);
 
+        // WHen using Pinc as a dependency of a Zig project, the static library is what will be linked with.
+        // TODO: option to load Pinc dynamically when using it with Zig as a regular dependency
+
+        const pincModule = b.addModule("Pinc", .{
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+            .root_source_file = b.path("include/pinc.zig"),
+        });
+        pincModule.addIncludePath(b.path("include"));
+        pincModule.linkLibrary(lib);
+
         break :blk lib;
     };
 

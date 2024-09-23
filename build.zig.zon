@@ -1,14 +1,23 @@
 .{
-    .name = "Pink",
+    .name = "Pinc",
+    // TODO: figure out a versioning scheme
     .version = "0.0.0",
+    // Dependencies are for losers anyway
     .dependencies = .{},
 
     .paths = .{
-        "build.zig",
+        // TODO: actually figure out what paths are needed instead of just adding all of them
+        "readme.md",
+        "logo.svg",
+        "LICENSE",
+        "contribute.md",
         "build.zig.zon",
+        "build.zig",
+        ".gitignore",
         "src",
         "include",
-        "readme.md",
-        "LICENSE",
+        "ext",
+        "examples",
+        ".vscode",
     },
 }
