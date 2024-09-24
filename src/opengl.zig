@@ -30,6 +30,8 @@ pub const Opengl21GraphicsBackend = struct {
     pub fn fillColor(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, c1: f32, c2: f32, c3: f32, c4: f32) void {
         _ = this;
         window.glMakeCurrent();
+        // Due to reasons, Some OpenGL state needs to be reset
+        gl.viewport(0, 0, @intCast(window.getWidth()), @intCast(window.getHeight()));
         const color = pinc.state.getFramebufferFormat().?.channelsToRgbaColor(c1, c2, c3, c4);
         gl.clearColor(color.r, color.g, color.b, color.a);
         gl.clear(gl.COLOR_BUFFER_BIT);
@@ -38,6 +40,8 @@ pub const Opengl21GraphicsBackend = struct {
     pub fn fillDepth(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, c1: f32) void {
         _ = this;
         window.glMakeCurrent();
+        // Due to reasons, Some OpenGL state needs to be reset
+        gl.viewport(0, 0, @intCast(window.getWidth()), @intCast(window.getHeight()));
         gl.clearDepth(c1);
         gl.clear(gl.DEPTH_BUFFER_BIT);
     }
