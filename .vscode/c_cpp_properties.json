@@ -4,6 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/ext/",
                 "${workspaceFolder}/include/",
                 "/usr/include"
             ],
@@ -16,7 +17,9 @@
         {
             "name": "Windows",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/ext/",
+                "${workspaceFolder}/include/"
             ],
             "defines": [
                 "_DEBUG",

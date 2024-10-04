@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
         if(scrollX != 0 || scrollY != 0) {
             printf("Scrolled by (%f,%f)\n", scrollX, scrollY);
         }
-        pinc_graphics_fill(window, pinc_graphics_fill_flag_color);
+        pinc_graphics_fill_color(window, 1, 1, 1, 1);
         pinc_window_present_framebuffer(window, 1);
         // It is good practice to collect errors after each frame
         if(collect_errors()) {

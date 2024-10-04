@@ -7,7 +7,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug window example",
+            "name": "(LLDB) Debug window example",
             "program": "${workspaceFolder}/zig-out/bin/window",
             "args": [],
             "cwd": "${workspaceFolder}",
@@ -16,7 +16,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug windowMaximal example",
+            "name": "(LLDB) Debug windowMaximal example",
             "program": "${workspaceFolder}/zig-out/bin/windowMaximal",
             "args": [],
             "cwd": "${workspaceFolder}",
@@ -25,7 +25,7 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug events example",
+            "name": "(LLDB) Debug events example",
             "program": "${workspaceFolder}/zig-out/bin/events",
             "args": [],
             "cwd": "${workspaceFolder}",
@@ -34,10 +34,75 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug rawgl example",
+            "name": "(LLDB) Debug rawgl example",
             "program": "${workspaceFolder}/zig-out/bin/rawgl",
             "args": [],
             "cwd": "${workspaceFolder}",
+            "preLaunchTask": "rawgl"
+        },
+        // These GDB options exist because LLDB *sucks crap* on Windows.
+        {
+            "name": "(GDB) Debug window example",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/zig-out/bin/window.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "symbolSearchPath": "${workspaceRoot}/zig-out/bin",
+            "environment": [],
+            "externalConsole": false,
+            "logging": {
+                "moduleLoad": false,
+            },
+            "preLaunchTask": "exampleWindow"
+        },
+        {
+            "name": "(GDB) Debug windowMaximal example",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/zig-out/bin/windowMaximal.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "symbolSearchPath": "${workspaceRoot}/zig-out/bin",
+            "environment": [],
+            "externalConsole": false,
+            "logging": {
+                "moduleLoad": false,
+            },
+            "preLaunchTask": "exampleWindowMaximal"
+        },
+        {
+            "name": "(GDB) Debug events example",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/zig-out/bin/events.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "symbolSearchPath": "${workspaceRoot}/zig-out/bin",
+            "environment": [],
+            "externalConsole": false,
+            "logging": {
+                "moduleLoad": false,
+            },
+            "preLaunchTask": "events"
+        },
+        {
+            "name": "(GDB) Debug rawgl example",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/zig-out/bin/rawgl.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceRoot}",
+            "symbolSearchPath": "${workspaceRoot}/zig-out/bin",
+            "environment": [],
+            "externalConsole": false,
+            "logging": {
+                "moduleLoad": false,
+            },
             "preLaunchTask": "rawgl"
         },
     ]

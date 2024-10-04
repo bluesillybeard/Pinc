@@ -8,6 +8,7 @@
 // (well, it can, it's just not recomended)
 // The header is only used to get type declarations,
 // functions have to be loaded manually.
+// Note that this header is retrieved from the ext folder in this repository.
 #include <GL/gl.h>
 
 // declare stuff
