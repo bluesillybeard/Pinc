@@ -178,6 +178,9 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn deinit(this: *SDL2WindowBackend) void {
+        if(this.dummyWindow) |w| {
+            w.deinit();
+        }
         libsdl.lib.?.close();
         libsdl.lib = null;
         pinc.allocator.?.destroy(this);
@@ -247,6 +250,10 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn createWindow(this: *SDL2WindowBackend, data: pinc.IncompleteWindow, id: c_int) ?pinc.ICompleteWindow {
+        return pinc.ICompleteWindow.init(SDL2CompleteWindow, this.createWindowDirect(data, id).?);
+    }
+
+    fn createWindowDirect(this: *SDL2WindowBackend, data: pinc.IncompleteWindow, id: ?c_int) ?*SDL2CompleteWindow {
         _ = this;
         // Unfortunately SDL has no way to get a "default" window size... Which is perfectly fine, honestly doesn't even matter
         // TODO: move this into a generic "makeSdlWindow" function and replace the dummy window creation with it
@@ -268,7 +275,7 @@ pub const SDL2WindowBackend = struct {
             flags |= sdl.SDL_WINDOW_INPUT_FOCUS;
             flags |= sdl.SDL_WINDOW_INPUT_FOCUS;
         }
-        if (pinc.state.init.graphicsBackendEnum == .opengl21) {
+        if (pinc.state.getGraphicsBackendEnum() == .opengl21) {
             flags |= sdl.SDL_WINDOW_OPENGL;
         }
         // TODO: maybe reuse the dummy window if possible?
@@ -277,8 +284,10 @@ pub const SDL2WindowBackend = struct {
             pinc.pushError(true, .any, "SDL2 backend: Failed to create window: {s}", .{libsdl.getError()});
             return null;
         }
-        const dat = SDLWindowUserData{
-            .pincWindowId = id,
+        const dat = SDLWindowUserData {
+            // id being nullable is really to indicate that it's optional.
+            // Just to be safe, set the ID for this window to 0 to indicate that this is an "under the table" window.
+            .pincWindowId = id orelse 0,
         };
         dat.toWindow(sdlwin.?);
         const win = pinc.allocator.?.create(SDL2CompleteWindow) catch unreachable;
@@ -291,7 +300,7 @@ pub const SDL2WindowBackend = struct {
             .width = width.?,
             .height = height.?,
         };
-        return pinc.ICompleteWindow.init(SDL2CompleteWindow, win);
+        return win;
     }
 
     pub fn step(this: *SDL2WindowBackend) void {
@@ -414,7 +423,7 @@ pub const SDL2WindowBackend = struct {
         const dummy = this.getAnyWindow().?;
         // TODO: checck for error
         // TODO: might it be worth making the dummy window a fully fledged SDL2CompleteWindow so we can just call dummy.glMakeCurrent()?
-        _ = libsdl.glMakeCurrent(dummy, this.getContext().?);
+        dummy.glMakeCurrent();
         return libsdl.glGetProcAddress(name.ptr);
     }
 
@@ -504,7 +513,7 @@ pub const SDL2WindowBackend = struct {
             if (framebufferFormat.channels == 4) {
                 _ = libsdl.glSetAttribute(sdl.SDL_GL_ALPHA_SIZE, @intCast(framebufferFormat.channelDepths[3]));
             }
-            this.openglContext = @ptrCast(libsdl.glCreateContext(this.getAnyWindow().?));
+            this.openglContext = @ptrCast(libsdl.glCreateContext(this.getAnyWindow().?.window));
             if (this.openglContext == null) {
                 // We couldn't make the context... sad
                 pinc.pushError(true, .any, "SDL2 backend: Failed to make OpenGL context! SDL2 error: {s}", .{libsdl.getError()});
@@ -513,7 +522,7 @@ pub const SDL2WindowBackend = struct {
         }
     }
 
-    fn getAnyWindow(this: *SDL2WindowBackend) ?*sdl.SDL_Window {
+    fn getAnyWindow(this: *SDL2WindowBackend) ?*SDL2CompleteWindow {
         if (this.dummyWindow) |dw| {
             return dw;
         }
@@ -522,7 +531,7 @@ pub const SDL2WindowBackend = struct {
                 for (st.objects.items) |obj| {
                     switch (obj) {
                         .completeWindow => |w| {
-                            return SDL2CompleteWindow.castFrom(w).?.window;
+                            return SDL2CompleteWindow.castFrom(w);
                         },
                         else => {},
                     }
@@ -531,7 +540,10 @@ pub const SDL2WindowBackend = struct {
             else => {},
         }
         // No existing window can be used, this means we have to make a new one
-        this.dummyWindow = libsdl.createWindow("pinc dummy window", sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, 32, 32, sdl.SDL_WINDOW_HIDDEN | sdl.SDL_WINDOW_OPENGL);
+        this.dummyWindow = this.createWindowDirect(pinc.IncompleteWindow{
+            .hidden = true,
+            .title = pinc.allocator.?.dupeZ(u8, "Pinc dummy window (SDL2)") catch unreachable,
+        }, null);
         if (this.dummyWindow == null) {
             // Couldn't create window! (sad)
             pinc.pushError(true, .any, "SDL2 backend: Failed to create dummy window: {s}", .{libsdl.getError()});
@@ -539,7 +551,9 @@ pub const SDL2WindowBackend = struct {
         return this.dummyWindow;
     }
 
-    dummyWindow: ?*sdl.SDL_Window,
+    // this window is "under the table" so to speak.
+    // It is not registered as a Pinc object.
+    dummyWindow: ?*SDL2CompleteWindow,
     openglContext: ?*GLContext,
     framebufferFormat: ?pinc.FramebufferFormat,
 };
@@ -725,7 +739,7 @@ pub const SDL2CompleteWindow = struct {
 
     pub fn glMakeCurrent(this: *SDL2CompleteWindow) void {
         // TODO: make a function for this
-        const sdl2WindowBackend: *SDL2WindowBackend = @alignCast(@ptrCast(pinc.state.init.windowBackend.obj));
+        const sdl2WindowBackend: *SDL2WindowBackend = @alignCast(@ptrCast(pinc.state.getWindowBackend().?.obj));
         // TODO: test for success
         _ = libsdl.glMakeCurrent(this.window, sdl2WindowBackend.getContext());
     }
