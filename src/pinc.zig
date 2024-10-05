@@ -727,7 +727,7 @@ pub const State = union(StateTag) {
         }
     }
 
-    pub fn getFramebufferFormat(this: *const State) ?FramebufferFormat {
+    pub inline fn getFramebufferFormat(this: *const State) ?FramebufferFormat {
         switch (this.*) {
             .set_framebuffer_format => |st| {
                 return st.framebufferFormat;
@@ -737,6 +737,25 @@ pub const State = union(StateTag) {
             },
             else => return null,
         }
+    }
+
+    pub inline fn getGraphicsBackendEnum(this: *const State) ?GraphicsBackend {
+        return switch (this.*) {
+            .set_graphics_backend => |st| st.graphicsBackendEnum,
+            .set_framebuffer_format => |st| st.graphicsBackendEnum,
+            .init => |st| st.graphicsBackendEnum,
+            else => null,
+        };
+    }
+
+    pub inline fn getWindowBackend(this: *const State) ?IWindowBackend {
+        return switch (this.*) {
+            .set_window_backend => |st| st.windowBackend,
+            .set_graphics_backend => |st| st.windowBackend,
+            .set_framebuffer_format => |st| st.windowBackend,
+            .init => |st| st.windowBackend,
+            else => null,
+        };
     }
 };
 
