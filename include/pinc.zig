@@ -2,7 +2,7 @@
 
 pub const window_backend = enum(c_int) {
     any,
-    sdl2,  
+    sdl2,
 };
 
 pub const graphics_backend = enum(c_int) {
@@ -148,7 +148,6 @@ pub const keyboard_key = enum(c_int) {
     count,
 };
 
-
 extern fn pinc_incomplete_init() void;
 extern fn pinc_window_backend_is_supported(backend: window_backend) c_int;
 extern fn pinc_init_set_window_backend(backend: window_backend) void;
@@ -220,7 +219,6 @@ extern fn pinc_event_window_scroll_vertical(window: c_int) f32;
 extern fn pinc_event_window_scroll_horizontal(window: c_int) f32;
 extern fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void;
 extern fn pinc_graphics_fill_depth(window: c_int, depth: f32) void;
-
 
 pub fn incomplete_init() void {
     pinc_incomplete_init();
@@ -505,4 +503,3 @@ pub fn graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) vo
 pub fn graphics_fill_depth(window: c_int, depth: f32) void {
     pinc_graphics_fill_depth(window, depth);
 }
-

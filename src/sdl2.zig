@@ -178,7 +178,7 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn deinit(this: *SDL2WindowBackend) void {
-        if(this.dummyWindow) |w| {
+        if (this.dummyWindow) |w| {
             w.deinit();
         }
         libsdl.lib.?.close();
@@ -245,7 +245,6 @@ pub const SDL2WindowBackend = struct {
     }
 
     pub fn prepareFramebuffer(this: *SDL2WindowBackend, framebuffer: pinc.FramebufferFormat) void {
-        // TODO: might actually be a good idea to make the OpenGL context here instead of later
         this.framebufferFormat = framebuffer;
     }
 
@@ -254,9 +253,7 @@ pub const SDL2WindowBackend = struct {
     }
 
     fn createWindowDirect(this: *SDL2WindowBackend, data: pinc.IncompleteWindow, id: ?c_int) ?*SDL2CompleteWindow {
-        _ = this;
         // Unfortunately SDL has no way to get a "default" window size... Which is perfectly fine, honestly doesn't even matter
-        // TODO: move this into a generic "makeSdlWindow" function and replace the dummy window creation with it
         var width = data.width;
         var height = data.height;
         if (width == null) width = 400;
@@ -275,16 +272,25 @@ pub const SDL2WindowBackend = struct {
             flags |= sdl.SDL_WINDOW_INPUT_FOCUS;
             flags |= sdl.SDL_WINDOW_INPUT_FOCUS;
         }
-        if (pinc.state.getGraphicsBackendEnum() == .opengl21) {
+        if (pinc.state.getGraphicsBackendEnum().? == .opengl21) {
             flags |= sdl.SDL_WINDOW_OPENGL;
+            // On certain platforms (aka Windows), OpenGL is INSANELY particular about the framebuffer format not changing when switching to another window.
+            // To be safe then, tell SDL2 what the framebuffer format should be before making a window.
+            // This does mean that the OpenGL context can't be created until the framebuffer format is set.
+            const framebufferFormat = this.framebufferFormat.?;
+            _ = libsdl.glSetAttribute(sdl.SDL_GL_RED_SIZE, @intCast(framebufferFormat.channelDepths[0]));
+            _ = libsdl.glSetAttribute(sdl.SDL_GL_GREEN_SIZE, @intCast(framebufferFormat.channelDepths[1]));
+            _ = libsdl.glSetAttribute(sdl.SDL_GL_BLUE_SIZE, @intCast(framebufferFormat.channelDepths[2]));
+            if (framebufferFormat.channels == 4) {
+                _ = libsdl.glSetAttribute(sdl.SDL_GL_ALPHA_SIZE, @intCast(framebufferFormat.channelDepths[3]));
+            }
         }
-        // TODO: maybe reuse the dummy window if possible?
         const sdlwin = libsdl.createWindow(data.title.ptr, sdl.SDL_WINDOWPOS_UNDEFINED, sdl.SDL_WINDOWPOS_UNDEFINED, @intCast(width.?), @intCast(height.?), flags);
         if (sdlwin == null) {
             pinc.pushError(true, .any, "SDL2 backend: Failed to create window: {s}", .{libsdl.getError()});
             return null;
         }
-        const dat = SDLWindowUserData {
+        const dat = SDLWindowUserData{
             // id being nullable is really to indicate that it's optional.
             // Just to be safe, set the ID for this window to 0 to indicate that this is an "under the table" window.
             .pincWindowId = id orelse 0,
@@ -421,8 +427,6 @@ pub const SDL2WindowBackend = struct {
     pub fn glGetProc(this: *SDL2WindowBackend, name: [:0]const u8) ?*anyopaque {
         // TODO: error on null dummy window?
         const dummy = this.getAnyWindow().?;
-        // TODO: checck for error
-        // TODO: might it be worth making the dummy window a fully fledged SDL2CompleteWindow so we can just call dummy.glMakeCurrent()?
         dummy.glMakeCurrent();
         return libsdl.glGetProcAddress(name.ptr);
     }
@@ -472,6 +476,7 @@ pub const SDL2WindowBackend = struct {
 
         // extract window object
         const dat = SDLWindowUserData.fromWindow(sdlWin);
+        if (dat.pincWindowId == 0) return null;
         const object = pinc.refObject(dat.pincWindowId);
         if (object.* != .completeWindow) undefined;
 
@@ -740,8 +745,8 @@ pub const SDL2CompleteWindow = struct {
     pub fn glMakeCurrent(this: *SDL2CompleteWindow) void {
         // TODO: make a function for this
         const sdl2WindowBackend: *SDL2WindowBackend = @alignCast(@ptrCast(pinc.state.getWindowBackend().?.obj));
-        if(libsdl.glMakeCurrent(this.window, sdl2WindowBackend.getContext()) != 0) {
-            pinc.pushError(false, .any, "SDL2 backend: Could not make context current for window titled \"{s}\": {s}", .{this.title, libsdl.getError()});
+        if (libsdl.glMakeCurrent(this.window, sdl2WindowBackend.getContext()) != 0) {
+            pinc.pushError(false, .any, "SDL2 backend: Could not make context current for window titled \"{s}\": {s}", .{ this.title, libsdl.getError() });
         }
     }
 
