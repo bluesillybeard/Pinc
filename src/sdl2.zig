@@ -740,8 +740,9 @@ pub const SDL2CompleteWindow = struct {
     pub fn glMakeCurrent(this: *SDL2CompleteWindow) void {
         // TODO: make a function for this
         const sdl2WindowBackend: *SDL2WindowBackend = @alignCast(@ptrCast(pinc.state.getWindowBackend().?.obj));
-        // TODO: test for success
-        _ = libsdl.glMakeCurrent(this.window, sdl2WindowBackend.getContext());
+        if(libsdl.glMakeCurrent(this.window, sdl2WindowBackend.getContext()) != 0) {
+            pinc.pushError(false, .any, "SDL2 backend: Could not make context current for window titled \"{s}\": {s}", .{this.title, libsdl.getError()});
+        }
     }
 
     pub fn eventMouseButton(this: *SDL2CompleteWindow) bool {
