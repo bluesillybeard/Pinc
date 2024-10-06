@@ -52,6 +52,10 @@
 //     - draw stuff (pinc_graphics_*)
 //     - present framebuffers (pinc_window_present_framebuffer)
 
+// header guard
+#ifndef PINC_HEADER_GUARD
+#define PINC_HEADER_GUARD
+
 /// @section options
 /// @brief this is for setting Pinc options. Note that, right now, the build system is not set up to use these.
 
@@ -108,6 +112,12 @@ enum pinc_object_type {
     /// @brief the object is empty / invalid
     pinc_object_none,
     pinc_object_window,
+    pinc_object_vertex_attributes,
+    pinc_object_uniforms,
+    pinc_object_shaders,
+    pinc_object_pipeline,
+    pinc_object_vertex_array,
+    pinc_object_texture,
 };
 
 /// enumeration of pinc keyboard codes
@@ -640,4 +650,7 @@ PINC_API void pinc_raw_opengl_make_current(int window);
 /// @return the function pointer.
 PINC_API void* pinc_raw_opengl_get_proc(const char* procname);
 
+#endif
+
+// header guard
 #endif

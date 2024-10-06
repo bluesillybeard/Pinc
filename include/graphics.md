@@ -4,7 +4,7 @@ NOTE: Currently in the planning phase! None of this has been implemented.
 
 Unlike the windowing API, the graphics API is a lot more dificult to understand straight from the header file. Thus, a document describing it. In the future, there may be full documentation for every feature, but for now there simply is not enough time to do so.
 
-Pincs's graphics API is meant to be able to run on OpenGL2 while avoiding potential performance issues for newer APIs like OpenGL 3/4 or Vulkan. All while being as simple as possible and avoiding the use of pointers.
+Pincs's graphics API is meant to be able to run on OpenGL 2.1 while avoiding potential performance issues for newer APIs like OpenGL 3/4 or Vulkan. All while being as simple as possible and avoiding the use of pointers.
 
 It is recommended to learn OpenGl 2.1 or something similar before using Pinc's API for now, because the documentation for Pinc does not teach any graphics programming concepts.
 
@@ -17,7 +17,7 @@ If you want the performance or power of something like OpenGl 4 or Vulkan, Pinc'
 - GLSL shaders
     - maximum supported version depends on graphics API
 - There is a single global Renderer. This is not like SDL where you can have multiple renderers - one program, one renderer.
-    - As noted before, the renderer itself holds very little state - so making multiple of them has no use anyway
+    - As noted before, the renderer itself holds very little state - so making multiple of them would have no use anyway
 
 ## Outline
 
@@ -42,10 +42,11 @@ If you want the performance or power of something like OpenGl 4 or Vulkan, Pinc'
         - just a list of numbers
     - Texture
 3. draw stuff
-    - `pinc_graphics_draw(window, pipeline, vertexArray, elementArray)`
+    - `pinc_graphics_draw(window, pipeline, vertexArray, elementArray, first, count)`
         - This stores a draw command to a command list
         - the state of the pipeline is copied
-        - Do not edit the vertex array, element array, or any textures involved in this draw before flushing the command list, as that may lead to confusing behavior.
+        - first is the first element / vertex to draw
+        - count is the number of elements / vertices to draw, or 0 for the rest of the array.
     - `pinc_graphics_done()`
         - Tells pinc that you are done drawing this frame. This allows Pinc to immediately begin working on the drawing commands.
         - For best performance: step -> graphics_draw -> graphics_done -> game logic -> present framebuffers
@@ -53,8 +54,8 @@ If you want the performance or power of something like OpenGl 4 or Vulkan, Pinc'
             - this is usually the better option if vsync is disabled, as in that case presenting framebuffers has no impact.
         - For best latency (and still very good performance): step -> game logic -> graphics_draw -> graphics_done -> present framebuffers
             - This makes it a little harder to parallelize between the CPU and GPU, but realistically the underlying API has its own buffers and bits that will make this run just fine
-        - Reading and writing to/from general GPU data (arrays, textures) between step() and graphics_done() is generally undefined behavior
-            - 
+        - Between step() and graphics_done(), Reading and writing to/from general GPU data (arrays, textures) is generally undefined behavior
+        - Should only be called once per frame
 
 ## Quick example
 
@@ -73,7 +74,7 @@ bool init() {
     // As a sanity check, make sure vec3 can be aligned to any 4-byte offset
     // For now, all backends can align all types to this, however in the future there may be backends that cannot do this.
     // For example, vec3 sometimes needs to be aligned to 12 or 16 bytes.
-    int vec3Align = pinc_graphics_vertex_attributes_get_type_align(pinc_attribute_type_vec3);
+    int vec3Align = pinc_graphics_vertex_attributes_get_type_align(pinc_graphics_attribute_type_vec3);
     if(vec3Align > 4) {
         // return false to signify something went wrong
         printf("vec3 alignment is not 4 bytes!");
@@ -84,32 +85,34 @@ bool init() {
     // there are a number of intermediate objects that need to be created.
     // these objects are temporary and are only used to hold configuration data,
     // although they can be reused, rebuilding them for every pipeline should have a negligible performance impact.
-    // This will actually be reused in this case for the vertex array.
-    int vertexAttribs = pinc_graphics_vertex_attributes_create();
+
     // Vertex attribs do not need to be completed - they only have a complete version
     // The reason is because this object is basically just a data structure with defaults for all fields.
     // only have two attributes: position (vec3), texture coordinates (vec2)
-    pinc_graphics_vertex_attributes_set_num(vertexAttribs, 2)
-    // attribs, index, type, offset, normalize
-    pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_attribute_type_vec3, 0, 0);
-    pinc_graphics_vertex_attributes_set_item(vertexAttribs, 1, pinc_attribute_type_vec2, 12, 0);
+    int vertexAttribs = pinc_graphics_vertex_attributes_create(2);
+    
+    
+    // params: attribs, index, type, offset, normalize
+    // If normalize is true, Pinc will convert int inputs into floats by dividing them by their maximum value.
+    // Normalization is only valid for integer vertex inputs.
+    pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_graphics_attribute_type_vec3, 0, 0);
+    pinc_graphics_vertex_attributes_set_item(vertexAttribs, 1, pinc_graphics_attribute_type_vec2, 12, 0);
     // Pinc can theoretically calculate the stride based on the attribute that reaches furthest,
     // however in order to allow sparse arrays or other weird things, the stride must be set manually
     pinc_graphics_vertex_attributes_set_stride(vertexAttribs, 20);
     
     // Same thing for uniforms - although in this case they won't be reused.
-    int uniforms = pinc_graphics_uniforms_create();
     // transform and texture sampler
-    pinc_graphics_uniforms_set_num(uniforms, 2);
-    // uniforms, index, type
-    pinc_graphics_uniforms_set_item(uniforms, 0, pinc_uniform_type_mat4x4);
-    pinc_graphics_uniforms_set_item(uniforms, 1, pinc_uniform_type_sampler2d);
+    int uniforms = pinc_graphics_uniforms_create(2);
+    // params: uniforms, index, type
+    pinc_graphics_uniforms_set_item(uniforms, 0, pinc_graphics_uniform_type_mat4x4);
+    pinc_graphics_uniforms_set_item(uniforms, 1, pinc_graphics_uniform_type_texture);
 
     // Believe it or not, there is more to do with the uniforms.
     // Texture sampling uniforms need more information about *how* to sample the texture.
     // Unlike with other APIs, Pinc does not have a separate object for a texture sampler;
     // the information that a texture sampler provides is baked into the pipeline itself.
-    // uniforms, index, wrapping, minFilter, magFilter, mipmap
+    // params: uniforms, index, wrapping, minFilter, magFilter, mipmap
     // wrapping is used to determine what happens when the texture coordinates are outside,
     // minFilter is what happenes when the texture needs to be scaled down,
     // magFilter is what happens when the texture needs to be scaled up
@@ -119,7 +122,7 @@ bool init() {
     pinc_graphics_uniforms_set_item_texture_sampler_properties(uniforms, 1,
         pinc_graphics_texture_wrap_clamp_to_border, // Unlike OpenGL, the border color cannot be set (for now at least) and will always be black.
         pinc_graphics_filter_linear_mipmap_linear, // interpolate linearly between mipmaps and between pixels when downscaling
-        pinc_graphics_filter_linear, // interpolate linearly when upscaling
+        pinc_graphics_filter_nearest, // don't interpolate when upscaling
         1 // use mipmaps
     );
 
@@ -130,11 +133,14 @@ bool init() {
     }
 
     // like with the attributes and uniforms, this only exists to store some data.
-    int shaders = pinc_graphics_shaders_create();
+    // it holds what kind of shaders (in this case it's GLSL) and the code for them.
+    // In the future more shader types may be supported - most likely to be first is a fixed-pipeline setup like what OpenGL 1.x has.
+    int shaders = pinc_graphics_shaders_create(pinc_graphics_shader_type_glsl);
 
     // Pinc actually forces explicit layout bindings,
-    // even when using a version of GLSL that does not.
+    // even when using a version of GLSL that isn't even supposed to have them.
     // Pinc will process the GLSL code and extract the layout bindings.
+
     // When when using GLSL versions that don't support them,
     // Pinc will remove those and use the old binding location system
     // to create a map from the user-facing location (index into the list of attributes / uniforms)
@@ -162,14 +168,14 @@ bool init() {
     ";
     int fragmentShaderCodeLen = strlen(fragmentShaderCode);
 
-    pinc_graphics_shaders_vertex_set_len(shaders, vertexShaderCodeLen);
+    pinc_graphics_shaders_glsl_vertex_set_len(shaders, vertexShaderCodeLen);
     for(int i=0; i<vertexShaderCodeLen; ++i) {
-        pinc_graphics_shaders_vertex_set_item(shaders, i, vertexShaderCode[i]);
+        pinc_graphics_shaders_glsl_vertex_set_item(shaders, i, vertexShaderCode[i]);
     }
 
-    pinc_graphics_shaders_fragment_set_len(shaders, fragmentShaderCodeLen);
+    pinc_graphics_shaders_glsl_fragment_set_len(shaders, fragmentShaderCodeLen);
     for(int i=0; i<fragmentShaderCodeLen; ++i) {
-        pinc_graphics_shaders_fragment_set_item(shaders, i, fragmentShaderCode[i]);
+        pinc_graphics_shaders_glsl_fragment_set_item(shaders, i, fragmentShaderCode[i]);
     }
 
     // Finally, the pipeline creation can begin
@@ -177,7 +183,7 @@ bool init() {
     // this tells Pinc to do the equivalent of glDrawArrays with GL_TRIANGLES.
     // pinc also has array_triangle_fan, array_triangle_strip, element_triangles, element_triangle_fan, and element_triangle_strip
     // array_* does the same as glDrawArrays, element_* does the same as glDrawElements
-    pinc_graphics_pipeline_set_vertex_assembly(pipeline, pinc_vertex_assembly_element_array_triangles);
+    pinc_graphics_pipeline_set_vertex_assembly(pipeline, pinc_graphics_vertex_assembly_array_triangles);
     // There are more pipeline settings, but for the sake of demonstration they will be left as default.
     // To see the options available, search for pinc_graphics_pipeline_set_*
 
@@ -203,7 +209,7 @@ bool init() {
     // This is to demonstrate that the number of vertices in a vertex array can be changed after its creation
     pinc_graphics_vertex_array_set_len(vertexArray, 6);
 
-    // array, vertex, attribute, value(s)
+    // params: array, vertex, attribute, value(s)
     // Triangle 1
     // bottom left
     pinc_graphics_vertex_array_set_item_vec3(vertexArray, 0, 0, -1, -1, 0);
@@ -236,29 +242,28 @@ bool init() {
     // Also remember, in C all arrays are pointers for some reason.
     char* rawVertexData = (char*)vertexData;
     for(int i=0; i<15*4; ++i) {
-        // array, index, value
+        // params: array, index, value
         pinc_graphics_vertex_array_set_byte(vertexArray, 15 * 4 + i, rawVertexData[i]);
     }
 
     // A locked vertex array cannot be used for any GPU operations (like drawing), so it needs to be locked once the data is ready for the GPU
     pinc_graphics_vertex_array_unlock(vertexArray);
 
-    // make a 32 x 32 texture.
+    // make a 8 x 8 texture.
     // there are many texture formats available, but for the sake of keeping things simple, we will only use 8bpp rgba.
-    // format, width, height
-    texture = pinc_graphics_texture_create(pinc_texture_format_r8g8b8a8, 32, 32);
+    // params: format, width, height
+    texture = pinc_graphics_texture_create(pinc_texture_format_r8g8b8a8, 8, 8);
 
     // Like with a vertex array, the data needs to be locked before being read or written
     pinc_graphics_texture_lock(texture);
 
-    // A texture's size can be modified after creation.
-    // let the texture data
-    for(int x=0; x<32; ++x) {
-        for(int y=0; y<32; ++y) {
-            // All pinc graphics apis, when taking in a color, take four color channels.
+    // A texture's size can be modified after creation. That is not demonstrated.
+    // set the texture data
+    for(int x=0; x<8; ++x) {
+        for(int y=0; y<8; ++y) {
+            // All pinc graphics apis, when taking about a color, take four color channels.
             // What those channel means depends on what is recieving the color.
-            // Since the texture will always be RGBA, the values it expects are RGBA from 0->black to 1->white
-            // This makes an alternating pattern of black and magenta pixels
+            // This makes an alternating pattern of black and magenta pixels assuming an RGB or RGBA color format.
             pinc_graphics_texture_set_pixel(texture, x, y, (x + y) & 1, (x + y) & 1, 0, 1);
         }
     }
@@ -284,6 +289,9 @@ bool init() {
 // Submits all of the draw commands for this frame.
 // Runs right after pinc_step() is called
 void draw() {
+    // transform is defined elsewhere
+    pinc_graphics_pipeline_set_uniform_mat4x4(pipeline, 0, transform);
+    pinc_graphics_pipeline_set_uniform_texture(pipeline, 1, texture);
     // Window is defined outside of this example code
     // Since the pipeline is set to use pinc_vertex_assembly_element_array_triangles, no element buffer is provided.
     pinc_graphics_draw(window, pipeline, vertexArray, 0);
