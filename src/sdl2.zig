@@ -730,16 +730,11 @@ pub const SDL2CompleteWindow = struct {
     }
 
     pub fn getTitle(this: *SDL2CompleteWindow) [:0]const u8 {
-        // TODO
-        _ = this;
-        unreachable;
+        return this.title;
     }
 
     pub fn setTitle(this: *SDL2CompleteWindow, title: [:0]const u8) void {
-        // TODO
-        _ = this;
-        _ = title;
-        unreachable;
+        this.title = title;
     }
 
     pub fn glMakeCurrent(this: *SDL2CompleteWindow) void {
