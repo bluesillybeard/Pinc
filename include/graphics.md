@@ -1,6 +1,6 @@
 # Pinc's general rendering API
 
-NOTE: Currently in the planning phase! None of this has been implemented.
+NOTE: The graphics API is *highly* experimental at the moment. Using OpenGL 2.1 directly is recommended.
 
 Unlike the windowing API, the graphics API is a lot more dificult to understand straight from the header file. Thus, a document describing it. In the future, there may be full documentation for every feature, but for now there simply is not enough time to do so.
 
@@ -251,8 +251,12 @@ bool init() {
 
     // make a 8 x 8 texture.
     // there are many texture formats available, but for the sake of keeping things simple, we will only use 8bpp rgba.
-    // params: format, width, height
-    texture = pinc_graphics_texture_create(pinc_texture_format_r8g8b8a8, 8, 8);
+    // params: channels enum, width, height, bit depths for each channel
+    // this makes an rgba texture with 8bpc that is 8x8 pixels.
+    // Note that the bit depths is more of a hint than a requirement.
+    //In other words, do not rely on the lack of precision!
+    // Pinc will allocate more precision than is asked for if the exact combination of channel depths is not available.
+    texture = pinc_graphics_texture_create(pinc_graphics_channels_rgba, 8, 8, 8, 8, 8, 8);
 
     // Like with a vertex array, the data needs to be locked before being read or written
     pinc_graphics_texture_lock(texture);
@@ -264,6 +268,7 @@ bool init() {
             // All pinc graphics apis, when taking about a color, take four color channels.
             // What those channel means depends on what is recieving the color.
             // This makes an alternating pattern of black and magenta pixels assuming an RGB or RGBA color format.
+            // args: texture, x, y, r, g, b, (a) (TO clarify, it is not always rgba, but in this case it is since the teture is rgba.)
             pinc_graphics_texture_set_pixel(texture, x, y, (x + y) & 1, (x + y) & 1, 0, 1);
         }
     }
@@ -293,12 +298,18 @@ void draw() {
     pinc_graphics_pipeline_set_uniform_mat4x4(pipeline, 0, transform);
     pinc_graphics_pipeline_set_uniform_texture(pipeline, 1, texture);
     // Window is defined outside of this example code
-    // Since the pipeline is set to use pinc_vertex_assembly_element_array_triangles, no element buffer is provided.
+    // Since the pipeline is set to use pinc_vertex_assembly_array_triangles, no element buffer is provided.
     pinc_graphics_draw(window, pipeline, vertexArray, 0);
 
     // That was the only draw.
     pinc_graphics_done();
 
     // presenting the framebuffer is done elsewhere.
+}
+
+void deinit() {
+    pinc_graphics_pipeline_deinit(pipeline)
+    pinc_graphics_vertex_array_deinit(vertexArray)
+    pinc_graphics_texture_deinit(texture)
 }
 ```
