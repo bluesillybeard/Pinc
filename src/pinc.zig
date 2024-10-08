@@ -1679,6 +1679,145 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
     }
 }
 
+// Graphics Functions - Currently the minimal set able to run the graphics.c example.
+
+pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
+    _ = num;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_attributes_set_item(vertex_attributes_obj: c_int, index: c_int, attrib_type: c_int, offset: c_int, normalize: c_int) void {
+    _ = vertex_attributes_obj;
+    _ = index;
+    _ = attrib_type;
+    _ = offset;
+    _ = normalize;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_attributes_set_stride(vertex_attributes_obj: c_int, stride: c_int) void {
+    _ = vertex_attributes_obj;
+    _ = stride;
+    unreachable;
+}
+
+pub export fn pinc_graphics_uniforms_create(num: c_int) c_int {
+    _ = num;
+    unreachable;
+}
+
+pub export fn pinc_graphics_shaders_create(shaders_type: c_int) c_int {
+    _ = shaders_type;
+    unreachable;
+}
+
+pub export fn pinc_graphics_shaders_glsl_vertex_set_len(shaders_obj: c_int, len: c_int) void {
+    _ = shaders_obj;
+    _ = len;
+    unreachable;
+}
+
+pub export fn pinc_graphics_shaders_glsl_vertex_set_item(shaders_obj: c_int, index: c_int, item: c_char) void {
+    _ = shaders_obj;
+    _ = index;
+    _ = item;
+    unreachable;
+}
+
+pub export fn pinc_graphics_shaders_glsl_fragment_set_len(shaders_obj: c_int, len: c_int) void {
+    _ = shaders_obj;
+    _ = len;
+    unreachable;
+}
+
+pub export fn pinc_graphics_shaders_glsl_fragment_set_item(shaders_obj: c_int, index: c_int, item: c_char) void {
+    _ = shaders_obj;
+    _ = index;
+    _ = item;
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_int, uniforms_obj: c_int, shaders_obj: c_int) c_int {
+    _ = vertex_attributes_obj;
+    _ = uniforms_obj;
+    _ = shaders_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_vertex_assembly(pipeline_obj: c_int, assembly: c_int) void {
+    _ = pipeline_obj;
+    _ = assembly;
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) c_int {
+    _ = pipeline_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_create(vertex_attributs_obj: c_int, num: c_int) c_int {
+    _ = vertex_attributs_obj;
+    _ = num;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_lock(vertex_array_obj: c_int) void {
+    _ = vertex_array_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    _ = v4;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_unlock(vertex_array_obj: c_int) void {
+    _ = vertex_array_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_shaders_deinit(shaders_obj: c_int) void {
+    _ = shaders_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_uniforms_deinit(uniforms_obj: c_int) void {
+    _ = uniforms_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_attributes_deinit(vertex_attributes: c_int) void {
+    _ = vertex_attributes;
+    unreachable;
+}
+
+pub export fn pinc_graphics_draw(window: c_int, pipeline_obj: c_int, vertex_array_obj: c_int, element_array_obj: c_int) void {
+    _ = window;
+    _ = pipeline_obj;
+    _ = vertex_array_obj;
+    _ = element_array_obj;
+    unreachable;
+}
+
+pub export fn pinc_graphics_done() void {
+    unreachable;
+}
+
 pub export fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void {
     state.validateFor(.init);
     const object = refObject(window);
@@ -1690,6 +1829,8 @@ pub export fn pinc_graphics_fill_depth(window: c_int, depth: f32) void {
     const object = refObject(window);
     state.init.graphicsBackend.fillDepth(object.completeWindow, depth);
 }
+
+// Raw OpenGL functions
 
 pub export fn pinc_raw_opengl_make_current(window: c_int) void {
     state.validateFor(.init);
