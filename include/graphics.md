@@ -184,8 +184,6 @@ bool init() {
     // pinc also has array_triangle_fan, array_triangle_strip, element_triangles, element_triangle_fan, and element_triangle_strip
     // array_* does the same as glDrawArrays, element_* does the same as glDrawElements
     pinc_graphics_pipeline_set_vertex_assembly(pipeline, pinc_graphics_vertex_assembly_array_triangles);
-    // There are more pipeline settings, but for the sake of demonstration they will be left as default.
-    // To see the options available, search for pinc_graphics_pipeline_set_*
 
     pinc_graphics_pipeline_complete(pipeline);
 

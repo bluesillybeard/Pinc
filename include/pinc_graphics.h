@@ -20,20 +20,20 @@ enum pinc_graphics_attribute_type {
     pinc_graphics_attribute_type_vec3,
     pinc_graphics_attribute_type_vec4,
     // 4 byte integer
-    pinc_graphics_uniform_type_int,
-    pinc_graphics_uniform_type_ivec2,
-    pinc_graphics_uniform_type_ivec3,
-    pinc_graphics_uniform_type_ivec4,
+    pinc_graphics_attribute_type_int,
+    pinc_graphics_attribute_type_ivec2,
+    pinc_graphics_attribute_type_ivec3,
+    pinc_graphics_attribute_type_ivec4,
     // 2 byte integer
-    pinc_graphics_uniform_type_short,
-    pinc_graphics_uniform_type_svec2,
-    pinc_graphics_uniform_type_svec3,
-    pinc_graphics_uniform_type_svec4,
+    pinc_graphics_attribute_type_short,
+    pinc_graphics_attribute_type_svec2,
+    pinc_graphics_attribute_type_svec3,
+    pinc_graphics_attribute_type_svec4,
     // 1 byte integer
-    pinc_graphics_uniform_type_byte,
-    pinc_graphics_uniform_type_bvec2,
-    pinc_graphics_uniform_type_bvec3,
-    pinc_graphics_uniform_type_bvec4,
+    pinc_graphics_attribute_type_byte,
+    pinc_graphics_attribute_type_bvec2,
+    pinc_graphics_attribute_type_bvec3,
+    pinc_graphics_attribute_type_bvec4,
 };
 
 enum pinc_graphics_uniform_type {
@@ -73,12 +73,12 @@ enum pinc_graphics_shader_type {
 };
 
 enum pinc_graphics_vertex_assembly {
-    pinc_vertex_assembly_array_triangles,
-    pinc_vertex_assembly_array_triangle_fan,
-    pinc_vertex_assembly_array_triangle_strip,
-    pinc_vertex_assembly_element_triangles,
-    pinc_vertex_assembly_element_triangle_fan,
-    pinc_vertex_assembly_element_triangle_strip,
+    pinc_graphics_vertex_assembly_array_triangles,
+    pinc_graphics_vertex_assembly_array_triangle_fan,
+    pinc_graphics_vertex_assembly_array_triangle_strip,
+    pinc_graphics_vertex_assembly_element_triangles,
+    pinc_graphics_vertex_assembly_element_triangle_fan,
+    pinc_graphics_vertex_assembly_element_triangle_strip,
 };
 
 // there are an actual ton of texture formats
@@ -177,7 +177,7 @@ enum pinc_graphics_source_texture_format {
 
 // These values DO NOT MATCH int channels from framebuffer formats.
 // these are for textures.
-enum pinc_graphics_channels_enum {
+enum pinc_graphics_channels {
     pinc_graphics_channels_alpha,
     pinc_graphics_channels_luminance,
     pinc_graphics_channels_luminance_alpha,
@@ -218,7 +218,7 @@ PINC_API void PINC_CALL pinc_graphics_vertex_attributes_set_stride(int vertex_at
 // create a uniforms object
 PINC_API int PINC_CALL pinc_graphics_uniforms_create(int num);
 
-PINC_API void PINC_CALL pinc_graphics_uniforms_deinit(int uniforms);
+PINC_API void PINC_CALL pinc_graphics_uniforms_deinit(int uniforms_obj);
 
 // set the type of a uniform
 PINC_API void PINC_CALL pinc_graphics_uniforms_set_item(int uniforms_obj, int index, int type);
@@ -228,7 +228,7 @@ PINC_API void PINC_CALL pinc_graphics_uniforms_set_item_texture_sampler_properti
 
 PINC_API int PINC_CALL pinc_graphics_shaders_create(int type);
 
-PINC_API void PINC_CALL pinc_graphics_shaders_deinit(int shaders);
+PINC_API void PINC_CALL pinc_graphics_shaders_deinit(int shaders_obj);
 
 PINC_API void PINC_CALL pinc_graphics_shaders_glsl_vertex_set_len(int shaders_obj, int len);
 
@@ -238,7 +238,7 @@ PINC_API void PINC_CALL pinc_graphics_shaders_glsl_fragment_set_len(int shaders_
 
 PINC_API void PINC_CALL pinc_graphics_shaders_glsl_fragment_set_item(int shaders_obj, int index, char item);
 
-PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attributes_obj, int uniforms, int shaders);
+PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attributes_obj, int uniforms_obj, int shaders_obj);
 
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_vertex_assembly(int pipeline_obj, int assembly);
 
@@ -252,7 +252,7 @@ PINC_API void PINC_CALL pinc_graphics_vertex_array_deinit(int vertex_array);
 
 PINC_API void PINC_CALL pinc_graphics_vertex_array_lock(int vertex_array_obj);
 
-PINC_API void PINC_CALL pinc_graphics_vertex_array_set_len(int vertex_array_obj);
+PINC_API void PINC_CALL pinc_graphics_vertex_array_set_len(int vertex_array_obj, int num);
 
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_float(int vertex_array_obj, int vertex, int attribute, float v);
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_vec2(int vertex_array_obj, int vertex, int attribute, float v1, float v2);
