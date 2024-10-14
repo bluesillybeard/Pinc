@@ -81,10 +81,10 @@ bool init(void) {
     }
 
     // Create the pipeline object.
-    // Pinc puts all of the vertex assemlbly, uniform inputs, shader code, and other rendering state into a single object more like Vulkan than OpenGL.
-    pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders);
-    // Just an array of triangles - arguably this should be part of the initial create method
-    pinc_graphics_pipeline_set_vertex_assembly(vertexAttribs, pinc_graphics_vertex_assembly_array_triangles);
+    // Pinc puts all of the vertex assemlbly, uniform inputs, shader code, and other rendering state into a single object
+    // more like Vulkan than OpenGL.
+    // Pipeline is given an array of triangles
+    pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders, pinc_graphics_vertex_assembly_array_triangles);
 
     pinc_graphics_pipeline_complete(pipeline);
 

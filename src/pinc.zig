@@ -38,6 +38,12 @@ pub const ErrorType = enum(c_int) {
 pub const ObjectType = enum(c_int) {
     none,
     window,
+    vertex_attributes,
+    uniforms,
+    shaders,
+    pipeline,
+    vertex_array,
+    texture,
 };
 
 pub const KeyboardKey = enum(c_int) {
@@ -166,6 +172,72 @@ pub const KeyboardKey = enum(c_int) {
     right_super,
     menu,
     count,
+};
+
+// Types from pinc_graphics.h
+// also needs to stay in sync for ABI compatibility
+pub const AttribtueType = enum(c_int) {
+    float,
+    vec2,
+    vec3,
+    vec4,
+    int,
+    ivec2,
+    ivec3,
+    ivec4,
+    short,
+    svec2,
+    svec3,
+    svec4,
+    byte,
+    bvec2,
+    bvec3,
+    bvec4,
+};
+
+pub const UniformType = enum(c_int) {
+    float,
+    vec2,
+    vec3,
+    vec4,
+    int,
+    ivec2,
+    ivec3,
+    ivec4,
+    mat2x2,
+    mat3x3,
+    mat4x4,
+    texture,
+};
+
+pub const TextureWrap = enum(c_int) {
+    clamp,
+    clamp_to_edge,
+    clamp_to_border,
+    repeat,
+    mirrored_repeat,
+};
+
+pub const Filter = enum(c_int) {
+    nearest,
+    linear,
+    nearest_mipmap_nearest,
+    nearest_mipmap_linear,
+    linear_mipmap_nearest,
+    linear_mipmap_linear,
+};
+
+pub const ShaderType = enum(c_int) {
+    glsl,
+};
+
+pub const VertexAssembly = enum(c_int) {
+    array_triangles,
+    array_triangle_fan,
+    array_triangle_strip,
+    element_triangles,
+    element_triangle_fan,
+    element_triangle_strip,
 };
 
 // other types
@@ -457,10 +529,138 @@ pub const ICompleteWindow = struct {
     obj: *anyopaque,
 };
 
+pub const IElementArray = struct {
+
+};
+
+// Vertex array interface for graphics backends to implement
+pub const IVertexArray = struct {
+    pub fn init(comptime T: type, obj: *T) IVertexArray {
+        // We make a new struct so the vtable gets put into the pinc binary
+        const vtholder = struct {
+            var vtable: Vtable = undefined;
+        };
+        var vtable = &vtholder.vtable;
+
+        // Using the power of comptime, we can automagically set all of the vtable functions
+        const vtinfo = @typeInfo(Vtable);
+        inline for (vtinfo.@"struct".fields) |field| {
+            @field(vtable, field.name) = @ptrCast(&@field(T, field.name));
+        }
+        T.init(obj);
+        return IVertexArray{
+            .vtable = vtable,
+            .obj = obj,
+        };
+    }
+
+    pub inline fn lock(this: IVertexArray) void {
+        this.vtable.lock(this.obj);
+    }
+
+    pub inline fn unlock(this: IVertexArray) void {
+        this.vtable.unlock(this.obj);
+    }
+
+    pub inline fn setItemVec2(this: IVertexArray, vertex: usize, attribute: usize, v: [2]f32) void {
+        this.vtable.setItemVec2(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemVec4(this: IVertexArray, vertex: usize, attribute: usize, v: [4]f32) void {
+        this.vtable.setItemVec4(this.obj, vertex, attribute, v);
+    }
+
+    pub const Vtable = struct {
+        lock: *const fn (this: *anyopaque) void,
+        unlock: *const fn (this: *anyopaque) void,
+        setItemVec2: *const fn(this: *anyopaque, vertex: usize, attribute: usize, v: [2]f32) void,
+        setItemVec4: *const fn(this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
+    };
+
+    vtable: *Vtable,
+    obj: *anyopaque,
+};
+
+// Texture interface for graphics backends to implement
+pub const ITexture = struct {
+
+};
+
+pub const VertexAttribute = struct {
+    type: AttribtueType = .vec4,
+    offset: usize = 0,
+    normalize: bool = false,
+};
+
+pub const VertexAttributesObj = struct {
+    // Note: OpenGL only guarantees a maximum of 16 4 component attributes.
+    // TODO: find a better maximum for the memory storage
+    pub const MaxNumAttributes = 16;
+    numAttribs: usize = 0,
+    stride: usize = 0,
+    attribsBuffer: [MaxNumAttributes]VertexAttribute = undefined,
+
+    pub fn setLength(this: *VertexAttributesObj, len: usize) void {
+        if(len > this.numAttribs) {
+            // make sure the new spots are undefined so if they are attempted to be used, they will cause a clear error.
+            for(this.numAttribs..len) |index| {
+                this.attribsBuffer[index] = undefined;
+            }
+        }
+    }
+};
+
+pub const Uniform = union(UniformType) {
+    float,
+    vec2,
+    vec3,
+    vec4,
+    int,
+    ivec2,
+    ivec3,
+    ivec4,
+    mat2x2,
+    mat3x3,
+    mat4x4,
+    texture: struct {
+        wrap: TextureWrap,
+        minFilter: Filter,
+        maxFilter: Filter,
+        mipmap: bool,
+    },
+};
+
+pub const UniformsObj = struct {
+    pub const MAX_UNIFORMS = 16;
+    uniformsBuffer: [MAX_UNIFORMS]Uniform = undefined,
+    numUniforms: usize = 0,
+};
+
+pub const ShadersObj = union(ShaderType) {
+    glsl: struct {
+        vertexSource: []u8,
+        fragmentSource: []u8,
+    },
+};
+
+pub const PipelineInitData = struct {
+    vertexAttribsObj: c_int,
+    uniformsObj: c_int,
+    shadersObj: c_int,
+    assembly: VertexAssembly,
+};
+
 pub const PincObject = union(enum) {
     none,
     incompleteWindow: IncompleteWindow,
     completeWindow: ICompleteWindow,
+    vertexAttributes: VertexAttributesObj,
+    uniforms: UniformsObj,
+    shaders: ShadersObj,
+    incompletePipeline: PipelineInitData,
+    completePipeline: IPipeline,
+    vertexArray: IVertexArray,
+    texture: ITexture,
 };
 
 pub const IWindowBackend = struct {
@@ -600,16 +800,61 @@ pub const IGraphicsBackend = struct {
         this.vtable.fillDepth(this.obj, window, depth);
     }
 
+    pub inline fn createPipeline(this: IGraphicsBackend, initData: PipelineInitData) ?IPipeline {
+        return this.vtable.createPipeline(this.obj, initData);
+    }
+
+    pub inline fn createVertexArray(this: IGraphicsBackend, attributes: *const VertexAttributesObj, num: usize) ?IVertexArray {
+        return this.vtable.createVertexArray(this.obj, attributes, num);
+    }
+
+    pub inline fn draw(this: IGraphicsBackend, window: ICompleteWindow, pipeline: IPipeline, vertexArray: IVertexArray, elementArray: ?IElementArray) void {
+        this.vtable.draw(this.obj, window, pipeline, vertexArray, elementArray);
+    }
+
+    pub inline fn done(this: IGraphicsBackend) void {
+        this.vtable.done(this.obj);
+    }
+
     pub const Vtable = struct {
         prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
         deinit: *const fn (this: *anyopaque) void,
         step: *const fn (this: *anyopaque) void,
         fillColor: *const fn (this: *anyopaque, window: ICompleteWindow, c1: f32, c2: f32, c3: f32, c4: f32) void,
         fillDepth: *const fn (this: *anyopaque, window: ICompleteWindow, depth: f32) void,
+        createPipeline: *const fn (this: *anyopaque, initData: PipelineInitData) ?IPipeline,
+        createVertexArray: *const fn (this: *anyopaque, attributes: *const VertexAttributesObj, num: usize) ?IVertexArray,
+        draw: *const fn (this: *anyopaque, window: ICompleteWindow, pipeline: IPipeline, vertexArray: IVertexArray, elementArray: ?IElementArray) void,
+        done: *const fn (this: *anyopaque) void,
     };
 
     vtable: *Vtable,
     obj: *anyopaque,
+};
+
+pub const IPipeline = struct {
+    pub fn init(comptime T: type, obj: *T) IPipeline {
+        // We make a new struct so the vtable gets put into the pinc binary
+        const vtholder = struct {
+            var vtable: Vtable = undefined;
+        };
+        var vtable = &vtholder.vtable;
+
+        // Using the power of comptime, we can automagically set all of the vtable functions
+        const vtinfo = @typeInfo(Vtable);
+        inline for (vtinfo.@"struct".fields) |field| {
+            @field(vtable, field.name) = @ptrCast(&@field(T, field.name));
+        }
+        T.init(obj);
+        return IGraphicsBackend{
+            .vtable = vtable,
+            .obj = obj,
+        };
+    }
+
+    pub const Vtable = struct {
+
+    };
 };
 
 pub const PincError = struct {
@@ -748,6 +993,15 @@ pub const State = union(StateTag) {
         };
     }
 
+    pub inline fn getGraphicsBackend(this: *const State) ?IGraphicsBackend {
+        return switch (this.*) {
+            .set_graphics_backend => |st| st.graphicsBackend,
+            .set_framebuffer_format => |st| st.graphicsBackend,
+            .init => |st| st.graphicsBackend,
+            else => null,
+        };
+    }
+
     pub inline fn getWindowBackend(this: *const State) ?IWindowBackend {
         return switch (this.*) {
             .set_window_backend => |st| st.windowBackend,
@@ -787,6 +1041,16 @@ pub inline fn refObject(id: c_int) *PincObject {
 pub inline fn refNewObject(out_id: *c_int) *PincObject {
     out_id.* = allocObject();
     return refObject(out_id.*);
+}
+
+pub inline fn deallocObject(id: c_int) void {
+    std.debug.assert(id >= state.init.objects.items.len);
+    state.init.objects.items[@intCast(id-1)] = .none;
+    var rid = id;
+    while(rid == state.init.objects.items.len) {
+        _ = state.init.objects.popOrNull();
+        rid -=1;
+    }
 }
 
 pub fn logDebug(comptime fmt: []const u8, args: anytype) void {
@@ -1019,7 +1283,24 @@ pub export fn pinc_deinit() void {
                         w.deinit();
                     },
                     .incompleteWindow => {},
+                    .vertexAttributes => {},
+                    .uniforms => {},
+                    .shaders => |ob| {
+                        if(ob.glsl.fragmentSource.len > 0) {
+                            allocator.?.free(ob.glsl.fragmentSource);
+                        }
+                        if(ob.glsl.vertexSource.len > 0) {
+                            allocator.?.free(ob.glsl.vertexSource);
+                        }
+                    },
+                    .incompletePipeline => {},
+                    // TODO:
+                    .vertexArray => {},
+                    // TODO:
+                    .texture => {},
                     .none => {},
+                    // TODO
+                    .completePipeline => {},
                 }
             }
             st.objects.deinit();
@@ -1078,6 +1359,13 @@ pub export fn pinc_object_get_type(id: c_int) c_int {
     return @intFromEnum(switch (refObject(id).*) {
         .none => ObjectType.none,
         .incompleteWindow, .completeWindow => ObjectType.window,
+        .incompletePipeline => ObjectType.pipeline,
+        .shaders => ObjectType.shaders,
+        .texture => ObjectType.texture,
+        .uniforms => ObjectType.uniforms,
+        .vertexArray => ObjectType.vertex_array,
+        .vertexAttributes => ObjectType.vertex_attributes,
+        .completePipeline => ObjectType.pipeline,
     });
 }
 
@@ -1087,6 +1375,13 @@ pub export fn pinc_object_get_complete(id: c_int) c_int {
         .none => 0,
         .incompleteWindow => 0,
         .completeWindow => 1,
+        .incompletePipeline => 0,
+        .shaders => 1,
+        .texture => 1,
+        .uniforms => 1,
+        .vertexArray => 1,
+        .vertexAttributes => 1,
+        .completePipeline => 1,
     };
 }
 
@@ -1206,6 +1501,7 @@ pub export fn pinc_window_set_width(window: c_int, width: c_int) void {
         .completeWindow => |w| {
             w.setWidth(@intCast(width));
         },
+        else => unreachable,
     }
 }
 
@@ -1682,140 +1978,134 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
 // Graphics Functions - Currently the minimal set able to run the graphics.c example.
 
 pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
-    _ = num;
-    unreachable;
+    if(num > VertexAttributesObj.MaxNumAttributes) unreachable;
+    state.validateFor(.init);
+    var id: c_int = undefined;
+    const object = refNewObject(&id);
+    object.* = .{ .vertexAttributes = .{ .numAttribs = @intCast(num) } };
+    return id;
 }
 
 pub export fn pinc_graphics_vertex_attributes_set_item(vertex_attributes_obj: c_int, index: c_int, attrib_type: c_int, offset: c_int, normalize: c_int) void {
-    _ = vertex_attributes_obj;
-    _ = index;
-    _ = attrib_type;
-    _ = offset;
-    _ = normalize;
-    unreachable;
+    state.validateFor(.init);
+    const vertexAttributes = &(refObject(vertex_attributes_obj).*.vertexAttributes);
+    if(vertexAttributes.numAttribs <= index) unreachable;
+    vertexAttributes.attribsBuffer[@intCast(index)] = .{
+        .normalize = normalize != 0,
+        .offset = @intCast(offset),
+        .type = @enumFromInt(attrib_type),
+    };
 }
 
 pub export fn pinc_graphics_vertex_attributes_set_stride(vertex_attributes_obj: c_int, stride: c_int) void {
-    _ = vertex_attributes_obj;
-    _ = stride;
-    unreachable;
+    state.validateFor(.init);
+    const vertexAttributes = &(refObject(vertex_attributes_obj).*.vertexAttributes);
+    vertexAttributes.stride = @intCast(stride);
 }
 
 pub export fn pinc_graphics_uniforms_create(num: c_int) c_int {
-    _ = num;
-    unreachable;
+    state.validateFor(.init);
+    var id: c_int = undefined;
+    const object = refNewObject(&id);
+    object.* = .{.uniforms = .{
+        .numUniforms = @intCast(num),
+    }};
+    return id;
 }
 
 pub export fn pinc_graphics_shaders_create(shaders_type: c_int) c_int {
-    _ = shaders_type;
-    unreachable;
+    state.validateFor(.init);
+    var id: c_int = undefined;
+    const shaderType: ShaderType = @enumFromInt(shaders_type);
+    const object = refNewObject(&id);
+    object.* = .{
+        .shaders = switch (shaderType) {
+            ShaderType.glsl => .{
+                .glsl = .{
+                    .fragmentSource =  &[0]u8{},
+                    .vertexSource = &[0]u8{}
+                }
+            },
+        }
+    };
+    return id;
 }
 
 pub export fn pinc_graphics_shaders_glsl_vertex_set_len(shaders_obj: c_int, len: c_int) void {
-    _ = shaders_obj;
-    _ = len;
-    unreachable;
+    state.validateFor(.init);
+    const glslShaders = &(refObject(shaders_obj).*.shaders.glsl);
+    if(glslShaders.vertexSource.len > 0) {
+        allocator.?.free(glslShaders.vertexSource);
+    }
+    if(len > 0) {
+        glslShaders.vertexSource = allocator.?.alloc(u8, @intCast(len)) catch unreachable;
+    } else {
+        glslShaders.vertexSource = &[0]u8{};
+    }
 }
 
 pub export fn pinc_graphics_shaders_glsl_vertex_set_item(shaders_obj: c_int, index: c_int, item: c_char) void {
-    _ = shaders_obj;
-    _ = index;
-    _ = item;
-    unreachable;
+    state.validateFor(.init);
+    refObject(shaders_obj).shaders.glsl.vertexSource[@intCast(index)] = @intCast(item);
 }
 
 pub export fn pinc_graphics_shaders_glsl_fragment_set_len(shaders_obj: c_int, len: c_int) void {
-    _ = shaders_obj;
-    _ = len;
-    unreachable;
+    state.validateFor(.init);
+    const glslShaders = &(refObject(shaders_obj).*.shaders.glsl);
+    if(glslShaders.fragmentSource.len > 0) {
+        allocator.?.free(glslShaders.fragmentSource);
+    }
+    if(len > 0) {
+        glslShaders.fragmentSource = allocator.?.alloc(u8, @intCast(len)) catch unreachable;
+    } else {
+        glslShaders.fragmentSource = &[0]u8{};
+    }
 }
 
 pub export fn pinc_graphics_shaders_glsl_fragment_set_item(shaders_obj: c_int, index: c_int, item: c_char) void {
-    _ = shaders_obj;
-    _ = index;
-    _ = item;
-    unreachable;
+    state.validateFor(.init);
+    refObject(shaders_obj).shaders.glsl.fragmentSource[@intCast(index)] = @intCast(item);
 }
 
-pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_int, uniforms_obj: c_int, shaders_obj: c_int) c_int {
-    _ = vertex_attributes_obj;
-    _ = uniforms_obj;
-    _ = shaders_obj;
-    unreachable;
-}
-
-pub export fn pinc_graphics_pipeline_set_vertex_assembly(pipeline_obj: c_int, assembly: c_int) void {
-    _ = pipeline_obj;
-    _ = assembly;
-    unreachable;
-}
-
-pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) c_int {
-    _ = pipeline_obj;
-    unreachable;
-}
-
-pub export fn pinc_graphics_vertex_array_create(vertex_attributs_obj: c_int, num: c_int) c_int {
-    _ = vertex_attributs_obj;
-    _ = num;
-    unreachable;
-}
-
-pub export fn pinc_graphics_vertex_array_lock(vertex_array_obj: c_int) void {
-    _ = vertex_array_obj;
-    unreachable;
-}
-
-pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    unreachable;
-}
-
-pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    _ = v4;
-    unreachable;
-}
-
-pub export fn pinc_graphics_vertex_array_unlock(vertex_array_obj: c_int) void {
-    _ = vertex_array_obj;
-    unreachable;
+pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_int, uniforms_obj: c_int, shaders_obj: c_int, assembly: c_int) c_int {
+    state.validateFor(.init);
+    var id: c_int = undefined;
+    const object = refNewObject(&id);
+    // TODO: verify these objects exist but only in 'unsafe' modes
+    object.* = .{
+        .incompletePipeline = .{
+            .vertexAttribsObj = vertex_attributes_obj,
+            .uniformsObj = uniforms_obj,
+            .shadersObj = shaders_obj,
+            .assembly = @enumFromInt(assembly),
+        }
+    };
+    return id;
 }
 
 pub export fn pinc_graphics_shaders_deinit(shaders_obj: c_int) void {
-    _ = shaders_obj;
-    unreachable;
+    state.validateFor(.init);
+    // shader objects have some memory that needs to be freed first
+    const obj = refObject(shaders_obj);
+    const frag = obj.shaders.glsl.fragmentSource;
+    if(frag.len > 0) {
+        allocator.?.free(frag);
+    }
+    const vert = obj.shaders.glsl.vertexSource;
+    if(vert.len > 0) {
+        allocator.?.free(vert);
+    }
+    deallocObject(shaders_obj);
 }
 
 pub export fn pinc_graphics_uniforms_deinit(uniforms_obj: c_int) void {
-    _ = uniforms_obj;
-    unreachable;
+    state.validateFor(.init);
+    deallocObject(uniforms_obj);
 }
 
-pub export fn pinc_graphics_vertex_attributes_deinit(vertex_attributes: c_int) void {
-    _ = vertex_attributes;
-    unreachable;
-}
-
-pub export fn pinc_graphics_draw(window: c_int, pipeline_obj: c_int, vertex_array_obj: c_int, element_array_obj: c_int) void {
-    _ = window;
-    _ = pipeline_obj;
-    _ = vertex_array_obj;
-    _ = element_array_obj;
-    unreachable;
-}
-
-pub export fn pinc_graphics_done() void {
-    unreachable;
+pub export fn pinc_graphics_vertex_attributes_deinit(vertex_attributes_obj: c_int) void {
+    state.validateFor(.init);
+    deallocObject(vertex_attributes_obj);
 }
 
 pub export fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void {
@@ -1828,6 +2118,64 @@ pub export fn pinc_graphics_fill_depth(window: c_int, depth: f32) void {
     state.validateFor(.init);
     const object = refObject(window);
     state.init.graphicsBackend.fillDepth(object.completeWindow, depth);
+}
+
+pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) void {
+    state.validateFor(.init);
+    const initData = refObject(pipeline_obj).*.incompletePipeline;
+    const pipeline = state.getGraphicsBackend().?.createPipeline(initData);
+    if(pipeline == null) {
+        // Something went wrong - the graphics backend should have created an error for this
+        return;
+    }
+    refObject(pipeline_obj).* = .{.completePipeline = pipeline.?};
+}
+
+pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, num: c_int) c_int {
+    state.validateFor(.init);
+    const vertexArray = state.getGraphicsBackend().?.createVertexArray(&refObject(vertex_attributes_obj).*.vertexAttributes, @intCast(num));
+    if(vertexArray == null) {
+        // backend should have created an error for this
+        return 0;
+    }
+    var id: c_int = undefined;
+    refNewObject(&id).* = .{ .vertexArray = vertexArray.? };
+    return id;
+}
+
+pub export fn pinc_graphics_vertex_array_lock(vertex_array_obj: c_int) void {
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.lock();
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32) void {
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemVec2(@intCast(vertex), @intCast(attribute), [2]f32{v1, v2});
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemVec4(@intCast(vertex), @intCast(attribute), [4]f32{v1, v2, v3, v4});
+}
+
+pub export fn pinc_graphics_vertex_array_unlock(vertex_array_obj: c_int) void {
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.unlock();
+}
+
+pub export fn pinc_graphics_draw(window: c_int, pipeline_obj: c_int, vertex_array_obj: c_int, element_array_obj: c_int) void {
+    state.validateFor(.init);
+    _ = element_array_obj;
+    state.getGraphicsBackend().?.draw(refObject(window).*.completeWindow, refObject(pipeline_obj).*.completePipeline, refObject(vertex_array_obj).*.vertexArray, null);
+}
+
+pub export fn pinc_graphics_done() void {
+    state.validateFor(.init);
+    state.getGraphicsBackend().?.done();
 }
 
 // Raw OpenGL functions

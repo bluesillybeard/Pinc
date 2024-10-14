@@ -45,4 +45,31 @@ pub const Opengl21GraphicsBackend = struct {
         gl.clearDepth(c1);
         gl.clear(gl.DEPTH_BUFFER_BIT);
     }
+
+    pub fn createPipeline(this: *Opengl21GraphicsBackend, initData: pinc.PipelineInitData) ?pinc.IPipeline {
+        _ = this;
+        _ = initData;
+        unreachable;
+    }
+
+    pub fn createVertexArray(this: *Opengl21GraphicsBackend, attributes: *const pinc.VertexAttributesObj, num: usize) ?pinc.IVertexArray {
+        _ = this;
+        _ = attributes;
+        _ = num;
+        unreachable;
+    }
+
+    pub fn draw(this: *Opengl21GraphicsBackend, window: pinc.ICompleteWindow, pipeline: pinc.IPipeline, vertexArray: pinc.IVertexArray, elementArray: ?pinc.IElementArray) void {
+        _ = this;
+        _ = window;
+        _ = pipeline;
+        _ = vertexArray;
+        _ = elementArray;
+        unreachable;
+    }
+
+    pub fn done(this: *Opengl21GraphicsBackend) void {
+        _ = this;
+        gl.flush();
+    }
 };
