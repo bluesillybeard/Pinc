@@ -43,8 +43,7 @@ If you want the performance or power of something like OpenGl 4 or Vulkan, Pinc'
     - Texture
 3. draw stuff
     - `pinc_graphics_draw(window, pipeline, vertexArray, elementArray, first, count)`
-        - This stores a draw command to a command list
-        - the state of the pipeline is copied
+        - Tells pinc to draw something
         - first is the first element / vertex to draw
         - count is the number of elements / vertices to draw, or 0 for the rest of the array.
     - `pinc_graphics_done()`
@@ -179,11 +178,10 @@ bool init() {
     }
 
     // Finally, the pipeline creation can begin
-    pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders);
     // this tells Pinc to do the equivalent of glDrawArrays with GL_TRIANGLES.
     // pinc also has array_triangle_fan, array_triangle_strip, element_triangles, element_triangle_fan, and element_triangle_strip
     // array_* does the same as glDrawArrays, element_* does the same as glDrawElements
-    pinc_graphics_pipeline_set_vertex_assembly(pipeline, pinc_graphics_vertex_assembly_array_triangles);
+    pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders, pinc_graphics_vertex_assembly_array_triangles);
 
     pinc_graphics_pipeline_complete(pipeline);
 

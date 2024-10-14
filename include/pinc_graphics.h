@@ -238,17 +238,16 @@ PINC_API void PINC_CALL pinc_graphics_shaders_glsl_fragment_set_len(int shaders_
 
 PINC_API void PINC_CALL pinc_graphics_shaders_glsl_fragment_set_item(int shaders_obj, int index, char item);
 
-PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attributes_obj, int uniforms_obj, int shaders_obj);
-
-PINC_API void PINC_CALL pinc_graphics_pipeline_set_vertex_assembly(int pipeline_obj, int assembly);
+// Make sure to complete the pipeline before editing or stroying any of the objects given to this function
+PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attributes_obj, int uniforms_obj, int shaders_obj, int assembly);
 
 PINC_API void PINC_CALL pinc_graphics_pipeline_complete(int pipeline_obj);
 
-PINC_API void PINC_CALL pinc_graphics_pipeline_deinit(int pipeline);
+PINC_API void PINC_CALL pinc_graphics_pipeline_deinit(int pipeline_obj);
 
 PINC_API int PINC_CALL pinc_graphics_vertex_array_create(int vertex_attributes_obj, int num);
 
-PINC_API void PINC_CALL pinc_graphics_vertex_array_deinit(int vertex_array);
+PINC_API void PINC_CALL pinc_graphics_vertex_array_deinit(int vertex_array_obj);
 
 PINC_API void PINC_CALL pinc_graphics_vertex_array_lock(int vertex_array_obj);
 
@@ -277,7 +276,7 @@ PINC_API void PINC_CALL pinc_graphics_vertex_array_unlock(int vertex_array_obj);
 
 PINC_API int PINC_CALL pinc_graphics_texture_create(int channels_enum, int width, int height, int depth1, int depth2, int depth3, int depth4);
 
-PINC_API void PINC_CALL pinc_graphics_texture_deinit(int texture);
+PINC_API void PINC_CALL pinc_graphics_texture_deinit(int texture_obj);
 
 PINC_API void PINC_CALL pinc_graphics_texture_lock(int texture_obj);
 
