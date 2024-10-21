@@ -43,14 +43,10 @@ bool init(void) {
 
     int shaders = pinc_graphics_shaders_create(pinc_graphics_shader_type_glsl);
 
-    // Even though this is GLSL 1.10, layout bindings are required.
-    // This is actually not even technically available in GLSL 1.10,
-    // However Pinc's backend will process the file and convert it from Pinc's custom GLSL to real GLSL that can be used.
-    // The reason for the layout bindings is so Pinc can match a vertex input with the attribute index from the vertex attributes object.
     char* vertexShaderCode = "\
-        #version 110\
-        layout(location=0) in vec2 pos;\n\
-        layout(location=1) in vec4 color;\n\
+        #version 110\n\
+        attribute vec2 pos;\n\
+        attribute vec4 color;\n\
         varying vec4 _color;\n\
         void main() {\n\
             gl_Position = vec4(pos, 0, 1);\n\
@@ -61,10 +57,10 @@ bool init(void) {
     int vertexShaderCodeLen = strlen(vertexShaderCode);
 
     char* fragmentShaderCode = "\
-        #version 110\
+        #version 110\n\
         varying vec4 _color;\n\
         void main() {\n\
-            gl_FragColor = _color\n\
+            gl_FragColor = _color;\n\
         }\
     ";
 
@@ -80,6 +76,22 @@ bool init(void) {
         pinc_graphics_shaders_glsl_fragment_set_item(shaders, i, fragmentShaderCode[i]);
     }
 
+    // Tell Pinc how to map an index into the vertex attributes object to an actual vertex input.
+    // This can be done through layout locations (explicit binding) instead, however GLSL 1.10 does not have that feature.
+    pinc_graphics_shaders_glsl_attribute_mapping_set_num(shaders, 2);
+    // attribute 0 is pos
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item_length(shaders, 0, 3);
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 0, 'p');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 1, 'o');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 2, 's');
+    // attribute 1 is color
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item_length(shaders, 1, 5);
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 0, 'c');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 1, 'o');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 2, 'l');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 3, 'o');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 4, 'r');
+
     // Create the pipeline object.
     // Pinc puts all of the vertex assemlbly, uniform inputs, shader code, and other rendering state into a single object
     // more like Vulkan than OpenGL.
@@ -88,8 +100,16 @@ bool init(void) {
 
     pinc_graphics_pipeline_complete(pipeline);
 
+    if(collect_errors()){
+        return false;
+    }
+
     // A single triangle using the same vertex attributes as the pipeline expects
     vertexArray = pinc_graphics_vertex_array_create(vertexAttribs, 3);
+
+    if(collect_errors()){
+        return false;
+    }
 
     pinc_graphics_vertex_array_lock(vertexArray);
 

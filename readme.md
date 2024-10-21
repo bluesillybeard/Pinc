@@ -56,18 +56,16 @@ Pinc's current API is fundamentally incompatible with multithreading. Sorry.
 
 At this point, I suggest messing with the examples for a bit to get a feel for how the library works.
 
-The easiest way to do it would be to just compile Pinc into a library with `zig build static` or `zig build dynamic`, copy the artifact and the header, and just add it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
+The easiest way to use Pinc would be to just compile it into a library with `zig build static` or `zig build dynamic`, copy the artifact and the header, and just add it to your linker flags. Automating that would be a good idea, especially for cross-compilation so you don't have a bajillion copies of the same library pre-compiled for different platforms.
 
-This project does not integrate with any existing build systems other than Zig. It doesn't even integrate with Zig's build system properly, since this is intended for use with C and not Zig. That being said, contributions that add support for other build systems / package managers are accepted and celebrated! Once a build system is implemented, it shouldn't need much (or any) maintainence due to the fact that Pinc has all dependencies self-contained or loaded at runtime.
+This project does not integrate with any existing build systems other than Zig. That being said, contributions that add support for other build systems / package managers are accepted and celebrated! Once a build system is implemented, it shouldn't need much (or any) maintainence due to the fact that Pinc has all dependencies self-contained or loaded at runtime.
 
 Hopefully the header is self-exaplanatory. If it's not clear what a function or type does, consider submitting an issue so we can improve documentation.
 
-It's worth noting the Pinc makes heavy use of asserts that will not trigger in ReleaseFast mode. We suggest using Debug to build the library, until you are confident everything works correctly, in which case ReleaseFast is a decent option. That being said, ReleaseSafe is almost certainly fast enough for any reasonable use case, but retains the safety checks of Debug mode.
-
-Using Pinc with Zig is not supported through zig's package management at the moment. Treat Pinc like a C library, because it is. It may be written in Zig, it may use Zig's build system, but the public-facing API is entirely for C.
+It's worth noting the Pinc makes heavy use of asserts that will not trigger in ReleaseFast mode. You should use Debug or ReleaseSafe to build the library. ReleaseFast is an option for those who absolutely need every tiny bit of performance.
 
 ## Other notes
-- When cross-compiling, it is generally a good idea to specify the ABI (example: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI which is quite annoying.
+- When cross-compiling, it is generally a good idea to specify the ABI (example: `x86_64-linux-gnu` instead of `x86_64-linux`) as it tends to default to the wrong ABI.
     - In particular, compiling from Windows to Linux uses musl by default, which does not work as Pinc uses dynamic loading with libc on Linux
 - The main branch is "stable" in the sense that it should always work. Before commiting to the main branch, We'll make sure everything still works.
     - the library as a whole is NOT stable. DO not use Pinc unless you are willing to face the consequences!
@@ -115,6 +113,7 @@ Using Pinc with Zig is not supported through zig's package management at the mom
 ## Planned backends / platforms in the VERY FAR future
 None of these are going to be implemented any time soon - if ever.
 - Playstation 4/5
+- Nintendo DS
 - Xbox
     - It's basically just Windows (I think), should be pretty easy actually
 - Nintendo switch
@@ -125,6 +124,8 @@ None of these are going to be implemented any time soon - if ever.
     - an msdos backend doesn't even make sense, as I don't think it has a universal way to draw pixels on the screen
 - terminal text output
     - haha ascii art go BRRR
+- 3dfx's Glide graphics api
+    - The funny thing is, there are actual Glide drivers available for modern GPUS. I believe it's an implementation that uses Vulkan to emulate the original API.
 
 ## backends that will NEVER be implemented
 - Raw X11 network packets

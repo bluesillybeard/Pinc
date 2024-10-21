@@ -2,7 +2,7 @@
 
 pub const window_backend = enum(c_int) {
     any,
-    sdl2,  
+    sdl2,
 };
 
 pub const graphics_backend = enum(c_int) {
@@ -220,8 +220,7 @@ extern fn pinc_event_window_scroll_horizontal(window: c_int) f32;
 extern fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void;
 extern fn pinc_graphics_fill_depth(window: c_int, depth: f32) void;
 extern fn pinc_raw_opengl_make_current(window: c_int) void;
-extern fn pinc_raw_opengl_get_proc(procname: [*:0] const u8) ?*anyopaque;
-
+extern fn pinc_raw_opengl_get_proc(procname: [*:0]const u8) ?*anyopaque;
 
 pub inline fn incomplete_init() void {
     pinc_incomplete_init();

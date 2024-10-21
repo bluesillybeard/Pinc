@@ -25,5 +25,11 @@
             "command": "zig",
             "args": ["build", "rawgl"]
         },
+        {
+            "label": "graphics",
+            "type": "shell",
+            "command": "zig",
+            "args": ["build", "graphics"]
+        },
     ]
 }
