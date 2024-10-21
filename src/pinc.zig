@@ -890,7 +890,13 @@ pub const IPipeline = struct {
         };
     }
 
-    pub const Vtable = struct {};
+    pub inline fn deinit(this: IPipeline) void {
+        this.vtable.deinit(this.obj);
+    }
+
+    pub const Vtable = struct {
+        deinit: *const fn (this: *anyopaque) void,
+    };
 
     vtable: *Vtable,
     obj: *anyopaque,
@@ -1341,7 +1347,9 @@ pub export fn pinc_deinit() void {
                     .texture => {},
                     .none => {},
                     // TODO
-                    .completePipeline => {},
+                    .completePipeline => |ob| {
+                        ob.deinit();
+                    },
                 }
             }
             st.objects.deinit();
