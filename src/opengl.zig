@@ -332,6 +332,12 @@ pub const Opengl21Pipeline = struct {
         _ = this;
     }
 
+    pub fn deinit(this: *Opengl21Pipeline) void {
+        gl.deleteProgram(this.shaderProgram);
+        this.* = undefined;
+        pinc.allocator.?.destroy(this);
+    }
+
     attributeBindMap: [pinc.GlslShadersObj.maxAttributeMaps]u32,
     shaderProgram: gl.GLuint,
     vertexAssembly: pinc.VertexAssembly,
@@ -410,6 +416,7 @@ pub const OpenGL21VertexArray = struct {
         if (this.mapped != null) this.unlock();
         const buffers = [_]gl.GLuint{this.buffer};
         gl.deleteBuffers(1, &buffers);
+        this.* = undefined;
         // TODO: perhaps a better memory model where this is not allocated like this
         pinc.allocator.?.destroy(this);
     }
