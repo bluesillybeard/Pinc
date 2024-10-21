@@ -529,9 +529,7 @@ pub const ICompleteWindow = struct {
     obj: *anyopaque,
 };
 
-pub const IElementArray = struct {
-
-};
+pub const IElementArray = struct {};
 
 // Vertex array interface for graphics backends to implement
 pub const IVertexArray = struct {
@@ -554,6 +552,10 @@ pub const IVertexArray = struct {
         };
     }
 
+    pub inline fn deinit(this: IVertexArray) void {
+        this.vtable.deinit(this.obj);
+    }
+
     pub inline fn lock(this: IVertexArray) void {
         this.vtable.lock(this.obj);
     }
@@ -571,10 +573,11 @@ pub const IVertexArray = struct {
     }
 
     pub const Vtable = struct {
+        deinit: *const fn (this: *anyopaque) void,
         lock: *const fn (this: *anyopaque) void,
         unlock: *const fn (this: *anyopaque) void,
-        setItemVec2: *const fn(this: *anyopaque, vertex: usize, attribute: usize, v: [2]f32) void,
-        setItemVec4: *const fn(this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
+        setItemVec2: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [2]f32) void,
+        setItemVec4: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
     };
 
     vtable: *Vtable,
@@ -582,9 +585,7 @@ pub const IVertexArray = struct {
 };
 
 // Texture interface for graphics backends to implement
-pub const ITexture = struct {
-
-};
+pub const ITexture = struct {};
 
 pub const VertexAttribute = struct {
     type: AttribtueType = .vec4,
@@ -601,12 +602,18 @@ pub const VertexAttributesObj = struct {
     attribsBuffer: [MaxNumAttributes]VertexAttribute = undefined,
 
     pub fn setLength(this: *VertexAttributesObj, len: usize) void {
-        if(len > this.numAttribs) {
+        if (len > this.numAttribs) {
             // make sure the new spots are undefined so if they are attempted to be used, they will cause a clear error.
-            for(this.numAttribs..len) |index| {
+            for (this.numAttribs..len) |index| {
                 this.attribsBuffer[index] = undefined;
             }
         }
+    }
+
+    // C++ style copy constructor
+    pub inline fn copy(this: *const VertexAttributesObj) VertexAttributesObj {
+        // all memory is inline, no references to external references
+        return this.*;
     }
 };
 
@@ -634,13 +641,37 @@ pub const UniformsObj = struct {
     pub const MAX_UNIFORMS = 16;
     uniformsBuffer: [MAX_UNIFORMS]Uniform = undefined,
     numUniforms: usize = 0,
+
+    // C++ style copy constructor.
+    // Yikes, I really am becoming a C++ developer, despite not even using C++...
+    pub inline fn copy(this: *UniformsObj) UniformsObj {
+        // For now, a uniforms object is fully inline - no references to external memory.
+        // So just dereference this.
+        return this.*;
+    }
 };
 
+// This is a heavy struct. Copying this is expensive. Generally, try to pass references to it instead.
 pub const ShadersObj = union(ShaderType) {
-    glsl: struct {
-        vertexSource: []u8,
-        fragmentSource: []u8,
-    },
+    glsl: GlslShadersObj,
+};
+
+pub const GlslShadersObj = struct {
+    pub const maxAttributeMaps = 16;
+    // these are on the heap
+    vertexSource: [:0]u8,
+    fragmentSource: [:0]u8,
+    numAttributeMaps: usize = 0,
+    // lol memory efficiency is for losers anyway
+    // TODO: fix this memory use disaster (ok it's not THAT bad... only like 1 kb per instance or something like that)
+    // The issue is when you realize that *all* pinc objects become at least 1kb per instance due the fact that all object types are in a union.
+    attributeMaps: [maxAttributeMaps]AttributeMap = undefined,
+};
+
+pub const AttributeMap = struct {
+    pub const maxAttributeNameSize = 32;
+    nameLen: usize,
+    name: [maxAttributeNameSize]u8,
 };
 
 pub const PipelineInitData = struct {
@@ -650,6 +681,7 @@ pub const PipelineInitData = struct {
     assembly: VertexAssembly,
 };
 
+// this is a heavy struct. Copying it is expensive. Generally, try to pass references of it instead.
 pub const PincObject = union(enum) {
     none,
     incompleteWindow: IncompleteWindow,
@@ -733,6 +765,11 @@ pub const IWindowBackend = struct {
         return this.vtable.getCursorPos(this.obj);
     }
 
+    // For when we need an OpenGL context to be current, but we don't care which window.
+    pub inline fn glMakeAnyCurrent(this: IWindowBackend) void {
+        return this.vtable.glMakeAnyCurrent(this.obj);
+    }
+
     pub const Vtable = struct {
         // TODO: Be more smart about how window backends are handled and get rid of this function
         getBackendEnumValue: *const fn (this: *anyopaque) WindowBackend,
@@ -747,6 +784,7 @@ pub const IWindowBackend = struct {
         getMouseState: *const fn (this: *anyopaque, button: u32) bool,
         getKeyboardState: *const fn (this: *anyopaque, button: KeyboardKey) bool,
         getCursorPos: *const fn (this: *anyopaque) PixelPos,
+        glMakeAnyCurrent: *const fn (this: *anyopaque) void,
     };
 
     vtable: *Vtable,
@@ -846,15 +884,16 @@ pub const IPipeline = struct {
             @field(vtable, field.name) = @ptrCast(&@field(T, field.name));
         }
         T.init(obj);
-        return IGraphicsBackend{
+        return IPipeline{
             .vtable = vtable,
             .obj = obj,
         };
     }
 
-    pub const Vtable = struct {
+    pub const Vtable = struct {};
 
-    };
+    vtable: *Vtable,
+    obj: *anyopaque,
 };
 
 pub const PincError = struct {
@@ -1034,7 +1073,7 @@ pub inline fn allocObject() c_int {
 }
 
 pub inline fn refObject(id: c_int) *PincObject {
-    std.debug.assert(id >= state.init.objects.items.len);
+    std.debug.assert(id <= state.init.objects.items.len);
     return &state.init.objects.items[@intCast(id - 1)];
 }
 
@@ -1044,12 +1083,12 @@ pub inline fn refNewObject(out_id: *c_int) *PincObject {
 }
 
 pub inline fn deallocObject(id: c_int) void {
-    std.debug.assert(id >= state.init.objects.items.len);
-    state.init.objects.items[@intCast(id-1)] = .none;
+    std.debug.assert(id <= state.init.objects.items.len);
+    state.init.objects.items[@intCast(id - 1)] = .none;
     var rid = id;
-    while(rid == state.init.objects.items.len) {
+    while (rid == state.init.objects.items.len) {
         _ = state.init.objects.popOrNull();
-        rid -=1;
+        rid -= 1;
     }
 }
 
@@ -1286,16 +1325,18 @@ pub export fn pinc_deinit() void {
                     .vertexAttributes => {},
                     .uniforms => {},
                     .shaders => |ob| {
-                        if(ob.glsl.fragmentSource.len > 0) {
+                        if (ob.glsl.fragmentSource.len > 0) {
                             allocator.?.free(ob.glsl.fragmentSource);
                         }
-                        if(ob.glsl.vertexSource.len > 0) {
+                        if (ob.glsl.vertexSource.len > 0) {
                             allocator.?.free(ob.glsl.vertexSource);
                         }
                     },
                     .incompletePipeline => {},
                     // TODO:
-                    .vertexArray => {},
+                    .vertexArray => |ob| {
+                        ob.deinit();
+                    },
                     // TODO:
                     .texture => {},
                     .none => {},
@@ -1978,7 +2019,7 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
 // Graphics Functions - Currently the minimal set able to run the graphics.c example.
 
 pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
-    if(num > VertexAttributesObj.MaxNumAttributes) unreachable;
+    if (num > VertexAttributesObj.MaxNumAttributes) unreachable;
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
@@ -1989,7 +2030,7 @@ pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
 pub export fn pinc_graphics_vertex_attributes_set_item(vertex_attributes_obj: c_int, index: c_int, attrib_type: c_int, offset: c_int, normalize: c_int) void {
     state.validateFor(.init);
     const vertexAttributes = &(refObject(vertex_attributes_obj).*.vertexAttributes);
-    if(vertexAttributes.numAttribs <= index) unreachable;
+    if (vertexAttributes.numAttribs <= index) unreachable;
     vertexAttributes.attribsBuffer[@intCast(index)] = .{
         .normalize = normalize != 0,
         .offset = @intCast(offset),
@@ -2007,9 +2048,9 @@ pub export fn pinc_graphics_uniforms_create(num: c_int) c_int {
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
-    object.* = .{.uniforms = .{
+    object.* = .{ .uniforms = .{
         .numUniforms = @intCast(num),
-    }};
+    } };
     return id;
 }
 
@@ -2020,13 +2061,10 @@ pub export fn pinc_graphics_shaders_create(shaders_type: c_int) c_int {
     const object = refNewObject(&id);
     object.* = .{
         .shaders = switch (shaderType) {
-            ShaderType.glsl => .{
-                .glsl = .{
-                    .fragmentSource =  &[0]u8{},
-                    .vertexSource = &[0]u8{}
-                }
-            },
-        }
+            // TODO: ok seriously what is the correct way to make a sentinel terminated string set to empty?
+            // Also zig fmt is responsible for putting this mess into one line. If I had my way, this would spit across like 5 lines.
+            ShaderType.glsl => .{ .glsl = .{ .fragmentSource = @constCast(&[0:0]u8{}), .vertexSource = @constCast(&[0:0]u8{}) } },
+        },
     };
     return id;
 }
@@ -2034,13 +2072,13 @@ pub export fn pinc_graphics_shaders_create(shaders_type: c_int) c_int {
 pub export fn pinc_graphics_shaders_glsl_vertex_set_len(shaders_obj: c_int, len: c_int) void {
     state.validateFor(.init);
     const glslShaders = &(refObject(shaders_obj).*.shaders.glsl);
-    if(glslShaders.vertexSource.len > 0) {
+    if (glslShaders.vertexSource.len > 0) {
         allocator.?.free(glslShaders.vertexSource);
     }
-    if(len > 0) {
-        glslShaders.vertexSource = allocator.?.alloc(u8, @intCast(len)) catch unreachable;
+    if (len > 0) {
+        glslShaders.vertexSource = allocator.?.allocSentinel(u8, @intCast(len), 0) catch unreachable;
     } else {
-        glslShaders.vertexSource = &[0]u8{};
+        glslShaders.vertexSource = @constCast(&[0:0]u8{});
     }
 }
 
@@ -2052,13 +2090,14 @@ pub export fn pinc_graphics_shaders_glsl_vertex_set_item(shaders_obj: c_int, ind
 pub export fn pinc_graphics_shaders_glsl_fragment_set_len(shaders_obj: c_int, len: c_int) void {
     state.validateFor(.init);
     const glslShaders = &(refObject(shaders_obj).*.shaders.glsl);
-    if(glslShaders.fragmentSource.len > 0) {
+    if (glslShaders.fragmentSource.len > 0) {
         allocator.?.free(glslShaders.fragmentSource);
     }
-    if(len > 0) {
-        glslShaders.fragmentSource = allocator.?.alloc(u8, @intCast(len)) catch unreachable;
+    if (len > 0) {
+        glslShaders.fragmentSource = allocator.?.allocSentinel(u8, @intCast(len), 0) catch unreachable;
     } else {
-        glslShaders.fragmentSource = &[0]u8{};
+        // length is zero, so a pointer to invalid memory is ok. There's almost certainly a correct way to do this that I have missed.
+        glslShaders.fragmentSource = @constCast(&[0:0]u8{});
     }
 }
 
@@ -2067,19 +2106,46 @@ pub export fn pinc_graphics_shaders_glsl_fragment_set_item(shaders_obj: c_int, i
     refObject(shaders_obj).shaders.glsl.fragmentSource[@intCast(index)] = @intCast(item);
 }
 
+pub export fn pinc_graphics_shaders_glsl_attribute_mapping_set_num(shaders_obj: c_int, num: c_int) void {
+    state.validateFor(.init);
+    const object = &refObject(shaders_obj).shaders;
+    object.glsl.numAttributeMaps = @intCast(num);
+    object.glsl.attributeMaps = undefined;
+    for (0..@intCast(num)) |index| {
+        object.glsl.attributeMaps[index] = .{
+            .name = undefined,
+            .nameLen = 0,
+        };
+    }
+}
+
+pub export fn pinc_graphics_shaders_glsl_attribute_mapping_set_item_length(shaders_obj: c_int, attribute: c_int, len: c_int) void {
+    state.validateFor(.init);
+    const object = &refObject(shaders_obj).shaders;
+    if (attribute > object.glsl.attributeMaps.len) unreachable;
+    if (len > object.glsl.attributeMaps[0].name.len) unreachable;
+    object.glsl.attributeMaps[@intCast(attribute)].nameLen = @intCast(len);
+}
+
+pub export fn pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders_obj: c_int, attribute: c_int, index: c_int, item: c_char) void {
+    state.validateFor(.init);
+    const object = &refObject(shaders_obj).shaders;
+    if (attribute > object.glsl.attributeMaps.len) unreachable;
+    if (index >= object.glsl.attributeMaps[@intCast(attribute)].nameLen) unreachable;
+    object.glsl.attributeMaps[@intCast(attribute)].name[@intCast(index)] = @intCast(item);
+}
+
 pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_int, uniforms_obj: c_int, shaders_obj: c_int, assembly: c_int) c_int {
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
     // TODO: verify these objects exist but only in 'unsafe' modes
-    object.* = .{
-        .incompletePipeline = .{
-            .vertexAttribsObj = vertex_attributes_obj,
-            .uniformsObj = uniforms_obj,
-            .shadersObj = shaders_obj,
-            .assembly = @enumFromInt(assembly),
-        }
-    };
+    object.* = .{ .incompletePipeline = .{
+        .vertexAttribsObj = vertex_attributes_obj,
+        .uniformsObj = uniforms_obj,
+        .shadersObj = shaders_obj,
+        .assembly = @enumFromInt(assembly),
+    } };
     return id;
 }
 
@@ -2088,11 +2154,11 @@ pub export fn pinc_graphics_shaders_deinit(shaders_obj: c_int) void {
     // shader objects have some memory that needs to be freed first
     const obj = refObject(shaders_obj);
     const frag = obj.shaders.glsl.fragmentSource;
-    if(frag.len > 0) {
+    if (frag.len > 0) {
         allocator.?.free(frag);
     }
     const vert = obj.shaders.glsl.vertexSource;
-    if(vert.len > 0) {
+    if (vert.len > 0) {
         allocator.?.free(vert);
     }
     deallocObject(shaders_obj);
@@ -2124,17 +2190,17 @@ pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) void {
     state.validateFor(.init);
     const initData = refObject(pipeline_obj).*.incompletePipeline;
     const pipeline = state.getGraphicsBackend().?.createPipeline(initData);
-    if(pipeline == null) {
+    if (pipeline == null) {
         // Something went wrong - the graphics backend should have created an error for this
         return;
     }
-    refObject(pipeline_obj).* = .{.completePipeline = pipeline.?};
+    refObject(pipeline_obj).* = .{ .completePipeline = pipeline.? };
 }
 
 pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, num: c_int) c_int {
     state.validateFor(.init);
     const vertexArray = state.getGraphicsBackend().?.createVertexArray(&refObject(vertex_attributes_obj).*.vertexAttributes, @intCast(num));
-    if(vertexArray == null) {
+    if (vertexArray == null) {
         // backend should have created an error for this
         return 0;
     }
@@ -2152,13 +2218,13 @@ pub export fn pinc_graphics_vertex_array_lock(vertex_array_obj: c_int) void {
 pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32) void {
     state.validateFor(.init);
     const obj = refObject(vertex_array_obj).*.vertexArray;
-    obj.setItemVec2(@intCast(vertex), @intCast(attribute), [2]f32{v1, v2});
+    obj.setItemVec2(@intCast(vertex), @intCast(attribute), [2]f32{ v1, v2 });
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
     state.validateFor(.init);
     const obj = refObject(vertex_array_obj).*.vertexArray;
-    obj.setItemVec4(@intCast(vertex), @intCast(attribute), [4]f32{v1, v2, v3, v4});
+    obj.setItemVec4(@intCast(vertex), @intCast(attribute), [4]f32{ v1, v2, v3, v4 });
 }
 
 pub export fn pinc_graphics_vertex_array_unlock(vertex_array_obj: c_int) void {

@@ -238,6 +238,18 @@ PINC_API void PINC_CALL pinc_graphics_shaders_glsl_fragment_set_len(int shaders_
 
 PINC_API void PINC_CALL pinc_graphics_shaders_glsl_fragment_set_item(int shaders_obj, int index, char item);
 
+PINC_API void PINC_CALL pinc_graphics_shaders_glsl_attribute_mapping_set_num(int shaders_obj, int num);
+
+PINC_API void PINC_CALL pinc_graphics_shaders_glsl_attribute_mapping_set_item_length(int shaders_obj, int attribute, int len);
+
+PINC_API void PINC_CALL pinc_graphics_shaders_glsl_attribute_mapping_set_item(int shaders_obj, int attribute, int index, char value);
+
+PINC_API void PINC_CALL pinc_graphics_shaders_glsl_uniform_mapping_set_num(int shaders_obj, int num);
+
+PINC_API void PINC_CALL pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(int shaders_obj, int uniform, int len);
+
+PINC_API void PINC_CALL pinc_graphics_shaders_glsl_uniform_mapping_set_item(int shaders_obj, int uniform, int index, char value);
+
 // Make sure to complete the pipeline before editing or stroying any of the objects given to this function
 PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attributes_obj, int uniforms_obj, int shaders_obj, int assembly);
 

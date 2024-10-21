@@ -136,19 +136,14 @@ bool init() {
     // In the future more shader types may be supported - most likely to be first is a fixed-pipeline setup like what OpenGL 1.x has.
     int shaders = pinc_graphics_shaders_create(pinc_graphics_shader_type_glsl);
 
-    // Pinc actually forces explicit layout bindings,
-    // even when using a version of GLSL that isn't even supposed to have them.
-    // Pinc will process the GLSL code and extract the layout bindings.
-
-    // When when using GLSL versions that don't support them,
-    // Pinc will remove those and use the old binding location system
-    // to create a map from the user-facing location (index into the list of attributes / uniforms)
-    // to the 'real' location that OpenGl uses.
+    // Pinc *must* map each vertex / uniform input into a linear list
+    // It's simply how the library has been designed.
+    // but for now, just the shader code
     char* vertexShaderCode = "\
     #version 110\n\
-    layout(location=0) in vec3 pos;\n\
-    layout(location=1) in vec2 uv;\n\
-    layout(location=0) uniform mat4 transform;\n\
+    in vec3 pos;\n\
+    in vec2 uv;\n\
+    uniform mat4 transform;\n\
     varying vec2 _uv;\n\
     void main() {\n\
         gl_Position = vec4(pos, 1) * transform;\n\
@@ -159,7 +154,7 @@ bool init() {
 
     char* fragmentShaderCode = "\
     #version 110\n\
-    layout(location=1) uniform sampler2D texture;\n\
+    uniform sampler2D texture;\n\
     varying vec2 _uv;\n\
     void main() {\n\
         gl_FragColor = texture(texture, _uv);\n\
@@ -175,6 +170,36 @@ bool init() {
     pinc_graphics_shaders_glsl_fragment_set_len(shaders, fragmentShaderCodeLen);
     for(int i=0; i<fragmentShaderCodeLen; ++i) {
         pinc_graphics_shaders_glsl_fragment_set_item(shaders, i, fragmentShaderCode[i]);
+    }
+
+    // Back to that explicit binding, Pinc needs to know how to map the vertex attribute indices to the actual vertex inputs
+    // and it needs to know how to map the uniform indices to the actual vertex inputs.
+    // If this isn't done,Pinc will assume the binding location OpenGL / Whatever gives it will match the index in the vertex attributes / uniforms.
+    // when explicit layout bindings are not used in GLSL, they *must* be specified here.
+
+    pinc_graphics_shaders_glsl_attribute_mapping_set_num(shaders, 2);
+    // attribute 0 is pos
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item_length(shaders, 0, 3);
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 0, 'p');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 1, 'o');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 2, 's');
+    // attribute 1 is uv
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item_length(shaders, 1, 2);
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 0, 'u');
+    pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 1, 1, 'v');
+
+    pinc_graphics_shaders_glsl_uniform_mapping_set_num(shaders, 2);
+    // uniform 0 is transform
+    char* transformStr = "transform";
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(0, strlen(transformStr));
+    for(int i=0; i<strlen(transformStr)>; ++i) {
+        pinc_graphics_shaders_glsl_uniform_mapping_set_item(0, i, transformStr[i]);
+    }
+    // uniform 1 is texture
+    char* textureStr = "texture";
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(1, strlen(textureStr));
+    for(int i=0; i<strlen(textureStr)>; ++i) {
+        pinc_graphics_shaders_glsl_uniform_mapping_set_item(1, i, textureStr[i]);
     }
 
     // Finally, the pipeline creation can begin

@@ -40,6 +40,15 @@
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "rawgl"
         },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "(LLDB) Debug graphics example",
+            "program": "${workspaceFolder}/zig-out/bin/graphics",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "graphics"
+        },
         // These GDB options exist because LLDB *sucks crap* on Windows.
         {
             "name": "(GDB) Debug window example",

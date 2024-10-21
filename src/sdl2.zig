@@ -87,6 +87,8 @@ const libsdl = struct {
     pub var getKeyboardFocus: *@TypeOf(sdl.SDL_GetKeyboardFocus) = undefined;
     pub const _getKeyboardState = "SDL_GetKeyboardState";
     pub var getKeyboardState: *@TypeOf(sdl.SDL_GetKeyboardState) = undefined;
+    pub const _glGetCurrentWindow = "SDL_GL_GetCurrentWindow";
+    pub var glGetCurrentWindow: *@TypeOf(sdl.SDL_GL_GetCurrentWindow) = undefined;
     pub var lib: ?std.DynLib = null;
     // returns false if loading failed for any reason
     pub fn load() bool {
@@ -467,6 +469,12 @@ pub const SDL2WindowBackend = struct {
             .x = @intCast(x),
             .y = @intCast(y),
         };
+    }
+
+    pub fn glMakeAnyCurrent(this: *SDL2WindowBackend) void {
+        // If there is already a current context, return immediately
+        if (libsdl.glGetCurrentWindow() != null) return;
+        this.dummyWindow.?.glMakeCurrent();
     }
 
     fn getWindowFromid(id: u32) ?*SDL2CompleteWindow {
