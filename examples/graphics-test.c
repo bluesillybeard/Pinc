@@ -49,6 +49,8 @@ typedef struct Example {
     void (* start)(void);
     void (* frame)(void);
     void (* deinit)(void);
+    char* name;
+    char* description;
 } Example;
 
 
@@ -114,13 +116,13 @@ int main(int argc, char** argv) {
     // the most basic main loop - also slightly scuffed but it's fine
     int example = 0;
     examples[example].start();
-    printf("Starting example %i\n", example + 1);
+    printf("Starting example %s: %s\n", examples[example].name, examples[example].description);
     bool running = true;
     while(running) {
         pinc_step();
         if(pinc_event_window_closed(window)) {
             examples[example].deinit();
-            printf("Exiting example %i\n", example + 1);
+            printf("Exiting example %s\n", examples[example].name);
             break;
             running = false;
         }
@@ -130,10 +132,10 @@ int main(int argc, char** argv) {
                 if(pinc_keyboard_key_get(pinc_keyboard_key_enter)) {
                     // Enter key was pressed, go to the next test
                     examples[example].deinit();
-                    printf("Exiting example %i\n", example + 1);
+                    printf("Exiting example %s\n", examples[example].name);
                     example = (example + 1) % NUM_EXAMPLES;
                     examples[example].start();
-                    printf("Starting example %i\n", example + 1);
+                    printf("Starting example %s: %s\n", examples[example].name, examples[example].description);
                 }
             }
         }
@@ -147,11 +149,11 @@ int main(int argc, char** argv) {
 
 // This first example is the same as graphics.c
 
-int test_1_pipeline;
+int test_basic_pipeline;
 
-int test_1_vertex_array;
+int test_basic_vertex_array;
 
-void test_1_start(void) {
+void test_basic_start(void) {
     // Create a vertex attributes object and fill out the information for it
     int vertexAttribs = pinc_graphics_vertex_attributes_create(2);
     // this is the position of the vertex
@@ -225,33 +227,33 @@ void test_1_start(void) {
     // Pinc puts all of the vertex assemlbly, uniform inputs, shader code, and other rendering state into a single object
     // more like Vulkan than OpenGL.
     // Pipeline is given an array of triangles
-    test_1_pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders, pinc_graphics_vertex_assembly_array_triangles);
+    test_basic_pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders, pinc_graphics_vertex_assembly_array_triangles);
 
-    pinc_graphics_pipeline_complete(test_1_pipeline);
+    pinc_graphics_pipeline_complete(test_basic_pipeline);
 
     if(collect_errors()){
         on_error_exit();
     }
 
     // A single triangle using the same vertex attributes as the pipeline expects
-    test_1_vertex_array = pinc_graphics_vertex_array_create(vertexAttribs, 3);
+    test_basic_vertex_array = pinc_graphics_vertex_array_create(vertexAttribs, 3);
 
     if(collect_errors()){
         on_error_exit();
     }
 
-    pinc_graphics_vertex_array_lock(test_1_vertex_array);
+    pinc_graphics_vertex_array_lock(test_basic_vertex_array);
 
-    pinc_graphics_vertex_array_set_item_vec2(test_1_vertex_array, 0, 0, -0.5, -0.5);
-    pinc_graphics_vertex_array_set_item_vec4(test_1_vertex_array, 0, 1, 1, 0, 0, 1);
+    pinc_graphics_vertex_array_set_item_vec2(test_basic_vertex_array, 0, 0, -0.5, -0.5);
+    pinc_graphics_vertex_array_set_item_vec4(test_basic_vertex_array, 0, 1, 1, 0, 0, 1);
 
-    pinc_graphics_vertex_array_set_item_vec2(test_1_vertex_array, 1, 0, 0.5, -0.5);
-    pinc_graphics_vertex_array_set_item_vec4(test_1_vertex_array, 1, 1, 0, 1, 0, 1);
+    pinc_graphics_vertex_array_set_item_vec2(test_basic_vertex_array, 1, 0, 0.5, -0.5);
+    pinc_graphics_vertex_array_set_item_vec4(test_basic_vertex_array, 1, 1, 0, 1, 0, 1);
 
-    pinc_graphics_vertex_array_set_item_vec2(test_1_vertex_array, 2, 0, 0, 0.5);
-    pinc_graphics_vertex_array_set_item_vec4(test_1_vertex_array, 2, 1, 0, 0, 1, 1);
+    pinc_graphics_vertex_array_set_item_vec2(test_basic_vertex_array, 2, 0, 0, 0.5);
+    pinc_graphics_vertex_array_set_item_vec4(test_basic_vertex_array, 2, 1, 0, 0, 1, 1);
 
-    pinc_graphics_vertex_array_unlock(test_1_vertex_array);
+    pinc_graphics_vertex_array_unlock(test_basic_vertex_array);
 
     // destroy the temporary objects
 
@@ -260,23 +262,23 @@ void test_1_start(void) {
     pinc_graphics_vertex_attributes_deinit(vertexAttribs);
 }
 
-void test_1_frame(void) {
+void test_basic_frame(void) {
     RGBAColor color = {0, 0, 0, 1};
     // graphics fill uses channels instead of rgba
     RealColor real_color = color_to_real(color, pinc_framebuffer_format_get_channels(-1));
     pinc_graphics_fill_color(window, real_color.c1, real_color.c2, real_color.c3, real_color.c4);
-    pinc_graphics_draw(window, test_1_pipeline, test_1_vertex_array, 0);
+    pinc_graphics_draw(window, test_basic_pipeline, test_basic_vertex_array, 0);
     pinc_graphics_done();
 }
 
-void test_1_deinit(void) {
-    pinc_graphics_pipeline_deinit(test_1_pipeline);
-    pinc_graphics_vertex_array_deinit(test_1_vertex_array);
+void test_basic_deinit(void) {
+    pinc_graphics_pipeline_deinit(test_basic_pipeline);
+    pinc_graphics_vertex_array_deinit(test_basic_vertex_array);
 }
 
 // This second test exists
 
-void test_2_frame(void) {
+void test_green_frame(void) {
     RGBAColor color = {0, 1, 0, 1};
     // graphics fill uses channels instead of rgba
     RealColor real_color = color_to_real(color, pinc_framebuffer_format_get_channels(-1));
@@ -284,12 +286,13 @@ void test_2_frame(void) {
 }
 
 // This third test is meant to test unusual alignments
+// This one caught a surprising number of erorrs
 
-int test_3_pipeline;
+int test_align1_pipeline;
 
-int test_3_vertex_array;
+int test_align1_vertex_array;
 
-void test_3_start(void) {
+void test_align1_start(void) {
     int vec2align = pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec2);
     int vec4align = pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec4);
     int posoffset = vec2align;
@@ -346,26 +349,26 @@ void test_3_start(void) {
     // Pinc puts all of the vertex assemlbly, uniform inputs, shader code, and other rendering state into a single object
     // more like Vulkan than OpenGL.
     // Pipeline is given an array of triangles
-    test_3_pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders, pinc_graphics_vertex_assembly_array_triangles);
+    test_align1_pipeline = pinc_graphics_pipeline_incomplete_create(vertexAttribs, uniforms, shaders, pinc_graphics_vertex_assembly_array_triangles);
 
-    pinc_graphics_pipeline_complete(test_3_pipeline);
+    pinc_graphics_pipeline_complete(test_align1_pipeline);
 
     if(collect_errors()){
         on_error_exit();
     }
 
     // A single triangle using the same vertex attributes as the pipeline expects
-    test_3_vertex_array = pinc_graphics_vertex_array_create(vertexAttribs, 3);
+    test_align1_vertex_array = pinc_graphics_vertex_array_create(vertexAttribs, 3);
 
     if(collect_errors()){
         on_error_exit();
     }
 
-    pinc_graphics_vertex_array_lock(test_3_vertex_array);
-    pinc_graphics_vertex_array_set_item_vec2(test_3_vertex_array, 0, 0, -0.5, -0.5);
-    pinc_graphics_vertex_array_set_item_vec2(test_3_vertex_array, 1, 0, 0.5, -0.5);
-    pinc_graphics_vertex_array_set_item_vec2(test_3_vertex_array, 2, 0, 0, 0.5);
-    pinc_graphics_vertex_array_unlock(test_3_vertex_array);
+    pinc_graphics_vertex_array_lock(test_align1_vertex_array);
+    pinc_graphics_vertex_array_set_item_vec2(test_align1_vertex_array, 0, 0, -0.5, -0.5);
+    pinc_graphics_vertex_array_set_item_vec2(test_align1_vertex_array, 1, 0, 0.5, -0.5);
+    pinc_graphics_vertex_array_set_item_vec2(test_align1_vertex_array, 2, 0, 0, 0.5);
+    pinc_graphics_vertex_array_unlock(test_align1_vertex_array);
 
     // destroy the temporary objects
 
@@ -374,23 +377,24 @@ void test_3_start(void) {
     pinc_graphics_vertex_attributes_deinit(vertexAttribs);
 }
 
-void test_3_frame(void) {
+void test_align1_frame(void) {
     RGBAColor color = {0, 0, 0, 1};
     // graphics fill uses channels instead of rgba
     RealColor real_color = color_to_real(color, pinc_framebuffer_format_get_channels(-1));
     pinc_graphics_fill_color(window, real_color.c1, real_color.c2, real_color.c3, real_color.c4);
-    pinc_graphics_draw(window, test_3_pipeline, test_3_vertex_array, 0);
+    pinc_graphics_draw(window, test_align1_pipeline, test_align1_vertex_array, 0);
     pinc_graphics_done();
 }
 
-void test_3_deinit(void) {
-
+void test_align1_deinit(void) {
+    pinc_graphics_pipeline_deinit(test_align1_pipeline);
+    pinc_graphics_vertex_array_deinit(test_align1_vertex_array);
 }
 
 const Example examples[] = {
-    {test_1_start, test_1_frame, test_1_deinit},
-    {empty_function, test_2_frame, empty_function},
-    {test_3_start, test_3_frame, test_3_deinit},
+    {empty_function, test_green_frame, empty_function, "green", "Just Green"},
+    {test_basic_start, test_basic_frame, test_basic_deinit, "basic", "A basic colored triangle"},
+    {test_align1_start, test_align1_frame, test_align1_deinit, "align", "A basic white triangle"},
 };
 
 const int NUM_EXAMPLES = 3;
