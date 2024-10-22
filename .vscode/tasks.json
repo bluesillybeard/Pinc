@@ -31,5 +31,11 @@
             "command": "zig",
             "args": ["build", "graphics"]
         },
+        {
+            "label": "graphicsTest",
+            "type": "shell",
+            "command": "zig",
+            "args": ["build", "graphicsTest"]
+        },
     ]
 }

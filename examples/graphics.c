@@ -18,8 +18,6 @@ int pipeline;
 
 int vertexArray;
 
-int texture;
-
 // graphics functions
 
 bool init(void) {
@@ -29,7 +27,7 @@ bool init(void) {
     pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_graphics_attribute_type_vec2, 0, 0);
     // this is the color of the vertex
     pinc_graphics_vertex_attributes_set_item(vertexAttribs, 1, pinc_graphics_attribute_type_vec4, 8, 0);
-    // the is the stride of each vertex as a whole. A float is 4 bytes, there are 6 total floats in a vertex, 4 * 6 = 22
+    // the is the stride of each vertex as a whole. A float is 4 bytes, there are 6 total floats in a vertex, 4 * 6 = 24
     // This assumes the alignment of this is valid
     pinc_graphics_vertex_attributes_set_stride(vertexAttribs, 24);
 

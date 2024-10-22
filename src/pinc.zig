@@ -854,6 +854,10 @@ pub const IGraphicsBackend = struct {
         this.vtable.done(this.obj);
     }
 
+    pub inline fn vertexAttributeAlign(this: IGraphicsBackend, _type: AttribtueType) u32 {
+        return this.vtable.vertexAttributeAlign(this.obj, _type);
+    }
+
     pub const Vtable = struct {
         prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
         deinit: *const fn (this: *anyopaque) void,
@@ -864,6 +868,7 @@ pub const IGraphicsBackend = struct {
         createVertexArray: *const fn (this: *anyopaque, attributes: *const VertexAttributesObj, num: usize) ?IVertexArray,
         draw: *const fn (this: *anyopaque, window: ICompleteWindow, pipeline: IPipeline, vertexArray: IVertexArray, elementArray: ?IElementArray) void,
         done: *const fn (this: *anyopaque) void,
+        vertexAttributeAlign: *const fn (this: *anyopaque, _type: AttribtueType) u32,
     };
 
     vtable: *Vtable,
@@ -2024,7 +2029,12 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
     }
 }
 
-// Graphics Functions - Currently the minimal set able to run the graphics.c example.
+// Graphics Functions (well, the ones that have been implemented at least)
+
+pub export fn pinc_graphics_vertex_attributes_type_align(_type: AttribtueType) c_int {
+    state.validateFor(.init);
+    return @intCast(state.getGraphicsBackend().?.vertexAttributeAlign(_type));
+}
 
 pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
     if (num > VertexAttributesObj.MaxNumAttributes) unreachable;
@@ -2203,6 +2213,18 @@ pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) void {
         return;
     }
     refObject(pipeline_obj).* = .{ .completePipeline = pipeline.? };
+}
+
+pub export fn pinc_graphics_pipeline_deinit(pipeline_obj: c_int) void {
+    state.validateFor(.init);
+    const object = refObject(pipeline_obj).completePipeline;
+    object.deinit();
+}
+
+pub export fn pinc_graphics_vertex_array_deinit(vertex_array_obj: c_int) void {
+    state.validateFor(.init);
+    const object = refObject(vertex_array_obj).vertexArray;
+    object.deinit();
 }
 
 pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, num: c_int) c_int {
