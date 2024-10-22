@@ -173,6 +173,7 @@ pub const Opengl21GraphicsBackend = struct {
 
     pub fn createVertexArray(this: *Opengl21GraphicsBackend, attributes: *const pinc.VertexAttributesObj, num: usize) ?pinc.IVertexArray {
         _ = this;
+        if(attributes.stride == 0) undefined;
         pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         var buffer: gl.GLuint = undefined;
         gl.genBuffers(1, &buffer);
@@ -205,11 +206,12 @@ pub const Opengl21GraphicsBackend = struct {
         // This is safe because only one graphics backend can be active at a time, so all graphics objects created must be OpenGL ones
         const pipelineV: *Opengl21Pipeline = @alignCast(@ptrCast(pipeline.obj));
         const vertexArrayV: *OpenGL21VertexArray = @alignCast(@ptrCast(vertexArray.obj));
-        window.glMakeCurrent();
+        // I'm not sure what OpenGL thinks of using mapped buffers to draw, but Pinc should not allow that.
         if (vertexArrayV.mapped != null) unreachable;
+        window.glMakeCurrent();
+        gl.viewport(0, 0, @intCast(window.getWidth()), @intCast(window.getHeight()));
         gl.bindBuffer(gl.ARRAY_BUFFER, vertexArrayV.buffer);
         gl.useProgram(pipelineV.shaderProgram);
-        // I'm not sure what OpenGL thinks of using mapped buffers to draw, but Pinc should not allow that.
         for (0..pipelineV.attributes.numAttribs) |attr| {
             // the attribute location that OpenGL uses / knows
             const attribIndex = pipelineV.attributeBindMap[attr];
@@ -288,7 +290,6 @@ pub const Opengl21GraphicsBackend = struct {
             // Anyway, more than an hour was lost due to forgetting to use this function.
             gl.enableVertexAttribArray(attribIndex);
             gl.vertexAttribPointer(attribIndex, _size, _type, if (attribV.normalize) gl.TRUE else gl.FALSE, @intCast(pipelineV.attributes.stride), @ptrFromInt(attribV.offset));
-            this.collectGlErrors();
         }
         switch (pipelineV.vertexAssembly) {
             .array_triangles => gl.drawArrays(gl.TRIANGLES, 0, @intCast(vertexArrayV.num)),
@@ -304,6 +305,14 @@ pub const Opengl21GraphicsBackend = struct {
     pub fn done(this: *Opengl21GraphicsBackend) void {
         _ = this;
         gl.flush();
+    }
+
+    pub fn vertexAttributeAlign(this: *Opengl21GraphicsBackend, _type: pinc.AttribtueType) u32 {
+        // classic OpenGL has no care for vertex attribute alignment
+        // I imagine this is incredibly painful and annoying for some drivers to support.
+        _ = this;
+        _ = _type;
+        return 1;
     }
 
     // converts GL errors / warnings into Pinc errors/warnings
@@ -385,31 +394,30 @@ pub const OpenGL21VertexArray = struct {
         pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         if (this.mapped == null) unreachable;
         if (vertex >= this.num) unreachable;
+        if (attribute >= this.attributes.numAttribs) unreachable;
         const attributeV = this.attributes.attribsBuffer[attribute];
         if (attributeV.type != .vec2) unreachable;
-        // Note: this assumes an alignment of 4 bytes, which I believe OpenGL might already require (I haven't looked into that yet)
-        const mapped = @as([*]f32, @alignCast(@ptrCast(this.mapped.?)));
-        // the divexact here will trigger undefined behavior if the alignment is not compatible with 4 bytes
-        const index = @divExact(vertex * this.attributes.stride + attribute * attributeV.offset, 4);
-        mapped[index] = v[0];
-        mapped[index + 1] = v[1];
+        // We want to make zero assumptions about the alignments of any of these pieces.
+        // As a result, everything needs to be done as bytes
+        const vb: *const [4*2]u8 = @ptrCast(&v);
+        const offset = vertex * this.attributes.stride + attributeV.offset;
+        const writeTo = @as(*[4*2]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        @memcpy(writeTo, vb);
     }
 
     pub fn setItemVec4(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [4]f32) void {
         pinc.state.getWindowBackend().?.glMakeAnyCurrent();
-        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         if (this.mapped == null) unreachable;
         if (vertex >= this.num) unreachable;
+        if (attribute >= this.attributes.numAttribs) unreachable;
         const attributeV = this.attributes.attribsBuffer[attribute];
         if (attributeV.type != .vec4) unreachable;
-        // Note: this assumes an alignment of 4 bytes, which I believe OpenGL might already require (I haven't looked into that yet)
-        const mapped = @as([*]f32, @alignCast(@ptrCast(this.mapped.?)));
-        // the divexact here will trigger undefined behavior if the alignment is not compatible with 4 bytes
-        const index = @divExact(vertex * this.attributes.stride + attribute * attributeV.offset, 4);
-        mapped[index] = v[0];
-        mapped[index + 1] = v[1];
-        mapped[index + 2] = v[2];
-        mapped[index + 3] = v[3];
+        // We want to make zero assumptions about the alignments of any of these pieces.
+        // As a result, everything needs to be done as bytes
+        const vb: *const [4*4]u8 = @ptrCast(&v);
+        const offset = vertex * this.attributes.stride + attributeV.offset;
+        const writeTo = @as(*[4*4]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        @memcpy(writeTo, vb);
     }
 
     pub fn deinit(this: *OpenGL21VertexArray) void {
