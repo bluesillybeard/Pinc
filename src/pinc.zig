@@ -858,6 +858,10 @@ pub const IGraphicsBackend = struct {
         return this.vtable.vertexAttributeAlign(this.obj, _type);
     }
 
+    pub inline fn glslVersionSupported(this: IGraphicsBackend, major: u32, minor: u32, patch: u32) bool {
+        return this.vtable.glslVersionSupported(this.obj, major, minor, patch);
+    }
+
     pub const Vtable = struct {
         prepareFramebuffer: *const fn (this: *anyopaque, framebuffer: FramebufferFormat) void,
         deinit: *const fn (this: *anyopaque) void,
@@ -869,6 +873,7 @@ pub const IGraphicsBackend = struct {
         draw: *const fn (this: *anyopaque, window: ICompleteWindow, pipeline: IPipeline, vertexArray: IVertexArray, elementArray: ?IElementArray) void,
         done: *const fn (this: *anyopaque) void,
         vertexAttributeAlign: *const fn (this: *anyopaque, _type: AttribtueType) u32,
+        glslVersionSupported: *const fn (this: *anyopaque, major: u32, minor: u32, patch: u32) bool,
     };
 
     vtable: *Vtable,
@@ -2034,6 +2039,27 @@ pub export fn pinc_event_window_scroll_horizontal(window: c_int) f32 {
 pub export fn pinc_graphics_vertex_attributes_type_align(_type: AttribtueType) c_int {
     state.validateFor(.init);
     return @intCast(state.getGraphicsBackend().?.vertexAttributeAlign(_type));
+}
+
+pub export fn pinc_graphics_vertex_attributes_max_num() c_int {
+    // TODO: for now this is hard-set at a static number
+    // In the future it will be indeterminant and will depend on the graphics backend at runtime.
+    return VertexAttributesObj.MaxNumAttributes;
+}
+
+pub export fn pinc_graphics_uniforms_max_num() c_int {
+    // TODO: for now this is hard-set at a static number
+    // In the future it will be indeterminant and will depend on the graphics backend at runtime.
+    return UniformsObj.MAX_UNIFORMS;
+}
+
+pub export fn pinc_graphics_texture_max_size() c_int {
+    unreachable;
+}
+
+pub export fn pinc_graphics_shader_glsl_version_supported(major: c_int, minor: c_int, patch: c_int) c_int {
+    state.validateFor(.init);
+    return if (state.getGraphicsBackend().?.glslVersionSupported(@intCast(major), @intCast(minor), @intCast(patch))) 1 else 0;
 }
 
 pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {

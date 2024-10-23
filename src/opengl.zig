@@ -173,7 +173,7 @@ pub const Opengl21GraphicsBackend = struct {
 
     pub fn createVertexArray(this: *Opengl21GraphicsBackend, attributes: *const pinc.VertexAttributesObj, num: usize) ?pinc.IVertexArray {
         _ = this;
-        if(attributes.stride == 0) undefined;
+        if (attributes.stride == 0) undefined;
         pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         var buffer: gl.GLuint = undefined;
         gl.genBuffers(1, &buffer);
@@ -315,6 +315,34 @@ pub const Opengl21GraphicsBackend = struct {
         return 1;
     }
 
+    pub fn glslVersionSupported(this: *Opengl21GraphicsBackend, major: u32, minor: u32, patch: u32) bool {
+        _ = this;
+        // TODO: test this!
+        // if this is compatible with base OpenGL 2.1, then return immediately.
+        if (compareGlslVersions(1, 20, 0, major, minor, patch)) return true;
+
+        // After this point, any kind of error will result in assuming base OpenGL 2.1
+        // Base OpenGL 2.1 was already covered above, so in that case just return false.
+        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
+        const versionstr = gl.getString(gl.SHADING_LANGUAGE_VERSION) orelse return false;
+        const version: []const u8 = std.mem.sliceTo(versionstr, 0);
+        // GLSL versions are formatted as [major].[minor]<.[patch]><[anything vendor specific]>
+        // std has a nice struct to help with this.
+        // It has some extra fluff for utf8, but who cares lol
+
+        const parser = std.fmt.Parser{ .buf = version, .iter = std.unicode.Utf8Iterator{ .bytes = version, .i = 0 } };
+
+        const majorver = parser.number() orelse return false;
+        // this is a wild line of code
+        if ((parser.char() orelse return false) != '.') return false;
+        const minorver = parser.number() orelse return false;
+        const potentialDotChar = parser.char() orelse ' ';
+        // another wilder line of code
+        const potentialPatchver: usize = if (potentialDotChar == '.') (parser.number() orelse 0) else 0;
+
+        return compareGlslVersions(@intCast(majorver), @intCast(minorver), @intCast(potentialPatchver), major, minor, patch);
+    }
+
     // converts GL errors / warnings into Pinc errors/warnings
     // Assumes a current context
     pub fn collectGlErrors(this: *Opengl21GraphicsBackend) void {
@@ -332,6 +360,16 @@ pub const Opengl21GraphicsBackend = struct {
                 else => pinc.pushError(false, .any, "OpenGL backend: unknown error", .{}),
             }
         }
+    }
+
+    fn compareGlslVersions(majora: u32, minora: u32, patcha: u32, majorb: u32, minorb: u32, patchb: u32) bool {
+        if (majora > majorb) return true;
+        if (majorb > majora) return false;
+        if (minora > minorb) return true;
+        if (minorb > minora) return false;
+        if (patcha > patchb) return true;
+        if (patchb > patchb) return false;
+        return true;
     }
 };
 
@@ -399,9 +437,9 @@ pub const OpenGL21VertexArray = struct {
         if (attributeV.type != .vec2) unreachable;
         // We want to make zero assumptions about the alignments of any of these pieces.
         // As a result, everything needs to be done as bytes
-        const vb: *const [4*2]u8 = @ptrCast(&v);
+        const vb: *const [4 * 2]u8 = @ptrCast(&v);
         const offset = vertex * this.attributes.stride + attributeV.offset;
-        const writeTo = @as(*[4*2]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        const writeTo = @as(*[4 * 2]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
         @memcpy(writeTo, vb);
     }
 
@@ -414,9 +452,9 @@ pub const OpenGL21VertexArray = struct {
         if (attributeV.type != .vec4) unreachable;
         // We want to make zero assumptions about the alignments of any of these pieces.
         // As a result, everything needs to be done as bytes
-        const vb: *const [4*4]u8 = @ptrCast(&v);
+        const vb: *const [4 * 4]u8 = @ptrCast(&v);
         const offset = vertex * this.attributes.stride + attributeV.offset;
-        const writeTo = @as(*[4*4]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        const writeTo = @as(*[4 * 4]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
         @memcpy(writeTo, vb);
     }
 
