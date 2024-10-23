@@ -199,7 +199,7 @@ PINC_API int PINC_CALL pinc_graphics_uniforms_max_num();
 // get the maximum width / height of a texture
 PINC_API int PINC_CALL pinc_graphics_texture_max_size();
 
-// Query if a GLSL version is available
+// Query if a GLSL version is available. Generally leave patch as zero unless you have a really good reason to require a specific patch version of the language.
 PINC_API int PINC_CALL pinc_graphics_shader_glsl_version_supported(int major, int minor, int patch);
 
 /// @subsection Graphics initialization functions
