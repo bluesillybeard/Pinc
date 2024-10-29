@@ -6,10 +6,12 @@
 // include the examples into this unity build
 #include "basic.h"
 #include "align1.h"
+#include "uniform.h"
 
 const Example examples[] = {
     {test_basic_start, test_basic_frame, test_basic_deinit, "basic", "A basic colored triangle"},
     {test_align1_start, test_align1_frame, test_align1_deinit, "align1", "A basic white triangle"},
+    {test_uniform_start, test_uniform_frame, test_uniform_deinit, "uniform", "A color changing triangle"},
 };
 
 // examples is a static array (not a pointer) so this trick will work
@@ -88,6 +90,7 @@ int main(int argc, char** argv) {
     }
     // the most basic main loop - also slightly scuffed but it's fine
     int example = 0;
+    frame = 0;
     examples[example].start();
     printf("Starting example %s: %s\n", examples[example].name, examples[example].description);
     bool running = true;
@@ -107,6 +110,7 @@ int main(int argc, char** argv) {
                     examples[example].deinit();
                     printf("Exiting example %s\n", examples[example].name);
                     example = (example + 1) % NUM_EXAMPLES;
+                    frame = 0;
                     examples[example].start();
                     printf("Starting example %s: %s\n", examples[example].name, examples[example].description);
                 }
@@ -117,5 +121,6 @@ int main(int argc, char** argv) {
             on_error_exit();
         }
         pinc_window_present_framebuffer(window, 1);
+        frame++;
     }
 }
