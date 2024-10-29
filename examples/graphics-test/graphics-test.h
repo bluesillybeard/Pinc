@@ -42,3 +42,5 @@ void on_error_exit(void);
 // delcare variables that all examples share
 
 int window;
+
+int frame;

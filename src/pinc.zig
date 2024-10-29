@@ -666,12 +666,21 @@ pub const GlslShadersObj = struct {
     // TODO: fix this memory use disaster (ok it's not THAT bad... only like 1 kb per instance or something like that)
     // The issue is when you realize that *all* pinc objects become at least 1kb per instance due the fact that all object types are in a union.
     attributeMaps: [maxAttributeMaps]AttributeMap = undefined,
+    // Whoops, another kilobyte per object, my bad
+    numUniformMaps: usize = 0,
+    uniformMaps: [UniformsObj.MAX_UNIFORMS]UniformMap = undefined,
 };
 
 pub const AttributeMap = struct {
     pub const maxAttributeNameSize = 32;
     nameLen: usize,
     name: [maxAttributeNameSize]u8,
+};
+
+pub const UniformMap = struct {
+    pub const maxUniformNameSize = 32;
+    nameLen: usize,
+    name: [maxUniformNameSize]u8,
 };
 
 pub const PipelineInitData = struct {
@@ -904,8 +913,13 @@ pub const IPipeline = struct {
         this.vtable.deinit(this.obj);
     }
 
+    pub inline fn setVec4(this: IPipeline, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void {
+        this.vtable.setVec4(this.obj, uniform, v1, v2, v3, v4);
+    }
+
     pub const Vtable = struct {
         deinit: *const fn (this: *anyopaque) void,
+        setVec4: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void,
     };
 
     vtable: *Vtable,
@@ -2054,6 +2068,7 @@ pub export fn pinc_graphics_uniforms_max_num() c_int {
 }
 
 pub export fn pinc_graphics_texture_max_size() c_int {
+    // TODO: implement
     unreachable;
 }
 
@@ -2069,6 +2084,11 @@ pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
     const object = refNewObject(&id);
     object.* = .{ .vertexAttributes = .{ .numAttribs = @intCast(num) } };
     return id;
+}
+
+pub export fn pinc_graphics_vertex_attributes_deinit(vertex_attributes_obj: c_int) void {
+    state.validateFor(.init);
+    deallocObject(vertex_attributes_obj);
 }
 
 pub export fn pinc_graphics_vertex_attributes_set_item(vertex_attributes_obj: c_int, index: c_int, attrib_type: c_int, offset: c_int, normalize: c_int) void {
@@ -2092,10 +2112,40 @@ pub export fn pinc_graphics_uniforms_create(num: c_int) c_int {
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
+    if(num > pinc_graphics_uniforms_max_num()) unreachable;
     object.* = .{ .uniforms = .{
         .numUniforms = @intCast(num),
     } };
     return id;
+}
+
+pub export fn pinc_graphics_uniforms_deinit(uniforms_obj: c_int) void {
+    state.validateFor(.init);
+    deallocObject(uniforms_obj);
+}
+
+pub export fn pinc_graphics_uniforms_set_item(uniforms_obj: c_int, index: c_int, _type: UniformType) void {
+    state.validateFor(.init);
+    const uniforms = &refObject(uniforms_obj).*.uniforms;
+    if(index >= uniforms.numUniforms) unreachable;
+    // This is what I get for using a union to store the texture sampler data
+    // TODO: Arguably that belongs in the pipeline anyway - I'll fix that later.
+    // TODO: Do the above one first, but if that never happens then at least implement the rest of the types
+    uniforms.uniformsBuffer[@intCast(index)] = switch (_type) {
+        .vec4 => .{.vec4 = void{}},
+        else => unreachable,
+    };
+}
+
+pub export fn pinc_graphics_uniforms_set_item_texture_sampler_properties(uniforms_obj: c_int, index: c_int, wrap: TextureWrap, min_filter: Filter, mag_filter: Filter, mipmap: c_int) void {
+    _ = uniforms_obj;
+    _ = index;
+    _ = wrap;
+    _ = min_filter;
+    _ = mag_filter;
+    _ = mipmap;
+    // TODO: implement
+    unreachable;
 }
 
 pub export fn pinc_graphics_shaders_create(shaders_type: c_int) c_int {
@@ -2111,6 +2161,21 @@ pub export fn pinc_graphics_shaders_create(shaders_type: c_int) c_int {
         },
     };
     return id;
+}
+
+pub export fn pinc_graphics_shaders_deinit(shaders_obj: c_int) void {
+    state.validateFor(.init);
+    // shader objects have some memory that needs to be freed first
+    const obj = refObject(shaders_obj);
+    const frag = obj.shaders.glsl.fragmentSource;
+    if (frag.len > 0) {
+        allocator.?.free(frag);
+    }
+    const vert = obj.shaders.glsl.vertexSource;
+    if (vert.len > 0) {
+        allocator.?.free(vert);
+    }
+    deallocObject(shaders_obj);
 }
 
 pub export fn pinc_graphics_shaders_glsl_vertex_set_len(shaders_obj: c_int, len: c_int) void {
@@ -2179,6 +2244,30 @@ pub export fn pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders_obj:
     object.glsl.attributeMaps[@intCast(attribute)].name[@intCast(index)] = @intCast(item);
 }
 
+pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_num(shaders_obj: c_int, num: c_int) void {
+    state.validateFor(.init);
+    const object = &refObject(shaders_obj).shaders;
+    if(num > pinc_graphics_uniforms_max_num()) unreachable;
+    object.glsl.numUniformMaps = @intCast(num);
+    object.glsl.uniformMaps = undefined;
+}
+
+pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders_obj: c_int, uniform: c_int, len: c_int) void {
+    state.validateFor(.init);
+    const object = &refObject(shaders_obj).shaders;
+    if(uniform > object.glsl.numUniformMaps) unreachable;
+    if(len > UniformMap.maxUniformNameSize) unreachable;
+    object.glsl.uniformMaps[@intCast(uniform)].nameLen = @intCast(len);
+}
+
+pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders_obj: c_int, uniform: c_int, index: c_int, value: c_char) void {
+    state.validateFor(.init);
+    const object = &refObject(shaders_obj).shaders;
+    if(uniform > object.glsl.numUniformMaps) unreachable;
+    if(index > object.glsl.uniformMaps[@intCast(uniform)].nameLen) unreachable;
+    object.glsl.uniformMaps[@intCast(uniform)].name[@intCast(index)] = @intCast(value);
+}
+
 pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_int, uniforms_obj: c_int, shaders_obj: c_int, assembly: c_int) c_int {
     state.validateFor(.init);
     var id: c_int = undefined;
@@ -2191,43 +2280,6 @@ pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_
         .assembly = @enumFromInt(assembly),
     } };
     return id;
-}
-
-pub export fn pinc_graphics_shaders_deinit(shaders_obj: c_int) void {
-    state.validateFor(.init);
-    // shader objects have some memory that needs to be freed first
-    const obj = refObject(shaders_obj);
-    const frag = obj.shaders.glsl.fragmentSource;
-    if (frag.len > 0) {
-        allocator.?.free(frag);
-    }
-    const vert = obj.shaders.glsl.vertexSource;
-    if (vert.len > 0) {
-        allocator.?.free(vert);
-    }
-    deallocObject(shaders_obj);
-}
-
-pub export fn pinc_graphics_uniforms_deinit(uniforms_obj: c_int) void {
-    state.validateFor(.init);
-    deallocObject(uniforms_obj);
-}
-
-pub export fn pinc_graphics_vertex_attributes_deinit(vertex_attributes_obj: c_int) void {
-    state.validateFor(.init);
-    deallocObject(vertex_attributes_obj);
-}
-
-pub export fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void {
-    state.validateFor(.init);
-    const object = refObject(window);
-    state.init.graphicsBackend.fillColor(object.completeWindow, c1, c2, c3, c4);
-}
-
-pub export fn pinc_graphics_fill_depth(window: c_int, depth: f32) void {
-    state.validateFor(.init);
-    const object = refObject(window);
-    state.init.graphicsBackend.fillDepth(object.completeWindow, depth);
 }
 
 pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) void {
@@ -2247,10 +2299,75 @@ pub export fn pinc_graphics_pipeline_deinit(pipeline_obj: c_int) void {
     object.deinit();
 }
 
-pub export fn pinc_graphics_vertex_array_deinit(vertex_array_obj: c_int) void {
+pub export fn pinc_graphics_pipeline_set_uniform_float(pipeline_obj: c_int, uniform: c_int, v: f32) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_vec2(pipeline_obj: c_int, uniform: c_int, v1: f32, v2: f32) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v1;
+    _ = v2;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_vec3(pipeline_obj: c_int, uniform: c_int, v1: f32, v2: f32, v3: f32) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_vec4(pipeline_obj: c_int, uniform: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
     state.validateFor(.init);
-    const object = refObject(vertex_array_obj).vertexArray;
-    object.deinit();
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setVec4(@intCast(uniform), v1, v2, v3, v4);
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_int(pipeline_obj: c_int, uniform: c_int, v: c_int) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_ivec2(pipeline_obj: c_int, uniform: c_int, v1: c_int, v2: c_int) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v1;
+    _ = v2;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_ivec3(pipeline_obj: c_int, uniform: c_int, v1: c_int, v2: c_int, v3: c_int) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_pipeline_set_uniform_ivec4(pipeline_obj: c_int, uniform: c_int, v1: c_int, v2: c_int, v3: c_int, v4: c_int) void {
+    _ = pipeline_obj;
+    _ = uniform;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    _ = v4;
+    // TODO: implement
+    unreachable;
 }
 
 pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, num: c_int) c_int {
@@ -2265,10 +2382,32 @@ pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, nu
     return id;
 }
 
+pub export fn pinc_graphics_vertex_array_deinit(vertex_array_obj: c_int) void {
+    state.validateFor(.init);
+    const object = refObject(vertex_array_obj).vertexArray;
+    object.deinit();
+}
+
 pub export fn pinc_graphics_vertex_array_lock(vertex_array_obj: c_int) void {
     state.validateFor(.init);
     const obj = refObject(vertex_array_obj).*.vertexArray;
     obj.lock();
+}
+
+pub export fn pinc_graphics_vertex_array_set_len(vertex_array_obj: c_int, num: c_int) void {
+    _ = vertex_array_obj;
+    _ = num;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_float(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: f32) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v;
+    // TODO: implement
+    unreachable;
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32) void {
@@ -2277,16 +2416,225 @@ pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, 
     obj.setItemVec2(@intCast(vertex), @intCast(attribute), [2]f32{ v1, v2 });
 }
 
+pub export fn pinc_graphics_vertex_array_set_item_vec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    // TODO: implement
+    unreachable;
+}
+
 pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
     state.validateFor(.init);
     const obj = refObject(vertex_array_obj).*.vertexArray;
     obj.setItemVec4(@intCast(vertex), @intCast(attribute), [4]f32{ v1, v2, v3, v4 });
 }
 
+pub export fn pinc_graphics_vertex_array_set_item_int(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: c_int) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_ivec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_int, v2: c_int) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_ivec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_int, v2: c_int, v3: c_int) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_ivec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_int, v2: c_int, v3: c_int, v4: c_int) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    _ = v4;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_short(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: c_short) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_svec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_short, v2: c_short) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_svec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_short, v2: c_short, v3: c_short) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_svec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_short, v2: c_short, v3: c_short, v4: c_short) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    _ = v4;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_byte(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: c_char) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_bvec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_char, v2: c_char) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_bvec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_char, v2: c_char, v3: c_char) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_item_bvec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_char, v2: c_char, v3: c_char, v4: c_char) void {
+    _ = vertex_array_obj;
+    _ = vertex;
+    _ = attribute;
+    _ = v1;
+    _ = v2;
+    _ = v3;
+    _ = v4;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_vertex_array_set_byte(vertex_array_obj: c_int, index: c_int, byte: c_char) void {
+    _ = vertex_array_obj;
+    _ = index;
+    _ = byte;
+    // TODO: implement
+    unreachable;
+}
+
 pub export fn pinc_graphics_vertex_array_unlock(vertex_array_obj: c_int) void {
     state.validateFor(.init);
     const obj = refObject(vertex_array_obj).*.vertexArray;
     obj.unlock();
+}
+
+// TODO: replace channels with type
+pub export fn pinc_graphics_texture_create(channels: c_int, width: c_int, height: c_int, depth1: c_int, depth2: c_int, depth3: c_int, depth4: c_int) c_int {
+    _ = channels;
+    _ = width;
+    _ = height;
+    _ = depth1;
+    _ = depth2;
+    _ = depth3;
+    _ = depth4;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_texture_deinit(texture_obj: c_int) void {
+    _ = texture_obj;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_texture_lock(texture_obj: c_int) void {
+    _ = texture_obj;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_texture_set_pixel(texture_obj: c_int, x: c_int, y: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void {
+    _ = texture_obj;
+    _ = x;
+    _ = y;
+    _ = c1;
+    _ = c2;
+    _ = c3;
+    _ = c4;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_texture_update_mipmaps(texture_obj: c_int, mipmap: c_int, levels: c_int, filter: Filter) void {
+    _ = texture_obj;
+    _ = mipmap;
+    _ = levels;
+    _ = filter;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_texture_unlock(texture_obj: c_int) void {
+    _ = texture_obj;
+    // TODO: implement
+    unreachable;
+}
+
+pub export fn pinc_graphics_fill_color(window: c_int, c1: f32, c2: f32, c3: f32, c4: f32) void {
+    state.validateFor(.init);
+    const object = refObject(window);
+    state.init.graphicsBackend.fillColor(object.completeWindow, c1, c2, c3, c4);
+}
+
+pub export fn pinc_graphics_fill_depth(window: c_int, depth: f32) void {
+    state.validateFor(.init);
+    const object = refObject(window);
+    state.init.graphicsBackend.fillDepth(object.completeWindow, depth);
 }
 
 pub export fn pinc_graphics_draw(window: c_int, pipeline_obj: c_int, vertex_array_obj: c_int, element_array_obj: c_int) void {

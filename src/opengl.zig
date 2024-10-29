@@ -2,6 +2,9 @@ const gl = @import("ext/gl21load.zig");
 const pinc = @import("pinc.zig");
 const std = @import("std");
 
+// General OpenGL 2.1 backend TODOs
+// - When using explicit layout binding locations, use those instead of the mapping list in the glsl shaders object
+
 pub const Opengl21GraphicsBackend = struct {
     pub fn init(this: *Opengl21GraphicsBackend) void {
         _ = this;
@@ -158,15 +161,26 @@ pub const Opengl21GraphicsBackend = struct {
             const location = gl.getAttribLocation(program, &name);
             attributeBindMap[mapIndex] = @intCast(location);
         }
+        var uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]u32 = undefined;
+        // TODO: uniform binding map
+        for (0..shaderSources.glsl.numUniformMaps) |mapIndex| {
+            const map = shaderSources.glsl.uniformMaps[mapIndex];
+            var name: [pinc.UniformMap.maxUniformNameSize + 1]u8 = undefined;
+            @memcpy((&name)[0..map.nameLen], map.name[0..map.nameLen]);
+            name[map.nameLen] = 0;
+            // TODO: error when location returns -1
+            const location = gl.getUniformLocation(program, &name);
+            uniformBindMap[mapIndex] = @intCast(location);
+        }
         // -> construct the pipeline instance and return it.
         const pipeline = pinc.allocator.?.create(Opengl21Pipeline) catch unreachable;
         pipeline.* = Opengl21Pipeline{
             .attributeBindMap = attributeBindMap,
+            .uniformBindMap = uniformBindMap,
             .shaderProgram = program,
             .vertexAssembly = assembly,
             .uniforms = uniforms,
             .attributes = attributes,
-            .state = .{},
         };
         return pinc.IPipeline.init(Opengl21Pipeline, pipeline);
     }
@@ -291,6 +305,18 @@ pub const Opengl21GraphicsBackend = struct {
             gl.enableVertexAttribArray(attribIndex);
             gl.vertexAttribPointer(attribIndex, _size, _type, if (attribV.normalize) gl.TRUE else gl.FALSE, @intCast(pipelineV.attributes.stride), @ptrFromInt(attribV.offset));
         }
+        for(0..pipelineV.uniforms.numUniforms) |uniformIndex| {
+            const uniformLocation = pipelineV.uniformBindMap[uniformIndex];
+            const uniformObj = pipelineV.uniforms.uniformsBuffer[uniformIndex];
+            const uniformValue = pipelineV.state.uniformsBuffer[uniformIndex];
+            switch (uniformObj) {
+                .vec4 => {
+                    gl.uniform4f(@intCast(uniformLocation), uniformValue.vec4[0], uniformValue.vec4[1], uniformValue.vec4[2], uniformValue.vec4[3]);
+                },
+                // TODO: implement the rest of the uniform types
+                else => unreachable,
+            }
+        }
         switch (pipelineV.vertexAssembly) {
             .array_triangles => gl.drawArrays(gl.TRIANGLES, 0, @intCast(vertexArrayV.num)),
             .array_triangle_fan => gl.drawArrays(gl.TRIANGLE_FAN, 0, @intCast(vertexArrayV.num)),
@@ -329,8 +355,79 @@ pub const Opengl21GraphicsBackend = struct {
         // GLSL versions are formatted as [major].[minor]<.[patch]><[anything vendor specific]>
         // std has a nice struct to help with this.
         // It has some extra fluff for utf8, but who cares lol
+        // Also, I have to use a local version because the std parse actually has compile errors (oops)
+        // I guess they just forgot to unit test it or something
 
-        const parser = std.fmt.Parser{ .buf = version, .iter = std.unicode.Utf8Iterator{ .bytes = version, .i = 0 } };
+        const Parser = struct {
+            buf: []const u8,
+            pos: usize = 0,
+            iter: std.unicode.Utf8Iterator = undefined,
+
+            // Returns a decimal number or null if the current character is not a
+            // digit
+            pub fn number(self: *@This()) ?usize {
+                var r: ?usize = null;
+
+                while (self.peek(0)) |code_point| {
+                    switch (code_point) {
+                        '0'...'9' => {
+                            if (r == null) r = 0;
+                            r.? *= 10;
+                            r.? += code_point - '0';
+                        },
+                        else => break,
+                    }
+                    _ = self.iter.nextCodepoint();
+                }
+
+                return r;
+            }
+
+            // Returns a substring of the input starting from the current position
+            // and ending where `ch` is found or until the end if not found
+            pub fn until(self: *@This(), ch: u21) []const u8 {
+                var result: []const u8 = &[_]u8{};
+                while (self.peek(0)) |code_point| {
+                    if (code_point == ch)
+                        break;
+                    result = result ++ (self.iter.nextCodepointSlice() orelse &[_]u8{});
+                }
+                return result;
+            }
+
+            // Returns one character, if available
+            pub fn char(self: *@This()) ?u21 {
+                if (self.iter.nextCodepoint()) |code_point| {
+                    return code_point;
+                }
+                return null;
+            }
+
+            pub fn maybe(self: *@This(), val: u21) bool {
+                if (self.peek(0) == val) {
+                    _ = self.iter.nextCodepoint();
+                    return true;
+                }
+                return false;
+            }
+
+            // Returns the n-th next character or null if that's past the end
+            pub fn peek(self: *@This(), n: usize) ?u21 {
+                const original_i = self.iter.i;
+                defer self.iter.i = original_i;
+
+                // std forgot to declare the type of this variable as usize
+                var i: usize = 0;
+                var code_point: ?u21 = null;
+                while (i <= n) : (i += 1) {
+                    code_point = self.iter.nextCodepoint();
+                    if (code_point == null) return null;
+                }
+                return code_point;
+            }
+        };
+
+        var parser = Parser{ .buf = version, .iter = std.unicode.Utf8Iterator{ .bytes = version, .i = 0 } };
 
         const majorver = parser.number() orelse return false;
         // this is a wild line of code
@@ -380,22 +477,37 @@ pub const Opengl21Pipeline = struct {
     }
 
     pub fn deinit(this: *Opengl21Pipeline) void {
+        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         gl.deleteProgram(this.shaderProgram);
         this.* = undefined;
         pinc.allocator.?.destroy(this);
     }
 
+    pub fn setVec4(this: *Opengl21Pipeline, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void {
+        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .vec4) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .vec4 = [4]f32{v1, v2, v3, v4} };
+    }
+
     attributeBindMap: [pinc.GlslShadersObj.maxAttributeMaps]u32,
+    uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]u32,
     shaderProgram: gl.GLuint,
     vertexAssembly: pinc.VertexAssembly,
     // Local copy of the uniforms object
     uniforms: pinc.UniformsObj,
     // local copy of the vertex attributes object
     attributes: pinc.VertexAttributesObj,
-    state: struct {
-        // TODO: uniform state
-        // Actually, uniforms are like basically the only pipeline state at the moment. The struct remains empty...
-    },
+    state: Opengl21UniformState = .{},
+};
+
+const Opengl21UniformState = struct {
+    uniformsBuffer: [pinc.UniformsObj.MAX_UNIFORMS]Opengl21UniformValue = undefined,
+};
+
+// This union is not discriminated as the tag is determined using the uniforms object held within each pipeline
+const Opengl21UniformValue = union {
+    vec4: [4]f32,
 };
 
 pub const OpenGL21VertexArray = struct {

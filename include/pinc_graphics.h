@@ -12,24 +12,29 @@
 
 // TODO: the enire graphics section is in need of documentation
 
+// TODO: add these features:
+// - depth testing
+// - stencil test?
+
 /// @subsection graphics enums
 
 enum pinc_graphics_attribute_type {
+    /// @brief 32 bit float
     pinc_graphics_attribute_type_float,
     pinc_graphics_attribute_type_vec2,
     pinc_graphics_attribute_type_vec3,
     pinc_graphics_attribute_type_vec4,
-    // 4 byte integer
+    /// @brief 4 byte integer
     pinc_graphics_attribute_type_int,
     pinc_graphics_attribute_type_ivec2,
     pinc_graphics_attribute_type_ivec3,
     pinc_graphics_attribute_type_ivec4,
-    // 2 byte integer
+    /// @brief 2 byte integer
     pinc_graphics_attribute_type_short,
     pinc_graphics_attribute_type_svec2,
     pinc_graphics_attribute_type_svec3,
     pinc_graphics_attribute_type_svec4,
-    // 1 byte integer
+    /// @brief 1 byte integer
     pinc_graphics_attribute_type_byte,
     pinc_graphics_attribute_type_bvec2,
     pinc_graphics_attribute_type_bvec3,
@@ -256,6 +261,19 @@ PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attri
 PINC_API void PINC_CALL pinc_graphics_pipeline_complete(int pipeline_obj);
 
 PINC_API void PINC_CALL pinc_graphics_pipeline_deinit(int pipeline_obj);
+
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_float(int pipeline_obj, int uniform, float v);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_vec2(int pipeline_obj, int uniform, float v1, float v2);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_vec3(int pipeline_obj, int uniform, float v1, float v2, float v3);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_vec4(int pipeline_obj, int uniform, float v1, float v2, float v3, float v4);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_int(int pipeline_obj, int uniform, int v);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_ivec2(int pipeline_obj, int uniform, int v1, int v2);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_ivec3(int pipeline_obj, int uniform, int v1, int v2, int v3);
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_ivec4(int pipeline_obj, int uniform, int v1, int v2, int v3, int v4);
+// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat2x2(int pipeline_obj, int uniform, mat2x2 v);
+// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat3x3(int pipeline_obj, int uniform, mat3x3 v);
+// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat4x4(int pipeline_obj, int uniform, mat4x4 v);
+// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_texture(int pipeline_obj, int uniform, texture v);
 
 PINC_API int PINC_CALL pinc_graphics_vertex_array_create(int vertex_attributes_obj, int num);
 
