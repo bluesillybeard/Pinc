@@ -242,12 +242,12 @@ pub const VertexAssembly = enum(c_int) {
 
 // other types
 
-pub const maxChannels = 4;
+pub const MAX_COLOR_CHANNELS = 4;
 
 pub const FramebufferFormat = struct {
     // Data given out to Pincs user
     channels: u32,
-    channelDepths: [maxChannels]u32,
+    channelDepths: [MAX_COLOR_CHANNELS]u32,
     depthBits: u32,
     // Data that is used internally
     /// This is to help implementing backends, not used by any of Pinc's backend-agnostic code.
@@ -596,10 +596,10 @@ pub const VertexAttribute = struct {
 pub const VertexAttributesObj = struct {
     // Note: OpenGL only guarantees a maximum of 16 4 component attributes.
     // TODO: find a better maximum for the memory storage
-    pub const MaxNumAttributes = 16;
+    pub const MAX_ATTRIBUTES = 16;
     numAttribs: usize = 0,
     stride: usize = 0,
-    attribsBuffer: [MaxNumAttributes]VertexAttribute = undefined,
+    attribsBuffer: [MAX_ATTRIBUTES]VertexAttribute = undefined,
 
     pub fn setLength(this: *VertexAttributesObj, len: usize) void {
         if (len > this.numAttribs) {
@@ -657,7 +657,6 @@ pub const ShadersObj = union(ShaderType) {
 };
 
 pub const GlslShadersObj = struct {
-    pub const maxAttributeMaps = 16;
     // these are on the heap
     vertexSource: [:0]u8,
     fragmentSource: [:0]u8,
@@ -665,22 +664,22 @@ pub const GlslShadersObj = struct {
     // lol memory efficiency is for losers anyway
     // TODO: fix this memory use disaster (ok it's not THAT bad... only like 1 kb per instance or something like that)
     // The issue is when you realize that *all* pinc objects become at least 1kb per instance due the fact that all object types are in a union.
-    attributeMaps: [maxAttributeMaps]AttributeMap = undefined,
+    attributeMaps: [VertexAttributesObj.MAX_ATTRIBUTES]AttributeMap = undefined,
     // Whoops, another kilobyte per object, my bad
     numUniformMaps: usize = 0,
     uniformMaps: [UniformsObj.MAX_UNIFORMS]UniformMap = undefined,
 };
 
 pub const AttributeMap = struct {
-    pub const maxAttributeNameSize = 32;
+    pub const MAX_ATTRIBUTE_NAME_SIZE = 32;
     nameLen: usize,
-    name: [maxAttributeNameSize]u8,
+    name: [MAX_ATTRIBUTE_NAME_SIZE]u8,
 };
 
 pub const UniformMap = struct {
-    pub const maxUniformNameSize = 32;
+    pub const MAX_UNIFORM_NAME_SIZE = 32;
     nameLen: usize,
-    name: [maxUniformNameSize]u8,
+    name: [MAX_UNIFORM_NAME_SIZE]u8,
 };
 
 pub const PipelineInitData = struct {
@@ -917,9 +916,24 @@ pub const IPipeline = struct {
         this.vtable.setVec4(this.obj, uniform, v1, v2, v3, v4);
     }
 
+    pub inline fn setFloat(this: IPipeline, uniform: u32, v: f32) void {
+        this.vtable.setFloat(this.obj, uniform, v);
+    }
+
+    pub inline fn setVec2(this: IPipeline, uniform: u32, v1: f32, v2: f32) void {
+        this.vtable.setVec2(this.obj, uniform, v1, v2);
+    }
+
+    pub inline fn setVec3(this: IPipeline, uniform: u32, v1: f32, v2: f32, v3: f32) void {
+        this.vtable.setVec3(this.obj, uniform, v1, v2, v3);
+    }
+
     pub const Vtable = struct {
         deinit: *const fn (this: *anyopaque) void,
         setVec4: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void,
+        setFloat: *const fn (this: *anyopaque, uniform: u32, v: f32) void,
+        setVec2: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32) void,
+        setVec3: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32, v3: f32) void,
     };
 
     vtable: *Vtable,
@@ -2058,7 +2072,7 @@ pub export fn pinc_graphics_vertex_attributes_type_align(_type: AttribtueType) c
 pub export fn pinc_graphics_vertex_attributes_max_num() c_int {
     // TODO: for now this is hard-set at a static number
     // In the future it will be indeterminant and will depend on the graphics backend at runtime.
-    return VertexAttributesObj.MaxNumAttributes;
+    return VertexAttributesObj.MAX_ATTRIBUTES;
 }
 
 pub export fn pinc_graphics_uniforms_max_num() c_int {
@@ -2078,7 +2092,7 @@ pub export fn pinc_graphics_shader_glsl_version_supported(major: c_int, minor: c
 }
 
 pub export fn pinc_graphics_vertex_attributes_create(num: c_int) c_int {
-    if (num > VertexAttributesObj.MaxNumAttributes) unreachable;
+    if (num > VertexAttributesObj.MAX_ATTRIBUTES) unreachable;
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
@@ -2132,6 +2146,9 @@ pub export fn pinc_graphics_uniforms_set_item(uniforms_obj: c_int, index: c_int,
     // TODO: Arguably that belongs in the pipeline anyway - I'll fix that later.
     // TODO: Do the above one first, but if that never happens then at least implement the rest of the types
     uniforms.uniformsBuffer[@intCast(index)] = switch (_type) {
+        .float => .{.float = void{}},
+        .vec2 => .{.vec2 = void{}},
+        .vec3 => .{.vec3 = void{}},
         .vec4 => .{.vec4 = void{}},
         else => unreachable,
     };
@@ -2256,7 +2273,7 @@ pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders
     state.validateFor(.init);
     const object = &refObject(shaders_obj).shaders;
     if(uniform > object.glsl.numUniformMaps) unreachable;
-    if(len > UniformMap.maxUniformNameSize) unreachable;
+    if(len > UniformMap.MAX_UNIFORM_NAME_SIZE) unreachable;
     object.glsl.uniformMaps[@intCast(uniform)].nameLen = @intCast(len);
 }
 
@@ -2300,30 +2317,21 @@ pub export fn pinc_graphics_pipeline_deinit(pipeline_obj: c_int) void {
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_float(pipeline_obj: c_int, uniform: c_int, v: f32) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setFloat(@intCast(uniform), v);
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_vec2(pipeline_obj: c_int, uniform: c_int, v1: f32, v2: f32) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v1;
-    _ = v2;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setVec2(@intCast(uniform), v1, v2);
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_vec3(pipeline_obj: c_int, uniform: c_int, v1: f32, v2: f32, v3: f32) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setVec3(@intCast(uniform), v1, v2, v3);
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_vec4(pipeline_obj: c_int, uniform: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {
