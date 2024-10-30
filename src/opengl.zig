@@ -150,11 +150,11 @@ pub const Opengl21GraphicsBackend = struct {
         // Anyway, the program is done. Time for the next step.
 
         // Map from input index to 'real' opengl layout binding
-        var attributeBindMap: [pinc.GlslShadersObj.maxAttributeMaps]u32 = undefined;
+        var attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]u32 = undefined;
         // TODO: uniform binding map
         for (0..shaderSources.glsl.numAttributeMaps) |mapIndex| {
             const map = shaderSources.glsl.attributeMaps[mapIndex];
-            var name: [pinc.AttributeMap.maxAttributeNameSize + 1]u8 = undefined;
+            var name: [pinc.AttributeMap.MAX_ATTRIBUTE_NAME_SIZE + 1]u8 = undefined;
             @memcpy((&name)[0..map.nameLen], map.name[0..map.nameLen]);
             name[map.nameLen] = 0;
             // TODO: error when location returns -1
@@ -165,7 +165,7 @@ pub const Opengl21GraphicsBackend = struct {
         // TODO: uniform binding map
         for (0..shaderSources.glsl.numUniformMaps) |mapIndex| {
             const map = shaderSources.glsl.uniformMaps[mapIndex];
-            var name: [pinc.UniformMap.maxUniformNameSize + 1]u8 = undefined;
+            var name: [pinc.UniformMap.MAX_UNIFORM_NAME_SIZE + 1]u8 = undefined;
             @memcpy((&name)[0..map.nameLen], map.name[0..map.nameLen]);
             name[map.nameLen] = 0;
             // TODO: error when location returns -1
@@ -310,6 +310,15 @@ pub const Opengl21GraphicsBackend = struct {
             const uniformObj = pipelineV.uniforms.uniformsBuffer[uniformIndex];
             const uniformValue = pipelineV.state.uniformsBuffer[uniformIndex];
             switch (uniformObj) {
+                .float => {
+                    gl.uniform1f(@intCast(uniformLocation), uniformValue.float);
+                },
+                .vec2 => {
+                    gl.uniform2f(@intCast(uniformLocation), uniformValue.vec2[0], uniformValue.vec2[1]);
+                },
+                .vec3 => {
+                    gl.uniform3f(@intCast(uniformLocation), uniformValue.vec3[0], uniformValue.vec3[1], uniformValue.vec3[2]);
+                },
                 .vec4 => {
                     gl.uniform4f(@intCast(uniformLocation), uniformValue.vec4[0], uniformValue.vec4[1], uniformValue.vec4[2], uniformValue.vec4[3]);
                 },
@@ -484,13 +493,30 @@ pub const Opengl21Pipeline = struct {
     }
 
     pub fn setVec4(this: *Opengl21Pipeline, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void {
-        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         if(uniform >= this.uniforms.numUniforms) unreachable;
         if(this.uniforms.uniformsBuffer[uniform] != .vec4) unreachable;
         this.state.uniformsBuffer[uniform] = .{ .vec4 = [4]f32{v1, v2, v3, v4} };
     }
 
-    attributeBindMap: [pinc.GlslShadersObj.maxAttributeMaps]u32,
+    pub fn setFloat(this: *Opengl21Pipeline, uniform: u32, v: f32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .float) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .float = v };
+    }
+
+    pub fn setVec2(this: *Opengl21Pipeline, uniform: u32, v1: f32, v2: f32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .vec2) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .vec2 = [2]f32{v1, v2} };
+    }
+
+    pub fn setVec3(this: *Opengl21Pipeline, uniform: u32, v1: f32, v2: f32, v3: f32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .vec3) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .vec3 = [3]f32{v1, v2, v3} };
+    }
+
+    attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]u32,
     uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]u32,
     shaderProgram: gl.GLuint,
     vertexAssembly: pinc.VertexAssembly,
@@ -498,15 +524,18 @@ pub const Opengl21Pipeline = struct {
     uniforms: pinc.UniformsObj,
     // local copy of the vertex attributes object
     attributes: pinc.VertexAttributesObj,
-    state: Opengl21UniformState = .{},
+    state: Opengl21PipelineState = .{},
 };
 
-const Opengl21UniformState = struct {
+const Opengl21PipelineState = struct {
     uniformsBuffer: [pinc.UniformsObj.MAX_UNIFORMS]Opengl21UniformValue = undefined,
 };
 
 // This union is not discriminated as the tag is determined using the uniforms object held within each pipeline
 const Opengl21UniformValue = union {
+    float: f32,
+    vec2: [2]f32,
+    vec3: [3]f32,
     vec4: [4]f32,
 };
 

@@ -1,17 +1,23 @@
 // This is more of a unit test type thing rather than a real example.
 // It will demonstrate use of all graphics features, however it is not meant as a demonstration.
 
+// TODO: once Pinc can report back framebuffer color values, use that to actually create a pass/fail based on pixel values in the framebuffer.
+// Probably need a margin for error as different backends may produce slightly different colors
+// and we need to account for framebuffer channels and depth.
+
 #include "graphics-test.h"
 
 // include the examples into this unity build
 #include "basic.h"
 #include "align1.h"
 #include "uniform.h"
+#include "uniform2.h"
 
 const Example examples[] = {
     {test_basic_start, test_basic_frame, test_basic_deinit, "basic", "A basic colored triangle"},
     {test_align1_start, test_align1_frame, test_align1_deinit, "align1", "A basic white triangle"},
     {test_uniform_start, test_uniform_frame, test_uniform_deinit, "uniform", "A color changing triangle"},
+    {test_uniform2_start, test_uniform2_frame, test_uniform2_deinit, "uniform2", "A green triangle - will be red if something isn't correct"},
 };
 
 // examples is a static array (not a pointer) so this trick will work

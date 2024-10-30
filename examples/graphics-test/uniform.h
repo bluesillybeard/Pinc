@@ -1,6 +1,5 @@
 #include "graphics-test.h"
 
-
 int test_uniform_pipeline;
 int test_uniform_vertex_array;
 
@@ -99,11 +98,6 @@ void test_uniform_start(void) {
     pinc_graphics_vertex_attributes_deinit(vertexAttribs);
 }
 
-float fabs(float value) {
-    if(value < 0) return -value;
-    return value;
-}
-
 void test_uniform_frame(void) {
     // ranges from 0 to 2pi
     float hue = (((float)(frame % 300)) / 299);
@@ -111,10 +105,7 @@ void test_uniform_frame(void) {
     float R = fabs(hue * 6.0 - 3.0) - 1.0;
     float G = 2.0 - fabs(hue * 6.0 - 2.0);
     float B = 2.0 - fabs(hue * 6.0 - 4.0);
-    // Set the fill color for the triangle
-    RGBAColor col = {R, G, B, 1};
-    RealColor realCol = color_to_real(col, pinc_framebuffer_format_get_channels(-1));
-    pinc_graphics_pipeline_set_uniform_vec4(test_uniform_pipeline, 0, realCol.c1, realCol.c2, realCol.c3, realCol.c4);
+    pinc_graphics_pipeline_set_uniform_vec4(test_uniform_pipeline, 0, R, G, B, 1);
     pinc_graphics_draw(window, test_uniform_pipeline, test_uniform_vertex_array, 0);
     pinc_graphics_done();
 }

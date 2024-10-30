@@ -35,6 +35,7 @@
         "cstring": "c",
         "graphics-test.h": "c",
         "sysexits.h": "c",
-        "execinfo.h": "c"
+        "execinfo.h": "c",
+        "graphics": "cpp"
     }
 }
