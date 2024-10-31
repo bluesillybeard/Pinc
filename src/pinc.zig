@@ -928,12 +928,32 @@ pub const IPipeline = struct {
         this.vtable.setVec3(this.obj, uniform, v1, v2, v3);
     }
 
+    pub inline fn setInt(this: IPipeline, uniform: u32, v: i32) void {
+        this.vtable.setInt(this.obj, uniform, v);
+    }
+
+    pub inline fn setIvec2(this: IPipeline, uniform: u32, v1: i32, v2: i32) void {
+        this.vtable.setIvec2(this.obj, uniform, v1, v2);
+    }
+
+    pub inline fn setIvec3(this: IPipeline, uniform: u32, v1: i32, v2: i32, v3: i32) void {
+        this.vtable.setIvec3(this.obj, uniform, v1, v2, v3);
+    }
+
+    pub inline fn setIvec4(this: IPipeline, uniform: u32, v1: i32, v2: i32, v3: i32, v4: i32) void {
+        this.vtable.setIvec4(this.obj, uniform, v1, v2, v3, v4);
+    }
+
     pub const Vtable = struct {
         deinit: *const fn (this: *anyopaque) void,
         setVec4: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void,
         setFloat: *const fn (this: *anyopaque, uniform: u32, v: f32) void,
         setVec2: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32) void,
         setVec3: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32, v3: f32) void,
+        setInt: *const fn (this: *anyopaque, uniform: u32, v: i32) void,
+        setIvec2: *const fn (this: *anyopaque, uniform: u32, v1: i32, v2: i32) void,
+        setIvec3: *const fn (this: *anyopaque, uniform: u32, v1: i32, v2: i32, v3: i32) void,
+        setIvec4: *const fn (this: *anyopaque, uniform: u32, v1: i32, v2: i32, v3: i32, v4: i32) void,
     };
 
     vtable: *Vtable,
@@ -2150,6 +2170,10 @@ pub export fn pinc_graphics_uniforms_set_item(uniforms_obj: c_int, index: c_int,
         .vec2 => .{.vec2 = void{}},
         .vec3 => .{.vec3 = void{}},
         .vec4 => .{.vec4 = void{}},
+        .int => .{.int = void{}},
+        .ivec2 => .{.ivec2 = void{}},
+        .ivec3 => .{.ivec3 = void{}},
+        .ivec4 => .{.ivec4 = void{}},
         else => unreachable,
     };
 }
@@ -2341,41 +2365,27 @@ pub export fn pinc_graphics_pipeline_set_uniform_vec4(pipeline_obj: c_int, unifo
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_int(pipeline_obj: c_int, uniform: c_int, v: c_int) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setInt(@intCast(uniform), @intCast(v));
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_ivec2(pipeline_obj: c_int, uniform: c_int, v1: c_int, v2: c_int) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v1;
-    _ = v2;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setIvec2(@intCast(uniform), @intCast(v1), @intCast(v2));
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_ivec3(pipeline_obj: c_int, uniform: c_int, v1: c_int, v2: c_int, v3: c_int) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setIvec3(@intCast(uniform), @intCast(v1), @intCast(v2), @intCast(v3));
 }
 
 pub export fn pinc_graphics_pipeline_set_uniform_ivec4(pipeline_obj: c_int, uniform: c_int, v1: c_int, v2: c_int, v3: c_int, v4: c_int) void {
-    _ = pipeline_obj;
-    _ = uniform;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    _ = v4;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setIvec4(@intCast(uniform), @intCast(v1), @intCast(v2), @intCast(v3), @intCast(v4));
 }
 
 pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, num: c_int) c_int {

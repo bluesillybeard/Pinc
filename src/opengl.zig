@@ -322,7 +322,18 @@ pub const Opengl21GraphicsBackend = struct {
                 .vec4 => {
                     gl.uniform4f(@intCast(uniformLocation), uniformValue.vec4[0], uniformValue.vec4[1], uniformValue.vec4[2], uniformValue.vec4[3]);
                 },
-                // TODO: implement the rest of the uniform types
+                .int => {
+                    gl.uniform1i(@intCast(uniformLocation), uniformValue.int);
+                },
+                .ivec2 => {
+                    gl.uniform2i(@intCast(uniformLocation), uniformValue.ivec2[0], uniformValue.ivec2[1]);
+                },
+                .ivec3 => {
+                    gl.uniform3i(@intCast(uniformLocation), uniformValue.ivec3[0], uniformValue.ivec3[1], uniformValue.ivec3[2]);
+                },
+                .ivec4 => {
+                    gl.uniform4i(@intCast(uniformLocation), uniformValue.ivec4[0], uniformValue.ivec4[1], uniformValue.ivec4[2], uniformValue.ivec4[3]);
+                },
                 else => unreachable,
             }
         }
@@ -516,6 +527,30 @@ pub const Opengl21Pipeline = struct {
         this.state.uniformsBuffer[uniform] = .{ .vec3 = [3]f32{v1, v2, v3} };
     }
 
+    pub fn setInt(this: *Opengl21Pipeline, uniform: u32, v: i32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .int) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .int = v };
+    }
+
+    pub fn setIvec2(this: *Opengl21Pipeline, uniform: u32, v1: i32, v2: i32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .ivec2) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .ivec2 = [2]i32{v1, v2} };
+    }
+
+    pub fn setIvec3(this: *Opengl21Pipeline, uniform: u32, v1: i32, v2: i32, v3: i32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .ivec3) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .ivec3 = [3]i32{v1, v2, v3} };
+    }
+
+    pub fn setIvec4(this: *Opengl21Pipeline, uniform: u32, v1: i32, v2: i32, v3: i32, v4: i32) void {
+        if(uniform >= this.uniforms.numUniforms) unreachable;
+        if(this.uniforms.uniformsBuffer[uniform] != .ivec4) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .ivec4 = [4]i32{v1, v2, v3, v4} };
+    }
+
     attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]u32,
     uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]u32,
     shaderProgram: gl.GLuint,
@@ -537,6 +572,10 @@ const Opengl21UniformValue = union {
     vec2: [2]f32,
     vec3: [3]f32,
     vec4: [4]f32,
+    int: i32,
+    ivec2: [2]i32,
+    ivec3: [3]i32,
+    ivec4: [4]i32,
 };
 
 pub const OpenGL21VertexArray = struct {

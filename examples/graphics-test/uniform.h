@@ -36,7 +36,7 @@ void test_uniform_start(void) {
         }\
     ";
 
-    int fragmentShaderCodeLen = strlen(vertexShaderCode);
+    int fragmentShaderCodeLen = strlen(fragmentShaderCode);
 
     pinc_graphics_shaders_glsl_vertex_set_len(shaders, vertexShaderCodeLen);
     for(int i=0; i<vertexShaderCodeLen; ++i) {
