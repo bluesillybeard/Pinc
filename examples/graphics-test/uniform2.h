@@ -11,11 +11,15 @@ void test_uniform2_start(void) {
     pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_graphics_attribute_type_vec2, 0, 0);
     pinc_graphics_vertex_attributes_set_stride(vertexAttribs, 8);
 
-    int uniforms = pinc_graphics_uniforms_create(4);
+    int uniforms = pinc_graphics_uniforms_create(8);
     pinc_graphics_uniforms_set_item(uniforms, 0, pinc_graphics_uniform_type_float);
     pinc_graphics_uniforms_set_item(uniforms, 1, pinc_graphics_uniform_type_vec2);
     pinc_graphics_uniforms_set_item(uniforms, 2, pinc_graphics_uniform_type_vec3);
     pinc_graphics_uniforms_set_item(uniforms, 3, pinc_graphics_uniform_type_vec4);
+    pinc_graphics_uniforms_set_item(uniforms, 4, pinc_graphics_uniform_type_int);
+    pinc_graphics_uniforms_set_item(uniforms, 5, pinc_graphics_uniform_type_ivec2);
+    pinc_graphics_uniforms_set_item(uniforms, 6, pinc_graphics_uniform_type_ivec3);
+    pinc_graphics_uniforms_set_item(uniforms, 7, pinc_graphics_uniform_type_ivec4);
 
     // TODO: once fixed-shading is available, use that instead for maximum compatibility
 
@@ -26,17 +30,30 @@ void test_uniform2_start(void) {
     char* vertexShaderCode = "\
         #version 110\n\
         attribute vec2 pos;\n\
-        uniform float tvf; // should be 0.5 \n\
+        uniform float tv1; // should be 0.5 \n\
         uniform vec2 tv2; // should be <-0.5, 1.0>\n\
         uniform vec3 tv3; // should be <7, 5, 6>\n\
         uniform vec4 tv4; // should be <1, 2, 3, 4>\n\
-        varying float vertexWorks;\n\
+        uniform int ti1; // should be 83\n\
+        uniform ivec2 ti2; //should be <8, 3>\n\
+        uniform ivec3 ti3; //should be <1, 2, 4>\n\
+        uniform ivec4 ti4; //should be <5, 6, 7, 9>\n\
+        varying float vw;\n\
         void main() {\n\
             gl_Position = vec4(pos, 0, 1);\n\
-            if(tvf == 0.5 && tv2 == vec2(-0.5, 1.0) && tv3 == vec3(7, 5, 6) && tv4 == vec4(1, 2, 3, 4)) {\n\
-                vertexWorks = 1.0;\n\
+            if(\n\
+                tv1 == 0.5\n\
+                && tv2 == vec2(-0.5, 1.0)\n\
+                && tv3 == vec3(7, 5, 6)\n\
+                && tv4 == vec4(1, 2, 3, 4)\n\
+                && ti1 == 83\n\
+                && ti2 == ivec2(8, 3)\n\
+                && ti3 == ivec3(1, 2, 4)\n\
+                && ti4 == ivec4(5, 6, 7, 9))\n\
+            {\n\
+                vw = 1.0;\n\
             } else {\n\
-                vertexWorks = 0.0;\n\
+                vw = 0.0;\n\
             }\n\
         }\
     ";
@@ -45,13 +62,27 @@ void test_uniform2_start(void) {
 
     char* fragmentShaderCode = "\
         #version 110\n\
-        uniform float tvf; // should be 0.5 \n\
+        uniform float tv1; // should be 0.5 \n\
         uniform vec2 tv2; // should be <-0.5, 1.0>\n\
         uniform vec3 tv3; // should be <7, 5, 6>\n\
         uniform vec4 tv4; // should be <1, 2, 3, 4>\n\
-        varying float vertexWorks;\n\
+        uniform int ti1; // should be 83\n\
+        uniform ivec2 ti2; //should be <8, 3>\n\
+        uniform ivec3 ti3; //should be <1, 2, 4>\n\
+        uniform ivec4 ti4; //should be <5, 6, 7, 9>\n\
+        varying float vw;\n\
         void main() {\n\
-            if(tvf == 0.5 && tv2 == vec2(-0.5, 1.0) && tv3 == vec3(7, 5, 6) && tv4 == vec4(1, 2, 3, 4) && vertexWorks == 1.0) {\n\
+            if (\n\
+                vw == 1.0\n\
+                && tv1 == 0.5\n\
+                && tv2 == vec2(-0.5, 1.0)\n\
+                && tv3 == vec3(7, 5, 6)\n\
+                && tv4 == vec4(1, 2, 3, 4)\n\
+                && ti1 == 83\n\
+                && ti2 == ivec2(8, 3)\n\
+                && ti3 == ivec3(1, 2, 4)\n\
+                && ti4 == ivec4(5, 6, 7, 9))\n\
+            {\n\
                 gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);\n\
             } else {\n\
                 gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n\
@@ -59,7 +90,7 @@ void test_uniform2_start(void) {
         }\
     ";
 
-    int fragmentShaderCodeLen = strlen(vertexShaderCode);
+    int fragmentShaderCodeLen = strlen(fragmentShaderCode);
 
     pinc_graphics_shaders_glsl_vertex_set_len(shaders, vertexShaderCodeLen);
     for(int i=0; i<vertexShaderCodeLen; ++i) {
@@ -81,12 +112,12 @@ void test_uniform2_start(void) {
     pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders, 0, 2, 's');
 
     // uniforms
-    pinc_graphics_shaders_glsl_uniform_mapping_set_num(shaders, 4);
+    pinc_graphics_shaders_glsl_uniform_mapping_set_num(shaders, 8);
 
     pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders, 0, 3);
     pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 0, 0, 't');
     pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 0, 1, 'v');
-    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 0, 2, 'f');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 0, 2, '1');
 
     pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders, 1, 3);
     pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 1, 0, 't');
@@ -102,6 +133,26 @@ void test_uniform2_start(void) {
     pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 3, 0, 't');
     pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 3, 1, 'v');
     pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 3, 2, '4');
+
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders, 4, 3);
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 4, 0, 't');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 4, 1, 'i');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 4, 2, '1');
+
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders, 5, 3);
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 5, 0, 't');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 5, 1, 'i');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 5, 2, '2');
+
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders, 6, 3);
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 6, 0, 't');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 6, 1, 'i');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 6, 2, '3');
+
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders, 7, 3);
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 7, 0, 't');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 7, 1, 'i');
+    pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders, 7, 2, '4');
 
     // Create the pipeline object.
     // Pinc puts all of the vertex assemlbly, uniform inputs, shader code, and other rendering state into a single object
@@ -140,6 +191,10 @@ void test_uniform2_frame(void) {
     pinc_graphics_pipeline_set_uniform_vec2(test_uniform2_pipeline, 1, -0.5, 1);
     pinc_graphics_pipeline_set_uniform_vec3(test_uniform2_pipeline, 2, 7, 5, 6);
     pinc_graphics_pipeline_set_uniform_vec4(test_uniform2_pipeline, 3, 1, 2, 3, 4);
+    pinc_graphics_pipeline_set_uniform_int(test_uniform2_pipeline, 4, 83);
+    pinc_graphics_pipeline_set_uniform_ivec2(test_uniform2_pipeline, 5, 8, 3);
+    pinc_graphics_pipeline_set_uniform_ivec3(test_uniform2_pipeline, 6, 1, 2, 4);
+    pinc_graphics_pipeline_set_uniform_ivec4(test_uniform2_pipeline, 7, 5, 6, 7, 9);
     pinc_graphics_draw(window, test_uniform2_pipeline, test_uniform2_vertex_array, 0);
     pinc_graphics_done();
 }
