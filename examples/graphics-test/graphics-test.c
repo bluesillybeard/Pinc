@@ -12,12 +12,14 @@
 #include "align1.h"
 #include "uniform.h"
 #include "uniform2.h"
+#include "allAttributes.h"
 
 const Example examples[] = {
     {test_basic_start, test_basic_frame, test_basic_deinit, "basic", "A basic colored triangle"},
     {test_align1_start, test_align1_frame, test_align1_deinit, "align1", "A basic white triangle"},
     {test_uniform_start, test_uniform_frame, test_uniform_deinit, "uniform", "A color changing triangle"},
     {test_uniform2_start, test_uniform2_frame, test_uniform2_deinit, "uniform2", "A green triangle - will be red if something isn't correct"},
+    {test_allAttributes_start, test_allAttributes_frame, test_allAttributes_deinit, "allAttributes", "A blue triangle - will be red if something isn't correct"}
 };
 
 // examples is a static array (not a pointer) so this trick will work

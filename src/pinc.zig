@@ -572,12 +572,22 @@ pub const IVertexArray = struct {
         this.vtable.setItemVec4(this.obj, vertex, attribute, v);
     }
 
+    pub inline fn setItemFloat(this: IVertexArray, vertex: usize, attribute: usize, v: f32) void {
+        this.vtable.setItemFloat(this.obj, vertex, attribute, v);
+    }
+    
+    pub inline fn setItemVec3(this: IVertexArray, vertex: usize, attribute: usize, v: [3]f32) void {
+        this.vtable.setItemVec3(this.obj, vertex, attribute, v);
+    }
+
     pub const Vtable = struct {
         deinit: *const fn (this: *anyopaque) void,
         lock: *const fn (this: *anyopaque) void,
         unlock: *const fn (this: *anyopaque) void,
         setItemVec2: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [2]f32) void,
         setItemVec4: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
+        setItemFloat: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: f32) void,
+        setItemVec3: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [3]f32) void,
     };
 
     vtable: *Vtable,
@@ -2420,12 +2430,9 @@ pub export fn pinc_graphics_vertex_array_set_len(vertex_array_obj: c_int, num: c
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_float(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: f32) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemFloat(@intCast(vertex), @intCast(attribute), v);
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32) void {
@@ -2435,14 +2442,9 @@ pub export fn pinc_graphics_vertex_array_set_item_vec2(vertex_array_obj: c_int, 
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_vec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemVec3(@intCast(vertex), @intCast(attribute), [3]f32{ v1, v2, v3 });
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: f32, v2: f32, v3: f32, v4: f32) void {

@@ -638,6 +638,36 @@ pub const OpenGL21VertexArray = struct {
         @memcpy(writeTo, vb);
     }
 
+    pub fn setItemFloat(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: f32) void {
+        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
+        if (this.mapped == null) unreachable;
+        if (vertex >= this.num) unreachable;
+        if (attribute >= this.attributes.numAttribs) unreachable;
+        const attributeV = this.attributes.attribsBuffer[attribute];
+        if (attributeV.type != .float) unreachable;
+        // We want to make zero assumptions about the alignments of any of these pieces.
+        // As a result, everything needs to be done as bytes
+        const vb: *const [4]u8 = @ptrCast(&v);
+        const offset = vertex * this.attributes.stride + attributeV.offset;
+        const writeTo = @as(*[4]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        @memcpy(writeTo, vb);
+    }
+
+    pub fn setItemVec3(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [3]f32) void {
+        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
+        if (this.mapped == null) unreachable;
+        if (vertex >= this.num) unreachable;
+        if (attribute >= this.attributes.numAttribs) unreachable;
+        const attributeV = this.attributes.attribsBuffer[attribute];
+        if (attributeV.type != .vec3) unreachable;
+        // We want to make zero assumptions about the alignments of any of these pieces.
+        // As a result, everything needs to be done as bytes
+        const vb: *const [4 * 3]u8 = @ptrCast(&v);
+        const offset = vertex * this.attributes.stride + attributeV.offset;
+        const writeTo = @as(*[4 * 3]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        @memcpy(writeTo, vb);
+    }
+
     pub fn deinit(this: *OpenGL21VertexArray) void {
         if (this.mapped != null) this.unlock();
         const buffers = [_]gl.GLuint{this.buffer};
