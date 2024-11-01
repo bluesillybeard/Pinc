@@ -179,6 +179,10 @@ None of these are going to be implemented any time soon - if ever.
 
 ## Todo (NOT IN ORDER)
 Note: Even if a feature/item you want is in here, make an issue anyway! Features are prioritized based on github issues.
+- replace undefined behavior with an assert function
+    - ALL undefined behavior that could be caused by user input, including integer overflows/overflows, OOB array index, and null dereference.
+    - make that assert function have a bunch of extra information about what conditions can cause it to happen
+    - the purpose of this is to make debugging broken programs a lot easier without using a proper debugger or knowledge of Pinc's internals
 - On-screen keyboard controls
 - touch gestures
     - Hopefully this is as simple as reporting multiple cursor positions

@@ -330,4 +330,47 @@ PINC_API void PINC_CALL pinc_graphics_draw(int window, int pipeline_obj, int ver
 
 PINC_API void PINC_CALL pinc_graphics_done();
 
+// super quick temp function
+// returns size of a vertex attribute type in bytes
+// TODO: implement properly
+PINC_API int PINC_CALL pinc_graphics_vertex_attributes_type_size(int type) {
+    switch (type)
+    {
+    case pinc_graphics_attribute_type_float:
+        return 4;
+    case pinc_graphics_attribute_type_vec2:
+        return 4 * 2;
+    case pinc_graphics_attribute_type_vec3:
+        return 4 * 3;
+    case pinc_graphics_attribute_type_vec4:
+        return 4 * 4;
+    case pinc_graphics_attribute_type_int:
+        return 4;
+    case pinc_graphics_attribute_type_ivec2:
+        return 4 * 2;
+    case pinc_graphics_attribute_type_ivec3:
+        return 4 * 3;
+    case pinc_graphics_attribute_type_ivec4:
+        return 4 * 4;
+    case pinc_graphics_attribute_type_short:
+        return 2;
+    case pinc_graphics_attribute_type_svec2:
+        return 2 * 2;
+    case pinc_graphics_attribute_type_svec3:
+        return 2 * 3;
+    case pinc_graphics_attribute_type_svec4:
+        return 2 * 4;
+    case pinc_graphics_attribute_type_byte:
+        return 1;
+    case pinc_graphics_attribute_type_bvec2:
+        return 2;
+    case pinc_graphics_attribute_type_bvec3:
+        return 3;
+    case pinc_graphics_attribute_type_bvec4:
+        return 4;
+    default:
+        // unknown type, should probably assert or something
+        return 0;
+    }
+}
 #endif
