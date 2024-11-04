@@ -10,9 +10,15 @@ int test_basic_pipeline;
 int test_basic_vertex_array;
 
 void test_basic_start(void) {
-    pinc_graphics_shader_glsl_version_supported(1, 1, 0);
+    if(!pinc_graphics_shader_glsl_version_supported(1, 1, 0)) {
+        assert(false);
+    }
     // Create a vertex attributes object and fill out the information for it
     int vertexAttribs = pinc_graphics_vertex_attributes_create(2);
+    assert(pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec2) < 24);
+    assert(24 % pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec2) == 0);
+    assert(pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec4) < 8);
+    assert(8 % pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec4) == 0);
     // this is the position of the vertex
     pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_graphics_attribute_type_vec2, 0, 0);
     // this is the color of the vertex

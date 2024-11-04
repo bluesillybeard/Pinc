@@ -575,7 +575,7 @@ pub const IVertexArray = struct {
     pub inline fn setItemFloat(this: IVertexArray, vertex: usize, attribute: usize, v: f32) void {
         this.vtable.setItemFloat(this.obj, vertex, attribute, v);
     }
-    
+
     pub inline fn setItemVec3(this: IVertexArray, vertex: usize, attribute: usize, v: [3]f32) void {
         this.vtable.setItemVec3(this.obj, vertex, attribute, v);
     }
@@ -2156,7 +2156,7 @@ pub export fn pinc_graphics_uniforms_create(num: c_int) c_int {
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
-    if(num > pinc_graphics_uniforms_max_num()) unreachable;
+    if (num > pinc_graphics_uniforms_max_num()) unreachable;
     object.* = .{ .uniforms = .{
         .numUniforms = @intCast(num),
     } };
@@ -2171,19 +2171,19 @@ pub export fn pinc_graphics_uniforms_deinit(uniforms_obj: c_int) void {
 pub export fn pinc_graphics_uniforms_set_item(uniforms_obj: c_int, index: c_int, _type: UniformType) void {
     state.validateFor(.init);
     const uniforms = &refObject(uniforms_obj).*.uniforms;
-    if(index >= uniforms.numUniforms) unreachable;
+    if (index >= uniforms.numUniforms) unreachable;
     // This is what I get for using a union to store the texture sampler data
     // TODO: Arguably that belongs in the pipeline anyway - I'll fix that later.
     // TODO: Do the above one first, but if that never happens then at least implement the rest of the types
     uniforms.uniformsBuffer[@intCast(index)] = switch (_type) {
-        .float => .{.float = void{}},
-        .vec2 => .{.vec2 = void{}},
-        .vec3 => .{.vec3 = void{}},
-        .vec4 => .{.vec4 = void{}},
-        .int => .{.int = void{}},
-        .ivec2 => .{.ivec2 = void{}},
-        .ivec3 => .{.ivec3 = void{}},
-        .ivec4 => .{.ivec4 = void{}},
+        .float => .{ .float = void{} },
+        .vec2 => .{ .vec2 = void{} },
+        .vec3 => .{ .vec3 = void{} },
+        .vec4 => .{ .vec4 = void{} },
+        .int => .{ .int = void{} },
+        .ivec2 => .{ .ivec2 = void{} },
+        .ivec3 => .{ .ivec3 = void{} },
+        .ivec4 => .{ .ivec4 = void{} },
         else => unreachable,
     };
 }
@@ -2298,7 +2298,7 @@ pub export fn pinc_graphics_shaders_glsl_attribute_mapping_set_item(shaders_obj:
 pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_num(shaders_obj: c_int, num: c_int) void {
     state.validateFor(.init);
     const object = &refObject(shaders_obj).shaders;
-    if(num > pinc_graphics_uniforms_max_num()) unreachable;
+    if (num > pinc_graphics_uniforms_max_num()) unreachable;
     object.glsl.numUniformMaps = @intCast(num);
     object.glsl.uniformMaps = undefined;
 }
@@ -2306,16 +2306,16 @@ pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_num(shaders_obj: c_
 pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_item_length(shaders_obj: c_int, uniform: c_int, len: c_int) void {
     state.validateFor(.init);
     const object = &refObject(shaders_obj).shaders;
-    if(uniform > object.glsl.numUniformMaps) unreachable;
-    if(len > UniformMap.MAX_UNIFORM_NAME_SIZE) unreachable;
+    if (uniform > object.glsl.numUniformMaps) unreachable;
+    if (len > UniformMap.MAX_UNIFORM_NAME_SIZE) unreachable;
     object.glsl.uniformMaps[@intCast(uniform)].nameLen = @intCast(len);
 }
 
 pub export fn pinc_graphics_shaders_glsl_uniform_mapping_set_item(shaders_obj: c_int, uniform: c_int, index: c_int, value: c_char) void {
     state.validateFor(.init);
     const object = &refObject(shaders_obj).shaders;
-    if(uniform > object.glsl.numUniformMaps) unreachable;
-    if(index > object.glsl.uniformMaps[@intCast(uniform)].nameLen) unreachable;
+    if (uniform > object.glsl.numUniformMaps) unreachable;
+    if (index > object.glsl.uniformMaps[@intCast(uniform)].nameLen) unreachable;
     object.glsl.uniformMaps[@intCast(uniform)].name[@intCast(index)] = @intCast(value);
 }
 

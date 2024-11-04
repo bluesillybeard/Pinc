@@ -11,20 +11,28 @@ int test_align1_pipeline;
 int test_align1_vertex_array;
 
 void test_align1_start(void) {
+    if(!pinc_graphics_shader_glsl_version_supported(1, 10, 0)) {
+        assert(false);
+    }
     int vec2align = pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec2);
+    assert(vec2align > 0);
     int vec4align = pinc_graphics_vertex_attributes_type_align(pinc_graphics_attribute_type_vec4);
+    assert(vec4align > 0);
     int posoffset = vec2align;
     int vertexAttribs = pinc_graphics_vertex_attributes_create(1);
+    // pure data objects like vertex attributes objects and uniforms objects should not be null under any reasonable circumstance.
+    assert(vertexAttribs != 0);
     pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_graphics_attribute_type_vec2, posoffset, 0);
     pinc_graphics_vertex_attributes_set_stride(vertexAttribs, posoffset + 8);
     int uniforms = pinc_graphics_uniforms_create(0);
+    assert(uniforms != 0);
 
     // TODO: once fixed-shading is available, use that instead for maximum compatibility
 
     // Make a shaders object with the code
 
     int shaders = pinc_graphics_shaders_create(pinc_graphics_shader_type_glsl);
-
+    assert(shaders != 0);
     char* vertexShaderCode = "\
         #version 110\n\
         attribute vec2 pos;\n\
