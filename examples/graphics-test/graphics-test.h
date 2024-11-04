@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 // Start off with useful types and functions
 

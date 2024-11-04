@@ -212,3 +212,5 @@ Note: Even if a feature/item you want is in here, make an issue anyway! Features
 - add a way to get the size of a window in real units (like inches or something)
 - empty / "null" / mock window backend
 - empty / "null" / mock graphics backend
+- figure out how to get Pinc working on older operating systems
+    - This may be best accomplished by using Zig's C backend, or maybe even rewriting Pinc in C because Zig does not seem to have any intention of supporting EOL operating systems.

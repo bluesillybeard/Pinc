@@ -20,7 +20,7 @@ int test_AllAttribute_alignForward(int index, int align) {
     return align * (index / align + 1);
 }
 
-// TODO: this probably beloincs in graphics-test.h
+// TODO: this probably belongs in graphics-test.h
 struct test_AllAttribute_VertexAttribute {
     int type;
     const char* name;
@@ -31,8 +31,7 @@ void test_allAttributes_submitVertices(void);
 
 void test_allAttributes_start(void) {
     if(!pinc_graphics_shader_glsl_version_supported(1, 1, 0)) {
-        // TODO: need an assert or something
-        return;
+        assert(false);
     }
 
     static const struct test_AllAttribute_VertexAttribute vertexAttributes[] = {
@@ -46,10 +45,12 @@ void test_allAttributes_start(void) {
     static const int numVertexAttributes = sizeof(vertexAttributes)/sizeof(struct test_AllAttribute_VertexAttribute);
 
     int vertexAttribs = pinc_graphics_vertex_attributes_create(numVertexAttributes);
+    assert(vertexAttribs != 0);
     int offset = 0;
     int largestAlign = 1;
     for(int i=0; i<numVertexAttributes; ++i) {
         int align = pinc_graphics_vertex_attributes_type_align(vertexAttributes[i].type);
+        assert(align > 0);
         if(largestAlign < align) largestAlign = align;
         offset = test_AllAttribute_alignForward(offset, align);
         pinc_graphics_vertex_attributes_set_item(vertexAttribs, i, vertexAttributes[i].type, offset, 0);
@@ -63,10 +64,12 @@ void test_allAttributes_start(void) {
     // create a uniforms object
     // Even though there will be no uniforms, a uniforms object is still required
     int uniforms = pinc_graphics_uniforms_create(0);
-
+    assert(uniforms != 0);
+    
     // Make a shaders object with the code
 
     int shaders = pinc_graphics_shaders_create(pinc_graphics_shader_type_glsl);
+    assert(shaders != 0);
 
     // The check is a basic checksum.
     // Sum each value x a prime number, check the result makes sense.
@@ -200,10 +203,7 @@ void test_allAttributes_submitVertices(void) {
         float f4w = -(partialSum + 0.5) / 23.0;
         // verify it's correct
         int realSum = partialSum + (int)(f4w * 23);
-        // Hmm, I wonder if the compiler is smart enough to optimize this if statement out...
-        if(realSum != 0) {
-            printf("uh oh\n");
-        }
+        assert(realSum == 0);
         pinc_graphics_vertex_array_set_item_vec4(test_allAttributes_vertex_array, i, 3, f4x, f4y, f4z, f4w);
     }
     pinc_graphics_vertex_array_unlock(test_allAttributes_vertex_array);
