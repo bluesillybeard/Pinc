@@ -728,8 +728,11 @@ pub const SDL2CompleteWindow = struct {
     pub fn presentFramebuffer(this: *SDL2CompleteWindow, vsync: bool) void {
         // TODO: actually make sure we're on the OpenGL backend before swapping for OpenGL
         this.glMakeCurrent();
-        // TODO: test for success
-        _ = libsdl.glSetSwapInterval(if (vsync) -1 else 0);
+        if(libsdl.glSetSwapInterval(if (vsync) -1 else 0) == -1) {
+            if(libsdl.glSetSwapInterval(if (vsync) 1 else 0) == -1) {
+                pinc.pushError(false, .any, "SDL2 backend: Unable to set swap interval: {s}", .{libsdl.getError()});
+            }
+        }
         libsdl.glSwapWindow(this.window);
     }
 

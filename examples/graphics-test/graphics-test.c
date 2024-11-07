@@ -13,13 +13,15 @@
 #include "uniform.h"
 #include "uniform2.h"
 #include "allAttributes.h"
+#include "uniform3.h"
 
 const Example examples[] = {
     {test_basic_start, test_basic_frame, test_basic_deinit, "basic", "A basic colored triangle"},
     {test_align1_start, test_align1_frame, test_align1_deinit, "align1", "A basic white triangle"},
     {test_uniform_start, test_uniform_frame, test_uniform_deinit, "uniform", "A color changing triangle"},
     {test_uniform2_start, test_uniform2_frame, test_uniform2_deinit, "uniform2", "A green triangle - will be red if something isn't correct"},
-    {test_allAttributes_start, test_allAttributes_frame, test_allAttributes_deinit, "allAttributes", "A blue triangle - will be red if something isn't correct"}
+    {test_allAttributes_start, test_allAttributes_frame, test_allAttributes_deinit, "allAttributes", "A blue triangle - will be red if something isn't correct"},
+    {test_uniform3_start, test_uniform3_frame, test_uniform3_deinit, "uniform3", "A nice rotating cube with basic lighting"},
 };
 
 // examples is a static array (not a pointer) so this trick will work
@@ -99,10 +101,16 @@ int main(int argc, char** argv) {
     // the most basic main loop - also slightly scuffed but it's fine
     int example = 0;
     frame = 0;
+    struct timespec now;
+    timespec_get(&now, TIME_UTC);
+    start_millis = ((long long int) now.tv_sec) * 1000 + ((long long int) now.tv_nsec) / 1000000;
     examples[example].start();
     printf("Starting example %s: %s\n", examples[example].name, examples[example].description);
     bool running = true;
     while(running) {
+        struct timespec now;
+        timespec_get(&now, TIME_UTC);
+        current_millis = ((long long int) now.tv_sec) * 1000 + ((long long int) now.tv_nsec) / 1000000;
         pinc_step();
         if(pinc_event_window_closed(window)) {
             examples[example].deinit();
@@ -119,6 +127,9 @@ int main(int argc, char** argv) {
                     printf("Exiting example %s\n", examples[example].name);
                     example = (example + 1) % NUM_EXAMPLES;
                     frame = 0;
+                    struct timespec now;
+                    timespec_get(&now, TIME_UTC);
+                    start_millis = ((long long int) now.tv_sec) * 1000 + ((long long int) now.tv_nsec) / 1000000;
                     examples[example].start();
                     printf("Starting example %s: %s\n", examples[example].name, examples[example].description);
                 }

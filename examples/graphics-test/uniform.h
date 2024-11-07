@@ -4,6 +4,7 @@ int test_uniform_pipeline;
 int test_uniform_vertex_array;
 
 void test_uniform_start(void) {
+    // TODO: check GLSL version
     int vertexAttribs = pinc_graphics_vertex_attributes_create(1);
     pinc_graphics_vertex_attributes_set_item(vertexAttribs, 0, pinc_graphics_attribute_type_vec2, 0, 0);
     pinc_graphics_vertex_attributes_set_stride(vertexAttribs, 8);

@@ -190,6 +190,14 @@ enum pinc_graphics_channels {
     pinc_graphics_channels_rgba,
 };
 
+enum pinc_graphics_depth_test {
+    // depth test disabled, fragments are always written
+    pinc_graphics_depth_test_none,
+    // fragments are only written if the depth is less than what is in the framebuffer
+    pinc_graphics_depth_test_less,
+    // TODO: the rest of these
+};
+
 /// @subsection Graphics capibilities querying
 
 // Get alignment of an attribute type
@@ -258,21 +266,50 @@ PINC_API void PINC_CALL pinc_graphics_shaders_glsl_uniform_mapping_set_item(int 
 // Make sure to complete the pipeline before editing or stroying any of the objects given to this function
 PINC_API int PINC_CALL pinc_graphics_pipeline_incomplete_create(int vertex_attributes_obj, int uniforms_obj, int shaders_obj, int assembly);
 
+// TODO: figure out if we need a function to test if this is possible on a specific pipeline
+// TODO: do we need a function to see if depth test is available before making a pipeline?
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_depth_test(int pipeline_obj, int test);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_complete(int pipeline_obj);
 
 PINC_API void PINC_CALL pinc_graphics_pipeline_deinit(int pipeline_obj);
 
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_float(int pipeline_obj, int uniform, float v);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_vec2(int pipeline_obj, int uniform, float v1, float v2);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_vec3(int pipeline_obj, int uniform, float v1, float v2, float v3);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_vec4(int pipeline_obj, int uniform, float v1, float v2, float v3, float v4);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_int(int pipeline_obj, int uniform, int v);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_ivec2(int pipeline_obj, int uniform, int v1, int v2);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_ivec3(int pipeline_obj, int uniform, int v1, int v2, int v3);
+
 PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_ivec4(int pipeline_obj, int uniform, int v1, int v2, int v3, int v4);
-// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat2x2(int pipeline_obj, int uniform, mat2x2 v);
-// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat3x3(int pipeline_obj, int uniform, mat3x3 v);
-// PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat4x4(int pipeline_obj, int uniform, mat4x4 v);
+
+// Order of matrix parameters is the same as in OpenGL - column major order
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat2x2(int pipeline_obj, int uniform,
+    float m00, float m01,
+    float m10, float m11
+);
+
+// Order of matrix parameters is the same as in OpenGL - column major order
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat3x3(int pipeline_obj, int uniform,
+    float m00, float m01, float m02,
+    float m10, float m11, float m12,
+    float m20, float m21, float m22
+);
+
+// Order of matrix parameters is the same as in OpenGL - column major order
+PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_mat4x4(int pipeline_obj, int uniform, 
+    float m00, float m01, float m02, float m03,
+    float m10, float m11, float m12, float m13,
+    float m20, float m21, float m22, float m23,
+    float m30, float m31, float m32, float m33
+);
 // PINC_API void PINC_CALL pinc_graphics_pipeline_set_uniform_texture(int pipeline_obj, int uniform, texture v);
 
 PINC_API int PINC_CALL pinc_graphics_vertex_array_create(int vertex_attributes_obj, int num);
@@ -284,20 +321,35 @@ PINC_API void PINC_CALL pinc_graphics_vertex_array_lock(int vertex_array_obj);
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_len(int vertex_array_obj, int num);
 
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_float(int vertex_array_obj, int vertex, int attribute, float v);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_vec2(int vertex_array_obj, int vertex, int attribute, float v1, float v2);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_vec3(int vertex_array_obj, int vertex, int attribute, float v1, float v2, float v3);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_vec4(int vertex_array_obj, int vertex, int attribute, float v1, float v2, float v3, float v4);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_int(int vertex_array_obj, int vertex, int attribute, int v1);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_ivec2(int vertex_array_obj, int vertex, int attribute, int v1, int v2);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_ivec3(int vertex_array_obj, int vertex, int attribute, int v1, int v2, int v3);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_ivec4(int vertex_array_obj, int vertex, int attribute, int v1, int v2, int v3, int v4);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_short(int vertex_array_obj, int vertex, int attribute, short v1);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_svec2(int vertex_array_obj, int vertex, int attribute, short v1, short v2);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_svec3(int vertex_array_obj, int vertex, int attribute, short v1, short v2, short v3);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_svec4(int vertex_array_obj, int vertex, int attribute, short v1, short v2, short v3, short v4);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_byte(int vertex_array_obj, int vertex, int attribute, char v1);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_bvec2(int vertex_array_obj, int vertex, int attribute, char v1, char v2);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_bvec3(int vertex_array_obj, int vertex, int attribute, char v1, char v2, char v3);
+
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_item_bvec4(int vertex_array_obj, int vertex, int attribute, char v1, char v2, char v3, char v4);
 
 PINC_API void PINC_CALL pinc_graphics_vertex_array_set_byte(int vertex_array_obj, int index, char byte);

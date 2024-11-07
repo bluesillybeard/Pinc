@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include <time.h>
 
 // Start off with useful types and functions
 
@@ -46,3 +47,7 @@ void on_error_exit(void);
 int window;
 
 int frame;
+
+long long int start_millis;
+
+long long int current_millis;

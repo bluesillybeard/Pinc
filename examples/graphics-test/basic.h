@@ -10,7 +10,7 @@ int test_basic_pipeline;
 int test_basic_vertex_array;
 
 void test_basic_start(void) {
-    if(!pinc_graphics_shader_glsl_version_supported(1, 1, 0)) {
+    if(!pinc_graphics_shader_glsl_version_supported(1, 10, 0)) {
         assert(false);
     }
     // Create a vertex attributes object and fill out the information for it
