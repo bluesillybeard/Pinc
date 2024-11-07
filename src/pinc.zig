@@ -240,6 +240,11 @@ pub const VertexAssembly = enum(c_int) {
     element_triangle_strip,
 };
 
+pub const DepthTest = enum(c_int) {
+    none,
+    less,
+};
+
 // other types
 
 pub const MAX_COLOR_CHANNELS = 4;
@@ -580,6 +585,10 @@ pub const IVertexArray = struct {
         this.vtable.setItemVec3(this.obj, vertex, attribute, v);
     }
 
+    pub inline fn setLen(this: IVertexArray, len: u32) void {
+        this.vtable.setLen(this.obj, len);
+    }
+
     pub const Vtable = struct {
         deinit: *const fn (this: *anyopaque) void,
         lock: *const fn (this: *anyopaque) void,
@@ -588,6 +597,7 @@ pub const IVertexArray = struct {
         setItemVec4: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
         setItemFloat: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: f32) void,
         setItemVec3: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [3]f32) void,
+        setLen: *const fn(this: *anyopaque, len: u32) void,
     };
 
     vtable: *Vtable,
@@ -697,6 +707,7 @@ pub const PipelineInitData = struct {
     uniformsObj: c_int,
     shadersObj: c_int,
     assembly: VertexAssembly,
+    depthTest: DepthTest,
 };
 
 // this is a heavy struct. Copying it is expensive. Generally, try to pass references of it instead.
@@ -954,6 +965,36 @@ pub const IPipeline = struct {
         this.vtable.setIvec4(this.obj, uniform, v1, v2, v3, v4);
     }
 
+    pub inline fn setMat2x2(this: IPipeline, uniform: u32, m00: f32, m01: f32, m10: f32, m11: f32) void {
+        this.vtable.setMat2x2(this.obj, uniform, m00, m01, m10, m11);
+    }
+
+    pub inline fn setMat3x3(this: IPipeline, uniform: u32,
+        m00: f32, m01: f32, m02: f32,
+        m10: f32, m11: f32, m12: f32,
+        m20: f32, m21: f32, m22: f32
+    ) void {
+        this.vtable.setMat3x3(this.obj, uniform,
+            m00, m01, m02,
+            m10, m11, m12,
+            m20, m21, m22
+        );
+    }
+
+    pub inline fn setMat4x4(this: IPipeline, uniform: u32, 
+        m00: f32, m01: f32, m02: f32, m03: f32,
+        m10: f32, m11: f32, m12: f32, m13: f32,
+        m20: f32, m21: f32, m22: f32, m23: f32,
+        m30: f32, m31: f32, m32: f32, m33: f32
+    ) void {
+        this.vtable.setMat4x4(this.obj, uniform, 
+            m00, m01, m02, m03,
+            m10, m11, m12, m13,
+            m20, m21, m22, m23,
+            m30, m31, m32, m33
+        );
+    }
+
     pub const Vtable = struct {
         deinit: *const fn (this: *anyopaque) void,
         setVec4: *const fn (this: *anyopaque, uniform: u32, v1: f32, v2: f32, v3: f32, v4: f32) void,
@@ -964,6 +1005,18 @@ pub const IPipeline = struct {
         setIvec2: *const fn (this: *anyopaque, uniform: u32, v1: i32, v2: i32) void,
         setIvec3: *const fn (this: *anyopaque, uniform: u32, v1: i32, v2: i32, v3: i32) void,
         setIvec4: *const fn (this: *anyopaque, uniform: u32, v1: i32, v2: i32, v3: i32, v4: i32) void,
+        setMat2x2: *const fn (this: *anyopaque, uniform: u32, m00: f32, m01: f32, m10: f32, m11: f32) void,
+        setMat3x3: *const fn (this: *anyopaque, uniform: u32,
+            m00: f32, m01: f32, m02: f32,
+            m10: f32, m11: f32, m12: f32,
+            m20: f32, m21: f32, m22: f32
+        ) void,
+        setMat4x4: *const fn (this: *anyopaque, uniform: u32, 
+            m00: f32, m01: f32, m02: f32, m03: f32,
+            m01: f32, m11: f32, m12: f32, m13: f32,
+            m02: f32, m21: f32, m22: f32, m23: f32,
+            m03: f32, m31: f32, m32: f32, m33: f32
+        ) void,
     };
 
     vtable: *Vtable,
@@ -2184,6 +2237,9 @@ pub export fn pinc_graphics_uniforms_set_item(uniforms_obj: c_int, index: c_int,
         .ivec2 => .{ .ivec2 = void{} },
         .ivec3 => .{ .ivec3 = void{} },
         .ivec4 => .{ .ivec4 = void{} },
+        .mat2x2 => .{ .mat2x2 = void{} },
+        .mat3x3 => .{ .mat3x3 = void{} },
+        .mat4x4 => .{ .mat4x4 = void{} },
         else => unreachable,
     };
 }
@@ -2323,14 +2379,22 @@ pub export fn pinc_graphics_pipeline_incomplete_create(vertex_attributes_obj: c_
     state.validateFor(.init);
     var id: c_int = undefined;
     const object = refNewObject(&id);
-    // TODO: verify these objects exist but only in 'unsafe' modes
+    // TODO: verify these objects exist
     object.* = .{ .incompletePipeline = .{
         .vertexAttribsObj = vertex_attributes_obj,
         .uniformsObj = uniforms_obj,
         .shadersObj = shaders_obj,
         .assembly = @enumFromInt(assembly),
+        .depthTest = .none,
     } };
     return id;
+}
+
+pub export fn pinc_graphics_pipeline_set_depth_test(pipeline_obj: c_int, t: c_int) void {
+    const depthTest: DepthTest = @enumFromInt(t);
+    state.validateFor(.init);
+    const obj = &refObject(pipeline_obj).incompletePipeline;
+    obj.depthTest = depthTest;
 }
 
 pub export fn pinc_graphics_pipeline_complete(pipeline_obj: c_int) void {
@@ -2398,6 +2462,48 @@ pub export fn pinc_graphics_pipeline_set_uniform_ivec4(pipeline_obj: c_int, unif
     object.setIvec4(@intCast(uniform), @intCast(v1), @intCast(v2), @intCast(v3), @intCast(v4));
 }
 
+// Order of matrix parameters is the same as in OpenGL - column major order
+pub export fn pinc_graphics_pipeline_set_uniform_mat2x2(pipeline_obj: c_int, uniform: c_int,
+    m00: f32, m01: f32,
+    m10: f32, m11: f32
+) void {
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setMat2x2(@intCast(uniform), m00, m01, m10, m11);
+}
+
+// Order of matrix parameters is the same as in OpenGL - column major order
+pub export fn pinc_graphics_pipeline_set_uniform_mat3x3(pipeline_obj: c_int, uniform: c_int,
+    m00: f32, m01: f32, m02: f32,
+    m10: f32, m11: f32, m12: f32,
+    m20: f32, m21: f32, m22: f32
+) void {
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setMat3x3(@intCast(uniform),
+        m00, m01, m02,
+        m10, m11, m12,
+        m20, m21, m22
+    );
+}
+
+// Order of matrix parameters is the same as in OpenGL - column major order
+pub export fn pinc_graphics_pipeline_set_uniform_mat4x4(pipeline_obj: c_int, uniform: c_int, 
+    m00: f32, m01: f32, m02: f32, m03: f32,
+    m10: f32, m11: f32, m12: f32, m13: f32,
+    m20: f32, m21: f32, m22: f32, m23: f32,
+    m30: f32, m31: f32, m32: f32, m33: f32
+) void {
+    state.validateFor(.init);
+    const object = &refObject(pipeline_obj).completePipeline;
+    object.setMat4x4(@intCast(uniform), 
+        m00, m01, m02, m03,
+        m10, m11, m12, m13,
+        m20, m21, m22, m23,
+        m30, m31, m32, m33
+    );
+}
+
 pub export fn pinc_graphics_vertex_array_create(vertex_attributes_obj: c_int, num: c_int) c_int {
     state.validateFor(.init);
     const vertexArray = state.getGraphicsBackend().?.createVertexArray(&refObject(vertex_attributes_obj).*.vertexAttributes, @intCast(num));
@@ -2423,10 +2529,9 @@ pub export fn pinc_graphics_vertex_array_lock(vertex_array_obj: c_int) void {
 }
 
 pub export fn pinc_graphics_vertex_array_set_len(vertex_array_obj: c_int, num: c_int) void {
-    _ = vertex_array_obj;
-    _ = num;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setLen(@intCast(num));
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_float(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: f32) void {

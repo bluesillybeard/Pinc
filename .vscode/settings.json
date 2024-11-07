@@ -36,6 +36,9 @@
         "graphics-test.h": "c",
         "sysexits.h": "c",
         "execinfo.h": "c",
-        "graphics": "cpp"
+        "graphics": "cpp",
+        "uniform3.h": "c",
+        "expected": "c",
+        "optional": "c"
     }
 }

@@ -30,7 +30,7 @@ struct test_AllAttribute_VertexAttribute {
 void test_allAttributes_submitVertices(void);
 
 void test_allAttributes_start(void) {
-    if(!pinc_graphics_shader_glsl_version_supported(1, 1, 0)) {
+    if(!pinc_graphics_shader_glsl_version_supported(1, 10, 0)) {
         assert(false);
     }
 

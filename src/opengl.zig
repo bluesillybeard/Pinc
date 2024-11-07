@@ -150,18 +150,17 @@ pub const Opengl21GraphicsBackend = struct {
         // Anyway, the program is done. Time for the next step.
 
         // Map from input index to 'real' opengl layout binding
-        var attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]u32 = undefined;
+        var attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]i32 = undefined;
         // TODO: uniform binding map
         for (0..shaderSources.glsl.numAttributeMaps) |mapIndex| {
             const map = shaderSources.glsl.attributeMaps[mapIndex];
             var name: [pinc.AttributeMap.MAX_ATTRIBUTE_NAME_SIZE + 1]u8 = undefined;
             @memcpy((&name)[0..map.nameLen], map.name[0..map.nameLen]);
             name[map.nameLen] = 0;
-            // TODO: error when location returns -1
             const location = gl.getAttribLocation(program, &name);
             attributeBindMap[mapIndex] = @intCast(location);
         }
-        var uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]u32 = undefined;
+        var uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]i32 = undefined;
         // TODO: uniform binding map
         for (0..shaderSources.glsl.numUniformMaps) |mapIndex| {
             const map = shaderSources.glsl.uniformMaps[mapIndex];
@@ -181,6 +180,9 @@ pub const Opengl21GraphicsBackend = struct {
             .vertexAssembly = assembly,
             .uniforms = uniforms,
             .attributes = attributes,
+            .state = .{
+                .depthTest = initData.depthTest,
+            },
         };
         return pinc.IPipeline.init(Opengl21Pipeline, pipeline);
     }
@@ -229,6 +231,10 @@ pub const Opengl21GraphicsBackend = struct {
         for (0..pipelineV.attributes.numAttribs) |attr| {
             // the attribute location that OpenGL uses / knows
             const attribIndex = pipelineV.attributeBindMap[attr];
+            if(attribIndex == -1) {
+                // if the index is -1, it means it was optimized out of the shader and is not needed
+                continue;
+            }
             const attribV = pipelineV.attributes.attribsBuffer[attr];
             // convert pinc attribute type to opengl attribute settings
             var _size: gl.GLint = undefined;
@@ -302,11 +308,15 @@ pub const Opengl21GraphicsBackend = struct {
             // I absolutely hate the fact that this function is required.
             // Why did they decide that vertexAttribPointer shouldn't automatically enable it?
             // Anyway, more than an hour was lost due to forgetting to use this function.
-            gl.enableVertexAttribArray(attribIndex);
-            gl.vertexAttribPointer(attribIndex, _size, _type, if (attribV.normalize) gl.TRUE else gl.FALSE, @intCast(pipelineV.attributes.stride), @ptrFromInt(attribV.offset));
+            gl.enableVertexAttribArray(@intCast(attribIndex));
+            gl.vertexAttribPointer(@intCast(attribIndex), _size, _type, if (attribV.normalize) gl.TRUE else gl.FALSE, @intCast(pipelineV.attributes.stride), @ptrFromInt(attribV.offset));
         }
         for (0..pipelineV.uniforms.numUniforms) |uniformIndex| {
             const uniformLocation = pipelineV.uniformBindMap[uniformIndex];
+            if(uniformLocation == -1) {
+                // if the location is -1, it means it was optimized out of the shader and is not needed
+                continue;
+            }
             const uniformObj = pipelineV.uniforms.uniformsBuffer[uniformIndex];
             const uniformValue = pipelineV.state.uniformsBuffer[uniformIndex];
             switch (uniformObj) {
@@ -334,7 +344,25 @@ pub const Opengl21GraphicsBackend = struct {
                 .ivec4 => {
                     gl.uniform4i(@intCast(uniformLocation), uniformValue.ivec4[0], uniformValue.ivec4[1], uniformValue.ivec4[2], uniformValue.ivec4[3]);
                 },
+                .mat2x2 => {
+                    gl.uniformMatrix2fv(@intCast(uniformLocation), 1, gl.FALSE, &uniformValue.mat2x2);
+                },
+                .mat3x3 => {
+                    gl.uniformMatrix3fv(@intCast(uniformLocation), 1, gl.FALSE, &uniformValue.mat3x3);
+                },
+                .mat4x4 => {
+                    gl.uniformMatrix4fv(@intCast(uniformLocation), 1, gl.FALSE, &uniformValue.mat4x4);
+                },
                 else => unreachable,
+            }
+        }
+        switch(pipelineV.state.depthTest){
+            .none => {
+                gl.disable(gl.DEPTH_TEST);
+            },
+            .less => {
+                gl.enable(gl.DEPTH_TEST);
+                gl.depthFunc(gl.LESS);
             }
         }
         switch (pipelineV.vertexAssembly) {
@@ -551,19 +579,47 @@ pub const Opengl21Pipeline = struct {
         this.state.uniformsBuffer[uniform] = .{ .ivec4 = [4]i32{ v1, v2, v3, v4 } };
     }
 
-    attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]u32,
-    uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]u32,
+    pub fn setMat2x2(this: *Opengl21Pipeline, uniform: u32, m00: f32, m01: f32, m10: f32, m11: f32) void {
+        if (uniform >= this.uniforms.numUniforms) unreachable;
+        if (this.uniforms.uniformsBuffer[uniform] != .mat2x2) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .mat2x2 = [4]f32{ m00, m01, m10, m11 } };
+    }
+
+    pub fn setMat3x3(this: *Opengl21Pipeline, uniform: u32,
+        m00: f32, m01: f32, m02: f32,
+        m10: f32, m11: f32, m12: f32,
+        m20: f32, m21: f32, m22: f32
+    ) void {
+        if (uniform >= this.uniforms.numUniforms) unreachable;
+        if (this.uniforms.uniformsBuffer[uniform] != .mat3x3) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .mat3x3 = [9]f32{m00, m01, m02, m10, m11, m12, m20, m21, m22} };
+    }
+
+    pub fn setMat4x4(this: *Opengl21Pipeline, uniform: u32, 
+        m00: f32, m01: f32, m02: f32, m03: f32,
+        m10: f32, m11: f32, m12: f32, m13: f32,
+        m20: f32, m21: f32, m22: f32, m23: f32,
+        m30: f32, m31: f32, m32: f32, m33: f32
+    ) void {
+        if (uniform >= this.uniforms.numUniforms) unreachable;
+        if (this.uniforms.uniformsBuffer[uniform] != .mat4x4) unreachable;
+        this.state.uniformsBuffer[uniform] = .{ .mat4x4 = [4*4]f32{m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33} };
+    }
+
+    attributeBindMap: [pinc.VertexAttributesObj.MAX_ATTRIBUTES]i32,
+    uniformBindMap: [pinc.UniformsObj.MAX_UNIFORMS]i32,
     shaderProgram: gl.GLuint,
     vertexAssembly: pinc.VertexAssembly,
     // Local copy of the uniforms object
     uniforms: pinc.UniformsObj,
     // local copy of the vertex attributes object
     attributes: pinc.VertexAttributesObj,
-    state: Opengl21PipelineState = .{},
+    state: Opengl21PipelineState,
 };
 
 const Opengl21PipelineState = struct {
     uniformsBuffer: [pinc.UniformsObj.MAX_UNIFORMS]Opengl21UniformValue = undefined,
+    depthTest: pinc.DepthTest,
 };
 
 // This union is not discriminated as the tag is determined using the uniforms object held within each pipeline
@@ -576,6 +632,9 @@ const Opengl21UniformValue = union {
     ivec2: [2]i32,
     ivec3: [3]i32,
     ivec4: [4]i32,
+    mat2x2: [4]f32,
+    mat3x3: [3*3]f32,
+    mat4x4: [4*4]f32,
 };
 
 pub const OpenGL21VertexArray = struct {
@@ -666,6 +725,13 @@ pub const OpenGL21VertexArray = struct {
         const offset = vertex * this.attributes.stride + attributeV.offset;
         const writeTo = @as(*[4 * 3]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
         @memcpy(writeTo, vb);
+    }
+
+    pub fn setLen(this: *OpenGL21VertexArray, len: u32) void {
+        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
+        // TODO: reuse settings from when the 
+        gl.bufferData(gl.ARRAY_BUFFER, @intCast(len * this.attributes.stride), null, gl.STATIC_DRAW);
     }
 
     pub fn deinit(this: *OpenGL21VertexArray) void {

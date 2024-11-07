@@ -191,7 +191,7 @@ Note: Even if a feature/item you want is in here, make an issue anyway! Features
 - error callback function, instead of forcing everyone to manually get the error if a function returns a value indicating an error
 - test on ALL zig tier 3 platforms, ideally using real hardware. As of right now, those are:
     - Windows x86_64 (testing hardware is available)
-    - Windows x86
+    - Windows x86 (testing hardware is available)
     - Windows aarch64
     - Macos aarch64
     - Macos x86_64
@@ -203,7 +203,6 @@ Note: Even if a feature/item you want is in here, make an issue anyway! Features
     - Linux powerpc64le
 - add functions that take advantage of pointers for performance
     - particularily for 3D rendering with large meshes
-- the graphics API as a whole does not exist really
 - example / test for having multiple windows
 - get the cursor movement within a specific window
 - get cursor movement delta
@@ -214,3 +213,5 @@ Note: Even if a feature/item you want is in here, make an issue anyway! Features
 - empty / "null" / mock graphics backend
 - figure out how to get Pinc working on older operating systems
     - This may be best accomplished by using Zig's C backend, or maybe even rewriting Pinc in C because Zig does not seem to have any intention of supporting EOL operating systems.
+    - Particularly Windows 7 which is still used for some reason, as well as older version of MacOS (I don't have older mac computers to test on though)
+    - This may be easier by avoiding libc wherever possible - It's basically impossible to do Linux without libc, but Windows and Macos may be a different story.
