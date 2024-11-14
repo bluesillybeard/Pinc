@@ -667,64 +667,89 @@ pub const OpenGL21VertexArray = struct {
         this.mapped = null;
     }
 
-    pub fn setItemVec2(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [2]f32) void {
+    inline fn setItemGeneric(this: *OpenGL21VertexArray, comptime T: type, vertex: usize, attribute: usize, v: T, comptime attribType: pinc.AttribtueType) void {
         pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         if (this.mapped == null) unreachable;
         if (vertex >= this.num) unreachable;
         if (attribute >= this.attributes.numAttribs) unreachable;
         const attributeV = this.attributes.attribsBuffer[attribute];
-        if (attributeV.type != .vec2) unreachable;
+        if (attributeV.type != attribType) unreachable;
         // We want to make zero assumptions about the alignments of any of these pieces.
         // As a result, everything needs to be done as bytes
-        const vb: *const [4 * 2]u8 = @ptrCast(&v);
+        const vb: *const [@sizeOf(T)]u8 = @ptrCast(&v);
         const offset = vertex * this.attributes.stride + attributeV.offset;
-        const writeTo = @as(*[4 * 2]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
-        @memcpy(writeTo, vb);
-    }
-
-    pub fn setItemVec4(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [4]f32) void {
-        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
-        if (this.mapped == null) unreachable;
-        if (vertex >= this.num) unreachable;
-        if (attribute >= this.attributes.numAttribs) unreachable;
-        const attributeV = this.attributes.attribsBuffer[attribute];
-        if (attributeV.type != .vec4) unreachable;
-        // We want to make zero assumptions about the alignments of any of these pieces.
-        // As a result, everything needs to be done as bytes
-        const vb: *const [4 * 4]u8 = @ptrCast(&v);
-        const offset = vertex * this.attributes.stride + attributeV.offset;
-        const writeTo = @as(*[4 * 4]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
+        const writeTo = @as(*[@sizeOf(T)]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
         @memcpy(writeTo, vb);
     }
 
     pub fn setItemFloat(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: f32) void {
-        pinc.state.getWindowBackend().?.glMakeAnyCurrent();
-        if (this.mapped == null) unreachable;
-        if (vertex >= this.num) unreachable;
-        if (attribute >= this.attributes.numAttribs) unreachable;
-        const attributeV = this.attributes.attribsBuffer[attribute];
-        if (attributeV.type != .float) unreachable;
-        // We want to make zero assumptions about the alignments of any of these pieces.
-        // As a result, everything needs to be done as bytes
-        const vb: *const [4]u8 = @ptrCast(&v);
-        const offset = vertex * this.attributes.stride + attributeV.offset;
-        const writeTo = @as(*[4]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
-        @memcpy(writeTo, vb);
+        this.setItemGeneric(f32, vertex, attribute, v, .float);
+    }
+
+    pub fn setItemVec2(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [2]f32) void {
+        this.setItemGeneric([2]f32, vertex, attribute, v, .vec2);
     }
 
     pub fn setItemVec3(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [3]f32) void {
+        this.setItemGeneric([3]f32, vertex, attribute, v, .vec3);
+    }
+
+    pub fn setItemVec4(this: *OpenGL21VertexArray, vertex: usize, attribute: usize, v: [4]f32) void {
+        this.setItemGeneric([4]f32, vertex, attribute, v, .vec4);
+    }
+
+    pub fn setItemInt(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: i32) void {
+        this.setItemGeneric(i32, vertex, attribute, v, .int);
+    }
+
+    pub fn setItemIvec2(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [2]i32) void {
+        this.setItemGeneric([2]i32, vertex, attribute, v, .ivec2);
+    }
+
+    pub fn setItemIvec3(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [3]i32) void {
+        this.setItemGeneric([3]i32, vertex, attribute, v, .ivec3);
+    }
+
+    pub fn setItemIvec4(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [4]i32) void {
+        this.setItemGeneric([4]i32, vertex, attribute, v, .ivec4);
+    }
+
+    pub fn setItemShort(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: i16) void {
+        this.setItemGeneric(i16, vertex, attribute, v, .short);
+    }
+
+    pub fn setItemSvec2(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [2]i16) void {
+        this.setItemGeneric([2]i16, vertex, attribute, v, .svec2);
+    }
+
+    pub fn setItemSvec3(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [3]i16) void {
+        this.setItemGeneric([3]i16, vertex, attribute, v, .svec3);
+    }
+
+    pub fn setItemSvec4(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [4]i16) void {
+        this.setItemGeneric([4]i16, vertex, attribute, v, .svec4);
+    }
+
+    pub fn setItemByte(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: u8) void {
+        this.setItemGeneric(u8, vertex, attribute, v, .byte);
+    }
+
+    pub fn setItemBvec2(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [2]u8) void {
+        this.setItemGeneric([2]u8, vertex, attribute, v, .bvec2);
+    }
+
+    pub fn setItemBvec3(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [3]u8) void {
+        this.setItemGeneric([3]u8, vertex, attribute, v, .bvec3);
+    }
+
+    pub fn setItemBvec4(this: *OpenGL21VertexArray, vertex:usize, attribute: usize, v: [4]u8) void {
+        this.setItemGeneric([4]u8, vertex, attribute, v, .bvec4);
+    }
+
+    pub fn setByte(this: *OpenGL21VertexArray, index: usize, byte: u8) void {
         pinc.state.getWindowBackend().?.glMakeAnyCurrent();
         if (this.mapped == null) unreachable;
-        if (vertex >= this.num) unreachable;
-        if (attribute >= this.attributes.numAttribs) unreachable;
-        const attributeV = this.attributes.attribsBuffer[attribute];
-        if (attributeV.type != .vec3) unreachable;
-        // We want to make zero assumptions about the alignments of any of these pieces.
-        // As a result, everything needs to be done as bytes
-        const vb: *const [4 * 3]u8 = @ptrCast(&v);
-        const offset = vertex * this.attributes.stride + attributeV.offset;
-        const writeTo = @as(*[4 * 3]u8, @ptrFromInt(@intFromPtr(this.mapped.?) + offset));
-        @memcpy(writeTo, vb);
+        this.mapped.?[index] = byte;
     }
 
     pub fn setLen(this: *OpenGL21VertexArray, len: u32) void {

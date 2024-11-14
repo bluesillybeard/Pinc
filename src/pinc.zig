@@ -569,20 +569,72 @@ pub const IVertexArray = struct {
         this.vtable.unlock(this.obj);
     }
 
+    pub inline fn setItemFloat(this: IVertexArray, vertex: usize, attribute: usize, v: f32) void {
+        this.vtable.setItemFloat(this.obj, vertex, attribute, v);
+    }
+
     pub inline fn setItemVec2(this: IVertexArray, vertex: usize, attribute: usize, v: [2]f32) void {
         this.vtable.setItemVec2(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemVec3(this: IVertexArray, vertex: usize, attribute: usize, v: [3]f32) void {
+        this.vtable.setItemVec3(this.obj, vertex, attribute, v);
     }
 
     pub inline fn setItemVec4(this: IVertexArray, vertex: usize, attribute: usize, v: [4]f32) void {
         this.vtable.setItemVec4(this.obj, vertex, attribute, v);
     }
 
-    pub inline fn setItemFloat(this: IVertexArray, vertex: usize, attribute: usize, v: f32) void {
-        this.vtable.setItemFloat(this.obj, vertex, attribute, v);
+    pub inline fn setItemInt(this: IVertexArray, vertex:usize, attribute: usize, v: i32) void {
+        this.vtable.setItemInt(this.obj, vertex, attribute, v);
     }
 
-    pub inline fn setItemVec3(this: IVertexArray, vertex: usize, attribute: usize, v: [3]f32) void {
-        this.vtable.setItemVec3(this.obj, vertex, attribute, v);
+    pub inline fn setItemIvec2(this: IVertexArray, vertex:usize, attribute: usize, v: [2]i32) void {
+        this.vtable.setItemIvec2(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemIvec3(this: IVertexArray, vertex:usize, attribute: usize, v: [3]i32) void {
+        this.vtable.setItemIvec3(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemIvec4(this: IVertexArray, vertex:usize, attribute: usize, v: [4]i32) void {
+        this.vtable.setItemIvec4(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemShort(this: IVertexArray, vertex:usize, attribute: usize, v: i16) void {
+        this.vtable.setItemShort(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemSvec2(this: IVertexArray, vertex:usize, attribute: usize, v: [2]i16) void {
+        this.vtable.setItemSvec2(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemSvec3(this: IVertexArray, vertex:usize, attribute: usize, v: [3]i16) void {
+        this.vtable.setItemSvec3(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemSvec4(this: IVertexArray, vertex:usize, attribute: usize, v: [4]i16) void {
+        this.vtable.setItemSvec4(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemByte(this: IVertexArray, vertex:usize, attribute: usize, v: u8) void {
+        this.vtable.setItemByte(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemBvec2(this: IVertexArray, vertex:usize, attribute: usize, v: [2]u8) void {
+        this.vtable.setItemBvec2(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemBvec3(this: IVertexArray, vertex:usize, attribute: usize, v: [3]u8) void {
+        this.vtable.setItemBvec3(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setItemBvec4(this: IVertexArray, vertex:usize, attribute: usize, v: [4]u8) void {
+        this.vtable.setItemBvec4(this.obj, vertex, attribute, v);
+    }
+
+    pub inline fn setByte(this: IVertexArray, index: usize, byte: u8) void {
+        this.vtable.setByte(this.obj, index, byte);
     }
 
     pub inline fn setLen(this: IVertexArray, len: u32) void {
@@ -593,10 +645,23 @@ pub const IVertexArray = struct {
         deinit: *const fn (this: *anyopaque) void,
         lock: *const fn (this: *anyopaque) void,
         unlock: *const fn (this: *anyopaque) void,
-        setItemVec2: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [2]f32) void,
-        setItemVec4: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
         setItemFloat: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: f32) void,
+        setItemVec2: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [2]f32) void,
         setItemVec3: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [3]f32) void,
+        setItemVec4: *const fn (this: *anyopaque, vertex: usize, attribute: usize, v: [4]f32) void,
+        setItemInt: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: i32) void,
+        setItemIvec2: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [2]i32) void,
+        setItemIvec3: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [3]i32) void,
+        setItemIvec4: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [4]i32) void,
+        setItemShort: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: i16) void,
+        setItemSvec2: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [2]i16) void,
+        setItemSvec3: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [3]i16) void,
+        setItemSvec4: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [4]i16) void,
+        setItemByte: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: u8) void,
+        setItemBvec2: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [2]u8) void,
+        setItemBvec3: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [3]u8) void,
+        setItemBvec4: *const fn (this: *anyopaque, vertex:usize, attribute: usize, v: [4]u8) void,
+        setByte: *const fn (this: *anyopaque, index: usize, byte: u8) void,
         setLen: *const fn(this: *anyopaque, len: u32) void,
     };
 
@@ -2559,137 +2624,81 @@ pub export fn pinc_graphics_vertex_array_set_item_vec4(vertex_array_obj: c_int, 
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_int(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: c_int) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemInt(@intCast(vertex), @intCast(attribute), @intCast(v));
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_ivec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_int, v2: c_int) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemIvec2(@intCast(vertex), @intCast(attribute), [2]i32{@intCast(v1), @intCast(v2)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_ivec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_int, v2: c_int, v3: c_int) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemIvec3(@intCast(vertex), @intCast(attribute), [3]i32{@intCast(v1), @intCast(v2), @intCast(v3)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_ivec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_int, v2: c_int, v3: c_int, v4: c_int) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    _ = v4;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemIvec4(@intCast(vertex), @intCast(attribute), [4]i32{@intCast(v1), @intCast(v2), @intCast(v3), @intCast(v4)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_short(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: c_short) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemShort(@intCast(vertex), @intCast(attribute), @intCast(v));
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_svec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_short, v2: c_short) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemSvec2(@intCast(vertex), @intCast(attribute), [_]i16{@intCast(v1), @intCast(v2)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_svec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_short, v2: c_short, v3: c_short) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemSvec3(@intCast(vertex), @intCast(attribute), [_]i16{@intCast(v1), @intCast(v2), @intCast(v3)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_svec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_short, v2: c_short, v3: c_short, v4: c_short) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    _ = v4;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemSvec4(@intCast(vertex), @intCast(attribute), [_]i16{@intCast(v1), @intCast(v2), @intCast(v3), @intCast(v4)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_byte(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v: c_char) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemByte(@intCast(vertex), @intCast(attribute), @intCast(v));
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_bvec2(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_char, v2: c_char) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemBvec2(@intCast(vertex), @intCast(attribute), [_]u8{@intCast(v1), @intCast(v2)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_bvec3(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_char, v2: c_char, v3: c_char) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemBvec3(@intCast(vertex), @intCast(attribute), [_]u8{@intCast(v1), @intCast(v2), @intCast(v3)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_item_bvec4(vertex_array_obj: c_int, vertex: c_int, attribute: c_int, v1: c_char, v2: c_char, v3: c_char, v4: c_char) void {
-    _ = vertex_array_obj;
-    _ = vertex;
-    _ = attribute;
-    _ = v1;
-    _ = v2;
-    _ = v3;
-    _ = v4;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setItemBvec4(@intCast(vertex), @intCast(attribute), [_]u8{@intCast(v1), @intCast(v2), @intCast(v3), @intCast(v4)});
 }
 
 pub export fn pinc_graphics_vertex_array_set_byte(vertex_array_obj: c_int, index: c_int, byte: c_char) void {
-    _ = vertex_array_obj;
-    _ = index;
-    _ = byte;
-    // TODO: implement
-    unreachable;
+    state.validateFor(.init);
+    const obj = refObject(vertex_array_obj).*.vertexArray;
+    obj.setByte(@intCast(index), @intCast(byte));
 }
 
 pub export fn pinc_graphics_vertex_array_unlock(vertex_array_obj: c_int) void {
