@@ -4,6 +4,8 @@
 
 Pinc is a cross platform windowing / rendering library written in Zig.
 
+QUICK NOTE: this project has been somewhat abandoned. Contributions will be accepted, however a new version of this library written entirely in C is being worked on. The reason for ditching Zig is that it does not support old versions of Windows, among other concerns with the creators of the language. C also compiles from anywhere to everwhere, while Zig is still somewhat limited by LLVM and its standard library.
+
 ## Pincs goals
 - Language agnostic - The external API is entirely in C, which makes binding to other languages relatively simple
     - The header is written plain C, which can be loaded through any C compatible FFI system imaginable
